@@ -13,7 +13,7 @@ The aim of the "`Index Management`" RFC is to offer a simplified API in the `Buc
 The goal is to abstract away regularly needed queries relative to indexes and provide a simple API. This way the user can focus on his business related `N1QL` queries, without having to think twice about the boilerplate of creating indexes.
 
 # General Design
-The API will be added to the `BucketManager` class of each SDK. In its blocking form, the API is made up of **6** base methods:
+The API will be added to the `BucketManager` class of each SDK. In its blocking form, the API is made up of at least **6** base methods:
  - `listIndex`: lists all the indexes relating to the current `Bucket` using the `system:indexes` N1QL view.
  - `createPrimaryIndex`: create a primary index on the current Bucket.
  - `createIndex`: create a secondary GSI index on the current Bucket.
@@ -21,7 +21,7 @@ The API will be added to the `BucketManager` class of each SDK. In its blocking 
  - `dropIndex`: drop a specific secondary index of the current Bucket.
  - `buildDeferredIndexes`: trigger the build of indexes that were created in a deferred fashion (see below).
 
-It is open for discussion wether or not this RFC should also include the following methods in a cross-SDK fashion, or if they should be optional:
+Additionally it is open for discussion wether or not this RFC should also include the following ***2*** methods in a cross-SDK fashion, or if they should be optional:
  - `watchIndex`: poll the `system:indexes` N1QL view until a given index changes its status to "online" (or a maximum amount of time has passed).
  - `watchIndexes`: poll the `system:indexes` N1QL view until a given list of index all become "online" (or a maximum amount of time has passed).
 
@@ -106,11 +106,13 @@ Signature:
 ```java
 boolean watchIndex(String indexName, long watchTimeout, TimeUnit watchTimeUnit)
 
-List<IndexInfo> watchIndexes(boolean watchPrimary, long watchTimeout, TimeUnit watchTimeUnit, List<String> watchList)
+List<IndexInfo> watchIndexes(List<String> watchList, boolean watchPrimary, long watchTimeout, TimeUnit watchTimeUnit)
 ```
 
 Remarks:
 The implementation would be based on regularly polling the index view (using `listIndexes()` for instance) until a specific index (or a list of indexes) is seen as `online`.
+
+`boolean watchPrimary`, if set to `true`, would have the effect of adding the default primary name **`#primary`** to the watchList. It is recommended to have that name as a constant somewhere and reference it in the method inline documentation (for instance in Java this is in `Index.PRIMARY_NAME` in the dsl).
 
 The `watchTimeout` and `watchTimeUnit` are a way to express a maximum **duration** for the poll. This can be replaced by a language-idiomatic way of representing a duration in each SDK.
 
@@ -127,9 +129,9 @@ Thus it can be empty if indexes were all "pending" and failed to be built during
 
  - For convenience, `createIndex` will offer a signature with varargs syntax (`boolean createIndex(String indexName, boolean ignoreIfExist, boolean defer, Object... fields)`).
 
- - For `watchIndexes`, the polling should be done with a linearly augmenting delay, from 50ms to 1000ms by steps of 500ms.
+ - For `watchIndexes`, the polling should be done with a linearly augmenting delay, from 50ms to 1000ms by steps of 500ms. Only the watch timeout should limit the polling (no maximum number of attempts)
 
- - The asynchronous version of `watchIndex` should return `Observable<IndexInfo>`, emitting the IndexInfo of the index once it becames online.
+ - The asynchronous version of `watchIndex` should return `Observable<IndexInfo>`, emitting the IndexInfo of the index once it becomes online.
 
  - Similarly, the async version of `watchIndexes` would return an `Observable<IndexInfo>` with a single emission for each index **that exists** and becomes "online".
 
