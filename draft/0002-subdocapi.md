@@ -55,19 +55,20 @@ requests in the network.
 
 ### Document/Item
 
-This class, used in top-level KV operations, is also employed by the sub-document
-API to return values or indicate status.
+This class is used in top-level KV operations. The `Document` object itself is the return value from normal KV operations
+which contain the value, cas, mutation token, etc.
 
-[The `Document` _may_ be subclassed into `DocumentFragment` to signal that the
-value contained therein is only _part_ of the document (a fragment).
+### DocumentFragment
+The `Document` _may_ be replaced by a `DocumentFragment` to signal that the
+value contained therein is only _part_ of the document (a fragment), and that top-level operations can't apply to a fragment.
 
 This subclass contains the same fields as the `Document`, except the `value`
-(or `contents`) is replaced by the `fragment` field. This is to avoid confusion
-regarding whether the value "truly" contains the entire document value, or
-merely a subdoc.
+(or `contents`) is replaced by the `fragment` field.
 
-The `Document` object itself is the return value from normal KV operations
-which contain the value, cas, mutation token, etc.
+It also additionally contains the `path` considered in subdoc operations.
+
+Thus `DocumentFragment` can be used both as a return type (eg. when attempting to get a fragment of a document) and an input (for mutations, `DocumentFragment` contains everything needed: id of the document, path in the document, fragment value to be applied, cas and expiry...).
+In some languages this can replace longer method signatures for mutations.
 
 This object is used as an example, some SDKs may wish to either use the
 'value' or 'document' field of the existing `Document` return value, or
@@ -103,7 +104,7 @@ JSON array.
 Each path component must be valid JSON (without the enclosing quotes). This
 means that things like tabs, quotes, and backslashes must be escaped. To think
 of it another way, the path matching algorithm in the server works via simple
-string comparison, so a JSON key `"bs\\ and \t tabs are here" would be matched
+string comparison, so a JSON key `"bs\\ and \t tabs are here"`` would be matched
 by a path component of `"bs\\ and \t tabs are here"`.
 
 The SDK MUST verify that a path is non-empty for operations which do not
@@ -147,17 +148,19 @@ Unconditionally places the specified value in the provided path.
   operations. The TTL can be set for _all_ mutation methods.
 * `persist_to`, `replicate_to`: Durability requirements. Functions exactly as in CRUD
 
-> *NOTE*: This (And the other sub-document APIs) will never create or remove documents
+> **NOTE**: This (And the other sub-document APIs) will never create or remove documents
 > on the server. This means that if the document does not exist, a `KEY_ENOENT`
 > is returned from the server. The document is never created, even if `create_parents`
 > is true
+
+> **ALTERNATIVE SIGNATURES**: Having a `DocumentFragment` class with all the fields necessary for a mutation opens the option of using the `DocumentFragment` as an input parameter for all mutation methods in place of `docid`, `path`, `value`, `cas` and `ttl`.
 
 ### `insert_in(docid, path, value, create_parents, cas, ttl, persist_to, replicate_to)`
 Exactly like `upsert_in`, except the path must not already exist.
 If it does, `PathExists` is thrown.
 
 ### `replace_in(docid, path, value, cas, ttl, persist_to, replicate_to)`
-Exactly like `upsert_in`, except the penultimate path must exist. If it 
+Exactly like `upsert_in`, except the penultimate path must exist. If it
 not exist, `PathNotFound` is thrown. Unlike `insert_in` and `upsert_in`,
 `replace_in` can work on both dictionary and array values
 
@@ -238,8 +241,10 @@ ID and cas are not provided (these are passed directly into `mutate_in`).
 
 ### `LookupResultSpec`
 This object represents a result for a single path when using `lookup_in`.
-It contains two fields:
+It contains four fields:
 
+* `path`: the path that was looked up for this result.
+* `operation`: a representation of the actual lookup operation that was attempted by the associated spec (can be the memcached opcode or preferably an enum or user-friendlier representation).
 * `status`: The error code for the operation. If the path exists, this should
   contain an object or value which indicates "Success" (this can be a NULL or
   empty value to indicate no error)
@@ -294,7 +299,7 @@ has a different CAS), there are additional sub-document specific error codes.
   This error is similar to other `TooDeep` errors, which all relate to various
   validation stages to ensure the server does not consume too much memory when
   parsing a single document.
-* DocumentTooDeep: Document is too deep to parse. 
+* DocumentTooDeep: Document is too deep to parse.
 * ValueTooDeep: Proposed value would make the document too deep to parse
 
 ### Numeric Errors
@@ -325,7 +330,7 @@ after the existing `lcb_store3()` API - using `lcb_sdstore3`:
     lcb_sched_enter(instance);
     lcb_sdstore3(instance, NULL, &cmd);
     lcb_sched_leave(instance);
-    
+
     // Multi Commands
     lcb_error_t rc = LCB_SUCCESS;
     lcb_CMDSDMULTI cmd = { 0 };
@@ -348,11 +353,11 @@ after the existing `lcb_store3()` API - using `lcb_sdstore3`:
     from subdocument import get, exists, upsert, counter
 
     cb.get_upsert_in('user:mnunberg', 'address', ['123 Main St', 'Reno', 'NV', 'USA'])
-    
+
     result = cb.get_in('user:mnunberg', 'address[0]')
     result.value
     # '123 Main St'
-    
+
     # Demonstrate lookup specs
     from couchbase.subdocument import get, exists
     results = cb.lookup_in('user:mnunberg',
@@ -362,7 +367,7 @@ after the existing `lcb_store3()` API - using `lcb_sdstore3`:
     email_ok, email = results[0]
     addr_ok, addr = results[1]
     couchbase_exists, _ = results[2]
-    
+
     # Demonstrate mutation specs
     from couchbase.subdocument import extend, replace, arrayinsert, addunique
     cb.mutate_in('user:mnunberg',
@@ -370,17 +375,17 @@ after the existing `lcb_store3()` API - using `lcb_sdstore3`:
                  replace('email', 'mnunberg2000@juno.com'),
                  arrayinsert('interests[4]', 'sitting'),
                  addunique('likes', 'running'))
-                 
 
-
-| Generic | .NET         | Java   | NodeJS | Go | C | PHP | Python | Ruby |
-| ------- | ------------ | ------ | ------ | -- | - | --- | ------ | ---- |
-| foo()   | foo<dynamic> | Foo<D> | ...... | .. | . | ... | ...... | .... |
+## Java
+ * `DocumentFragment` will be used as input parameter for single mutations as well as return type for single lookups and mutations.
+ * `DocumentFragment` will NOT implementing the `Document` interface (so it's impossible to do say `bucket.upser(someDocumentFragment)`).
+ * method naming follow the Java camelCase convention so eg. `arrayinsert_in` becomes `arrayInsertIn`.
+ * **TODO** `extend_in` and `arrayinsert_in` core-level implementations don't yet support multiple values.
 
 
 # Unresolved Questions
 
-* Array method naming: `append` and `prepend` vs `extend?
+* Array method naming: `append` and `prepend` vs `extend`?
 * Array prefix: `arrayXXXX`?
 * How should multi mutation errors be reported?
 * For languages supporting overloads, should one simply overload `get()`, `upsert()`, etc.
