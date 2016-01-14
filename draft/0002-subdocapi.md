@@ -239,19 +239,24 @@ ID and cas are not provided (these are passed directly into `mutate_in`).
 * `MutationSpec.counter(path, delta)`. See `counter_in`
 * `MutationSpec.remove(path)`. See `remove_in`
 
-### `LookupResultSpec`
+### `LookupResult`
 This object represents a result for a single path when using `lookup_in`.
-It contains four fields:
+It contains at least two fields:
 
-* `path`: the path that was looked up for this result.
-* `operation`: a representation of the actual lookup operation that was attempted by the associated spec (can be the memcached opcode or preferably an enum or user-friendlier representation).
 * `status`: The error code for the operation. If the path exists, this should
   contain an object or value which indicates "Success" (this can be a NULL or
   empty value to indicate no error)
 * `value`: The value for the path. This is always empty when using `exists`.
 
+Optionally and for developers convenience, implementations can also add two fields:
+
+* `path`: the path that was looked up for this result.
+* `operation`: a representation of the actual lookup operation that was attempted by the associated spec (can be the memcached opcode or preferably an enum or user-friendlier representation).
+
 The implementation of this as a concrete type is _optional_. Python for example
-simply exposes this as a tuple of `(error, value)`
+simply exposes this as a tuple of `(error, value)`.
+
+Implementing as a concrete type can open the possibility to offer convenience methods such as `exists()` or `valueOrThrow()` (see Java specifics).
 
 ### `lookup_in(docid, lookup_specs...)`
 
@@ -260,15 +265,14 @@ Retrieve (or check the existence of) multiple paths.
 Since this operation can have mixed results, exceptions should not be raised (or
 if they are, ensure they are extremely well documented).
 
-This should a `Document` containing a list of `LookupResultSpec` objects in
+This should return a `Document` containing a list of `LookupResultSpec` objects in
 its  `value` field. If a multi-variant `value` field is not suitable, a separate
-return type (for example, `MultiLookupResultDocument`) can subclass `Document`
-for this purpose.
+return type (for example, `MultiLookupResult`) can be offered for this purpose (not necessarily extending `Document`).
 
 ### `mutate_in(docid, cas, ttl, persist_to, replicate_to, mutation_specs...)`
 Mutate paths in a document. Either all or none of the mutations will succeed.
 
-Upon success, a success return value is provided (i.e. a new `Document` object).
+Upon success, a success return value is provided (i.e. a new `Document` object, or a dedicated `MultiMutationResult` containing the updated cas and `MutationToken`).
 Upon failure, the Memcached protocol will inform the client of the index of the
 failure (i.e. the 0-base _nth_ spec which caused the error).
 This may be provided to the user as part of the exception structure; via
@@ -378,10 +382,14 @@ after the existing `lcb_store3()` API - using `lcb_sdstore3`:
 
 ## Java
  * `DocumentFragment` will be used as input parameter for single mutations as well as return type for single lookups and mutations.
- * `DocumentFragment` will NOT implementing the `Document` interface (so it's impossible to do say `bucket.upser(someDocumentFragment)`).
+ * `DocumentFragment` will NOT implementing the `Document` interface (so it's impossible to do `bucket.upser(someDocumentFragment)`).
  * method naming follow the Java camelCase convention so eg. `arrayinsert_in` becomes `arrayInsertIn`.
+ * multi lookup result is a `MultiLookupResult` with a list of `LookupResult` and convenience methods to detect if it was a total success, partial success or total failure (eg. every LookupSpec was on a path not found).
+ * `LookupResult` also have convenience methods:
+   - `valueOrThrow()` to go from an error code to throwing the same exception that would have been thrown by `getIn` or `existIn`
+   - `exists()`: returns true if the status is `SUCCESS`, which makes sense in the Lookup.EXIST case as well as the Lookup.GET case (where `exists() == true` means you can safely look at the `value()`).
+ * multi mutation result is a `MultiMutationResult` that only contains the document's id, the updated cas and optional MutationToken.
  * **TODO** `extend_in` and `arrayinsert_in` core-level implementations don't yet support multiple values.
-
 
 # Unresolved Questions
 
