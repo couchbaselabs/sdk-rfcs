@@ -17,8 +17,8 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 
 RFC #  | Description | Status 
 ------------- | ------------- | --------- 
-1  | [The RFC Process](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0001-rfc-process.md) | ACCEPTED 
-2  | [SubDocument API](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0002-subdocapi.md) | DRAFT 
+1  | [The RFC Process](rfc/0001-rfc-process.md) | ACCEPTED 
+2  | [SubDocument API](rfc/0002-subdocapi.md) | DRAFT 
 3  | [Index Management](https://github.com/couchbaselabs/sdk-rfcs/issues/6) | DRAFT 
 4 | RYW Consistent Queries– at_plus | IDENTIFIED 
 5 | [VBucket Retry Logic](https://github.com/couchbaselabs/sdk-rfcs/issues/10) | DRAFT 
@@ -26,6 +26,7 @@ RFC #  | Description | Status
 8 | Datastructures | IDENTIFIED 
 9 | 2i Query Support | IDENTIFIED 
 10 | CB Full Text API | IDENTIFIED 
+11 | [Connection String](rfc/0011-connection-string.md) | ACCEPTED
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
