@@ -325,62 +325,68 @@ In this section, the abstract design parts need to be broken down on the SDK lev
 The C SDK will not use these verbs, and will instead model the subdoc operations
 after the existing `lcb_store3()` API - using `lcb_sdstore3`:
 
-    // Single command
-    lcb_CMDSDSTORE cmd = { 0 };
-    LCB_CMD_SET_KEY(&cmd, "key", 3);
-    LCB_CMD_SET_VALUE(&cmd, "\"value\"", strlen("\"value\""));
-    LCB_SDCMD_SET_PATH(&cmd, "path", strlen("path"));
-    cmd.mode = LCB_SUBDOC_DICT_UPSERT;
-    lcb_sched_enter(instance);
-    lcb_sdstore3(instance, NULL, &cmd);
-    lcb_sched_leave(instance);
+```c
+// Single command
+lcb_CMDSDSTORE cmd = { 0 };
+LCB_CMD_SET_KEY(&cmd, "key", 3);
+LCB_CMD_SET_VALUE(&cmd, "\"value\"", strlen("\"value\""));
+LCB_SDCMD_SET_PATH(&cmd, "path", strlen("path"));
+cmd.mode = LCB_SUBDOC_DICT_UPSERT;
+lcb_sched_enter(instance);
+lcb_sdstore3(instance, NULL, &cmd);
+lcb_sched_leave(instance);
 
-    // Multi Commands
-    lcb_error_t rc = LCB_SUCCESS;
-    lcb_CMDSDMULTI cmd = { 0 };
-    LCB_CMD_SET_KEY(&cmd, "key", 3);
-    cmd.multimode = LCB_SDMULTI_MODE_LOOKUP;
-    lcb_SDMULTICTX *ctx = lcb_sdmultictx_new(instance, NULL, &cmd, &err);
-    // Check error...
-    lcb_CMDSDGET gcmd = { 0 };
-    LCB_SDCMD_SET_PATH(&gcmd, "path1", strlen("path1"));
-    err = lcb_sdmultictx_addcmd(ctx, LCB_SUBDOC_GET, (const lcb_SDCMDBASE*)&gcmd);
-    LCB_SDCMD_SET_PATH(&gcmd, "path2", strlen("path2"));
-    err = lcb_sdmultictx_addcmd(ctx, LCB_SUBDOC_EXISTS, (const lcb_SDCMDBASE*)&gcmd);
-    lcb_sched_enter(instance);
-    lcb_sdmultictx_done(ctx);
-    lcb_sched_leave(instance);
-    lcb_wait(instance);
+// Multi Commands
+lcb_error_t rc = LCB_SUCCESS;
+lcb_CMDSDMULTI cmd = { 0 };
+LCB_CMD_SET_KEY(&cmd, "key", 3);
+cmd.multimode = LCB_SDMULTI_MODE_LOOKUP;
+lcb_SDMULTICTX *ctx = lcb_sdmultictx_new(instance, NULL, &cmd, &err);
+// Check error...
+lcb_CMDSDGET gcmd = { 0 };
+LCB_SDCMD_SET_PATH(&gcmd, "path1", strlen("path1"));
+err = lcb_sdmultictx_addcmd(ctx, LCB_SUBDOC_GET, (const lcb_SDCMDBASE*)&gcmd);
+LCB_SDCMD_SET_PATH(&gcmd, "path2", strlen("path2"));
+err = lcb_sdmultictx_addcmd(ctx, LCB_SUBDOC_EXISTS, (const lcb_SDCMDBASE*)&gcmd);
+lcb_sched_enter(instance);
+lcb_sdmultictx_done(ctx);
+lcb_sched_leave(instance);
+lcb_wait(instance);
+```
 
 ## Python
 
-    from subdocument import get, exists, upsert, counter
+```python
+from subdocument import get, exists, upsert, counter
 
-    cb.get_upsert_in('user:mnunberg', 'address', ['123 Main St', 'Reno', 'NV', 'USA'])
+cb.get_upsert_in('user:mnunberg', 'address', ['123 Main St', 'Reno', 'NV', 'USA'])
 
-    result = cb.get_in('user:mnunberg', 'address[0]')
-    result.value
-    # '123 Main St'
+result = cb.get_in('user:mnunberg', 'address[0]')
+result.value
+# '123 Main St'
 
-    # Demonstrate lookup specs
-    from couchbase.subdocument import get, exists
-    results = cb.lookup_in('user:mnunberg',
-                           get('email'),
-                           get('address'),
-                           exists('couchbase_id'))
-    email_ok, email = results[0]
-    addr_ok, addr = results[1]
-    couchbase_exists, _ = results[2]
+# Demonstrate lookup specs
+from couchbase.subdocument import get, exists
+results = cb.lookup_in('user:mnunberg',
+                       get('email'),
+                       get('address'),
+                       exists('couchbase_id'))
+email_ok, email = results[0]
+addr_ok, addr = results[1]
+couchbase_exists, _ = results[2]
 
-    # Demonstrate mutation specs
-    from couchbase.subdocument import extend, replace, arrayinsert, addunique
-    cb.mutate_in('user:mnunberg',
-                 extend('messages', {'from': 'management', 'body': 'Hello!'}, direction=FRONT),
-                 replace('email', 'mnunberg2000@juno.com'),
-                 arrayinsert('interests[4]', 'sitting'),
-                 addunique('likes', 'running'))
+# Demonstrate mutation specs
+from couchbase.subdocument import extend, replace, arrayinsert, addunique
+cb.mutate_in('user:mnunberg',
+             extend('messages', {'from': 'management', 'body': 'Hello!'}, direction=FRONT),
+             replace('email', 'mnunberg2000@juno.com'),
+             arrayinsert('interests[4]', 'sitting'),
+             addunique('likes', 'running'))
+```
 
 ## Java
+The following specifics and caveats apply to the Java implementation:
+
  * `DocumentFragment` will be used as input parameter for single mutations as well as return type for single lookups and mutations.
  * `DocumentFragment` will NOT implementing the `Document` interface (so it's impossible to do `bucket.upser(someDocumentFragment)`).
  * method naming follow the Java camelCase convention so eg. `arrayinsert_in` becomes `arrayInsertIn`.
@@ -390,6 +396,150 @@ after the existing `lcb_store3()` API - using `lcb_sdstore3`:
    - `exists()`: returns true if the status is `SUCCESS`, which makes sense in the Lookup.EXIST case as well as the Lookup.GET case (where `exists() == true` means you can safely look at the `value()`).
  * multi mutation result is a `MultiMutationResult` that only contains the document's id, the updated cas and optional MutationToken.
  * **TODO** `extend_in` and `arrayinsert_in` core-level implementations don't yet support multiple values.
+
+
+Example of expected usage of the API:
+
+```java
+//Assuming a Bucket instance "bucket" is available...
+
+// Create the base document to work within, with a key of "user:mnunberg"
+JsonObject mnunberg = JsonObject.create()
+        .put("email", "mnunberg@juno.com")
+        .put("messages", JsonArray.empty())
+        .put("likes", JsonArray.from("falling"))
+        .put("interest", JsonArray.from("A", "B", "C", "D", "E", "F"));
+bucket.upsert(JsonDocument.create("user:mnunberg", mnunberg));
+
+// Demonstrate single mutation
+JsonArray address = JsonArray.from("123 Main St", "Reno", "NV", "USA");
+bucket.upsertIn(DocumentFragment.create("user:mnunberg", "address", address), false, PersistTo.NONE, ReplicateTo.NONE);
+
+DocumentFragment<String> getResult = bucket.getIn("user:mnunberg", "address[0]", String.class);
+System.out.println(getResult.fragment());
+// "123 Main St"
+
+// Demonstrate lookup specs, uses static import:
+// import static com.couchbase.client.java.document.subdoc.LookupSpec.*;
+MultiLookupResult lookupResult = bucket.lookupIn("user:mnunberg",
+        get("email"),
+        get("address"),
+        get("couchbase_id"),
+        exists("couchbase_id"));
+
+boolean partialFailure = lookupResult.hasFailure() && lookupResult.hasSuccess(); //true
+
+LookupResult emailResult = lookupResult.results().get(0);
+boolean emailOk = emailResult.exists(); //true
+boolean emailOkFromStatus = emailResult.status() == ResponseStatus.SUCCESS; //true
+String email = (String) emailResult.value(); //"mnunberg2000@juno.com"
+
+LookupResult couchbaseResult = lookupResult.results().get(3);
+boolean couchbaseExists = couchbaseResult.exists();
+boolean couchbaseExistsFromValue = (Boolean) couchbaseResult.value();
+
+LookupResult failureResult = lookupResult.results().get(2);
+boolean ok = failureResult.exists(); //false
+Object value = failureResult.value(); //null
+ResponseStatus status = failureResult.status(); //SUBDOC_PATH_NOT_FOUND
+
+// Demonstrate mutation specs, uses static import:
+// import static com.couchbase.client.java.document.subdoc.MutationSpec.*;
+try {
+    MultiMutationResult mutationResult = bucket.mutateIn("user:mnunberg", PersistTo.NONE, ReplicateTo.NONE,
+            extend("messages", JsonObject.create().put("from", "management").put("body", "Hello!"), ExtendDirection.FRONT, false),
+            replace("email", "mnunberg2000@juno.com"),
+            arrayInsert("interest[4]", "sitting"),
+            addUnique("likes", "running", false));
+    System.out.println("Mutation OK");
+} catch (MultiMutationException e) {
+    System.out.println("Mutation FAILED");
+    System.out.println("First mutation command to fail was #" + (e.firstFailureIndex() + 1));
+    System.out.println("Error was " + e.firstFailureStatus());
+}
+System.out.println(bucket.get("user:mnunberg").content());
+// prints:
+//Mutation OK
+//{"messages":[{"body":"Hello!","from":"management"}],
+// "address":["123 Main St","Reno","NV","USA"],
+// "interest":["A","B","C","D","sitting","E","F"],
+// "email":"mnunberg2000@juno.com",
+// "likes":["falling","running"]}
+```
+
+## .NET
+```csharp
+//Assuming a Bucket instance "Bucket" is available...
+
+var document = new Document<dynamic>() {
+    Id = "user:mnunberg",
+    Content = new
+    {
+        email = "mnunberg@juno.com",
+        messages = new string[0],
+        likes = new string[] { "falling" },
+        interest = new string[] { "A", "B", "C", "D", "E", "F" }
+    }
+};
+bucket.Upsert(document);
+
+Console.WriteLine(bucket.Get<dynamic>("user:mnunberg").Value);
+
+// Demonstrate single mutation
+var address = new string[] { "123 Main St", "Reno", "NV", "USA" };
+bucket.UpsertIn(new DocumentFragment<dynamic>("user:mnunberg", "address", address), false, 0L, 0, PersistTo.Zero, ReplicateTo.Zero);
+
+var getResult = bucket.GetIn<String>("user:mnunberg", "address[0]");
+Console.WriteLine(getResult.Fragment);
+// "123 Main St"
+
+// Demonstrate lookup specs
+var lookupResult = bucket.LookupIn("user:mnunberg",
+    Get("email"),
+    Get("address"),
+    Get("couchbase_id"),
+    Exists("couchbase_id"));
+
+var emailResult = lookupResult.Results[0];
+var emailOk = emailResult.Exists; //true
+var emailOkFromStatus = emailResult.Status == ResponseStatus.Success; //true
+var email = emailResult.Value<string>; //"mnunberg2000@juno.com"
+
+var couchbaseResult = lookupResult.Results[3];
+var couchbaseExists = couchbaseResult.Exists;
+var couchbaseExistsFromValue = couchbaseResult.Value<Boolean>;
+
+var failureResult = lookupResult.Results[2];
+var ok = failureResult.Exists; //false
+var value = failureResult.Value; //null
+var status = failureResult.Status; //SUBDOC_PATH_NOT_FOUND
+
+// Demonstrate mutation specs
+try {
+    MultiMutationResult mutationResult = bucket.MutateIn(
+        "user:mnunberg", PersistTo.Zero, ReplicateTo.Zero,
+        Extend("messages", new {
+            from = "management",
+            body = "Hello!"
+        }, ExtendDirection.FRONT, false),
+        Replace("email", "mnunberg2000@juno.com"),
+        ArrayInsert("interest[4]", "sitting"),
+        AddUnique("likes", "running", false));
+    Console.WriteLine("Mutation OK");
+} catch (MultiMutationException e) {
+    Console.WriteLine("Mutation FAILED");
+    Console.WriteLine("First mutation command to fail was #" + (e.FirstFailureIndex + 1));
+    Console.WriteLine("Error was " + e.FirstFailureStatus);
+}
+Console.WriteLine(bucket.Get<dynamic>("user:mnunberg").Value);
+// prints:
+//Mutation OK
+//{"messages":[{"body":"Hello!","from":"management"}],
+// "address":["123 Main St","Reno","NV","USA"],
+// "interest":["A","B","C","D","sitting","E","F"],
+// "email":"mnunberg2000@juno.com",
+// "likes":["falling","running"]}
+```
 
 # Unresolved Questions
 
