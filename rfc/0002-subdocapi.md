@@ -467,6 +467,80 @@ System.out.println(bucket.get("user:mnunberg").content());
 // "likes":["falling","running"]}
 ```
 
+## .NET
+```csharp
+//Assuming a Bucket instance "Bucket" is available...
+
+var document = new Document<dynamic>() {
+    Id = "user:mnunberg",
+    Content = new
+    {
+        email = "mnunberg@juno.com",
+        messages = new string[0],
+        likes = new string[] { "falling" },
+        interest = new string[] { "A", "B", "C", "D", "E", "F" }
+    }
+};
+bucket.Upsert(document);
+
+Console.WriteLine(bucket.Get<dynamic>("user:mnunberg").Value);
+
+// Demonstrate single mutation
+var address = new string[] { "123 Main St", "Reno", "NV", "USA" };
+bucket.UpsertIn(new DocumentFragment<dynamic>("user:mnunberg", "address", address), false, 0L, 0, PersistTo.Zero, ReplicateTo.Zero);
+
+var getResult = bucket.GetIn<String>("user:mnunberg", "address[0]");
+Console.WriteLine(getResult.Fragment);
+// "123 Main St"
+
+// Demonstrate lookup specs
+var lookupResult = bucket.LookupIn("user:mnunberg",
+    Get("email"),
+    Get("address"),
+    Get("couchbase_id"),
+    Exists("couchbase_id"));
+
+var emailResult = lookupResult.Results[0];
+var emailOk = emailResult.Exists; //true
+var emailOkFromStatus = emailResult.Status == ResponseStatus.Success; //true
+var email = emailResult.Value<string>; //"mnunberg2000@juno.com"
+
+var couchbaseResult = lookupResult.Results[3];
+var couchbaseExists = couchbaseResult.Exists;
+var couchbaseExistsFromValue = couchbaseResult.Value<Boolean>;
+
+var failureResult = lookupResult.Results[2];
+var ok = failureResult.Exists; //false
+var value = failureResult.Value; //null
+var status = failureResult.Status; //SUBDOC_PATH_NOT_FOUND
+
+// Demonstrate mutation specs
+try {
+    MultiMutationResult mutationResult = bucket.MutateIn(
+        "user:mnunberg", PersistTo.Zero, ReplicateTo.Zero,
+        Extend("messages", new {
+            from = "management",
+            body = "Hello!"
+        }, ExtendDirection.FRONT, false),
+        Replace("email", "mnunberg2000@juno.com"),
+        ArrayInsert("interest[4]", "sitting"),
+        AddUnique("likes", "running", false));
+    Console.WriteLine("Mutation OK");
+} catch (MultiMutationException e) {
+    Console.WriteLine("Mutation FAILED");
+    Console.WriteLine("First mutation command to fail was #" + (e.FirstFailureIndex + 1));
+    Console.WriteLine("Error was " + e.FirstFailureStatus);
+}
+Console.WriteLine(bucket.Get<dynamic>("user:mnunberg").Value);
+// prints:
+//Mutation OK
+//{"messages":[{"body":"Hello!","from":"management"}],
+// "address":["123 Main St","Reno","NV","USA"],
+// "interest":["A","B","C","D","sitting","E","F"],
+// "email":"mnunberg2000@juno.com",
+// "likes":["falling","running"]}
+```
+
 # Unresolved Questions
 
 * Array method naming: `append` and `prepend` vs `extend`?
