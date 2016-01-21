@@ -325,60 +325,64 @@ In this section, the abstract design parts need to be broken down on the SDK lev
 The C SDK will not use these verbs, and will instead model the subdoc operations
 after the existing `lcb_store3()` API - using `lcb_sdstore3`:
 
-    // Single command
-    lcb_CMDSDSTORE cmd = { 0 };
-    LCB_CMD_SET_KEY(&cmd, "key", 3);
-    LCB_CMD_SET_VALUE(&cmd, "\"value\"", strlen("\"value\""));
-    LCB_SDCMD_SET_PATH(&cmd, "path", strlen("path"));
-    cmd.mode = LCB_SUBDOC_DICT_UPSERT;
-    lcb_sched_enter(instance);
-    lcb_sdstore3(instance, NULL, &cmd);
-    lcb_sched_leave(instance);
+```c
+// Single command
+lcb_CMDSDSTORE cmd = { 0 };
+LCB_CMD_SET_KEY(&cmd, "key", 3);
+LCB_CMD_SET_VALUE(&cmd, "\"value\"", strlen("\"value\""));
+LCB_SDCMD_SET_PATH(&cmd, "path", strlen("path"));
+cmd.mode = LCB_SUBDOC_DICT_UPSERT;
+lcb_sched_enter(instance);
+lcb_sdstore3(instance, NULL, &cmd);
+lcb_sched_leave(instance);
 
-    // Multi Commands
-    lcb_error_t rc = LCB_SUCCESS;
-    lcb_CMDSDMULTI cmd = { 0 };
-    LCB_CMD_SET_KEY(&cmd, "key", 3);
-    cmd.multimode = LCB_SDMULTI_MODE_LOOKUP;
-    lcb_SDMULTICTX *ctx = lcb_sdmultictx_new(instance, NULL, &cmd, &err);
-    // Check error...
-    lcb_CMDSDGET gcmd = { 0 };
-    LCB_SDCMD_SET_PATH(&gcmd, "path1", strlen("path1"));
-    err = lcb_sdmultictx_addcmd(ctx, LCB_SUBDOC_GET, (const lcb_SDCMDBASE*)&gcmd);
-    LCB_SDCMD_SET_PATH(&gcmd, "path2", strlen("path2"));
-    err = lcb_sdmultictx_addcmd(ctx, LCB_SUBDOC_EXISTS, (const lcb_SDCMDBASE*)&gcmd);
-    lcb_sched_enter(instance);
-    lcb_sdmultictx_done(ctx);
-    lcb_sched_leave(instance);
-    lcb_wait(instance);
+// Multi Commands
+lcb_error_t rc = LCB_SUCCESS;
+lcb_CMDSDMULTI cmd = { 0 };
+LCB_CMD_SET_KEY(&cmd, "key", 3);
+cmd.multimode = LCB_SDMULTI_MODE_LOOKUP;
+lcb_SDMULTICTX *ctx = lcb_sdmultictx_new(instance, NULL, &cmd, &err);
+// Check error...
+lcb_CMDSDGET gcmd = { 0 };
+LCB_SDCMD_SET_PATH(&gcmd, "path1", strlen("path1"));
+err = lcb_sdmultictx_addcmd(ctx, LCB_SUBDOC_GET, (const lcb_SDCMDBASE*)&gcmd);
+LCB_SDCMD_SET_PATH(&gcmd, "path2", strlen("path2"));
+err = lcb_sdmultictx_addcmd(ctx, LCB_SUBDOC_EXISTS, (const lcb_SDCMDBASE*)&gcmd);
+lcb_sched_enter(instance);
+lcb_sdmultictx_done(ctx);
+lcb_sched_leave(instance);
+lcb_wait(instance);
+```
 
 ## Python
 
-    from subdocument import get, exists, upsert, counter
+```python
+from subdocument import get, exists, upsert, counter
 
-    cb.get_upsert_in('user:mnunberg', 'address', ['123 Main St', 'Reno', 'NV', 'USA'])
+cb.get_upsert_in('user:mnunberg', 'address', ['123 Main St', 'Reno', 'NV', 'USA'])
 
-    result = cb.get_in('user:mnunberg', 'address[0]')
-    result.value
-    # '123 Main St'
+result = cb.get_in('user:mnunberg', 'address[0]')
+result.value
+# '123 Main St'
 
-    # Demonstrate lookup specs
-    from couchbase.subdocument import get, exists
-    results = cb.lookup_in('user:mnunberg',
-                           get('email'),
-                           get('address'),
-                           exists('couchbase_id'))
-    email_ok, email = results[0]
-    addr_ok, addr = results[1]
-    couchbase_exists, _ = results[2]
+# Demonstrate lookup specs
+from couchbase.subdocument import get, exists
+results = cb.lookup_in('user:mnunberg',
+                       get('email'),
+                       get('address'),
+                       exists('couchbase_id'))
+email_ok, email = results[0]
+addr_ok, addr = results[1]
+couchbase_exists, _ = results[2]
 
-    # Demonstrate mutation specs
-    from couchbase.subdocument import extend, replace, arrayinsert, addunique
-    cb.mutate_in('user:mnunberg',
-                 extend('messages', {'from': 'management', 'body': 'Hello!'}, direction=FRONT),
-                 replace('email', 'mnunberg2000@juno.com'),
-                 arrayinsert('interests[4]', 'sitting'),
-                 addunique('likes', 'running'))
+# Demonstrate mutation specs
+from couchbase.subdocument import extend, replace, arrayinsert, addunique
+cb.mutate_in('user:mnunberg',
+             extend('messages', {'from': 'management', 'body': 'Hello!'}, direction=FRONT),
+             replace('email', 'mnunberg2000@juno.com'),
+             arrayinsert('interests[4]', 'sitting'),
+             addunique('likes', 'running'))
+```
 
 ## Java
  * `DocumentFragment` will be used as input parameter for single mutations as well as return type for single lookups and mutations.
