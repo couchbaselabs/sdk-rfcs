@@ -385,6 +385,8 @@ cb.mutate_in('user:mnunberg',
 ```
 
 ## Java
+The following specifics and caveats apply to the Java implementation:
+
  * `DocumentFragment` will be used as input parameter for single mutations as well as return type for single lookups and mutations.
  * `DocumentFragment` will NOT implementing the `Document` interface (so it's impossible to do `bucket.upser(someDocumentFragment)`).
  * method naming follow the Java camelCase convention so eg. `arrayinsert_in` becomes `arrayInsertIn`.
@@ -394,6 +396,76 @@ cb.mutate_in('user:mnunberg',
    - `exists()`: returns true if the status is `SUCCESS`, which makes sense in the Lookup.EXIST case as well as the Lookup.GET case (where `exists() == true` means you can safely look at the `value()`).
  * multi mutation result is a `MultiMutationResult` that only contains the document's id, the updated cas and optional MutationToken.
  * **TODO** `extend_in` and `arrayinsert_in` core-level implementations don't yet support multiple values.
+
+
+Example of expected usage of the API:
+
+```java
+//Assuming a Bucket instance "bucket" is available...
+
+// Create the base document to work within, with a key of "user:mnunberg"
+JsonObject mnunberg = JsonObject.create()
+        .put("email", "mnunberg@juno.com")
+        .put("messages", JsonArray.empty())
+        .put("likes", JsonArray.from("falling"))
+        .put("interest", JsonArray.from("A", "B", "C", "D", "E", "F"));
+bucket.upsert(JsonDocument.create("user:mnunberg", mnunberg));
+
+// Demonstrate single mutation
+JsonArray address = JsonArray.from("123 Main St", "Reno", "NV", "USA");
+bucket.upsertIn(DocumentFragment.create("user:mnunberg", "address", address), false, PersistTo.NONE, ReplicateTo.NONE);
+
+DocumentFragment<String> getResult = bucket.getIn("user:mnunberg", "address[0]", String.class);
+System.out.println(getResult.fragment());
+// "123 Main St"
+
+// Demonstrate lookup specs, uses static import:
+// import static com.couchbase.client.java.document.subdoc.LookupSpec.*;
+MultiLookupResult lookupResult = bucket.lookupIn("user:mnunberg",
+        get("email"),
+        get("address"),
+        get("couchbase_id"),
+        exists("couchbase_id"));
+
+boolean partialFailure = lookupResult.hasFailure() && lookupResult.hasSuccess(); //true
+
+LookupResult emailResult = lookupResult.results().get(0);
+boolean emailOk = emailResult.exists(); //true
+boolean emailOkFromStatus = emailResult.status() == ResponseStatus.SUCCESS; //true
+String email = (String) emailResult.value(); //"mnunberg2000@juno.com"
+
+LookupResult couchbaseResult = lookupResult.results().get(3);
+boolean couchbaseExists = couchbaseResult.exists();
+boolean couchbaseExistsFromValue = (Boolean) couchbaseResult.value();
+
+LookupResult failureResult = lookupResult.results().get(2);
+boolean ok = failureResult.exists(); //false
+Object value = failureResult.value(); //null
+ResponseStatus status = failureResult.status(); //SUBDOC_PATH_NOT_FOUND
+
+// Demonstrate mutation specs, uses static import:
+// import static com.couchbase.client.java.document.subdoc.MutationSpec.*;
+try {
+    MultiMutationResult mutationResult = bucket.mutateIn("user:mnunberg", PersistTo.NONE, ReplicateTo.NONE,
+            extend("messages", JsonObject.create().put("from", "management").put("body", "Hello!"), ExtendDirection.FRONT, false),
+            replace("email", "mnunberg2000@juno.com"),
+            arrayInsert("interest[4]", "sitting"),
+            addUnique("likes", "running", false));
+    System.out.println("Mutation OK");
+} catch (MultiMutationException e) {
+    System.out.println("Mutation FAILED");
+    System.out.println("First mutation command to fail was #" + (e.firstFailureIndex() + 1));
+    System.out.println("Error was " + e.firstFailureStatus());
+}
+System.out.println(bucket.get("user:mnunberg").content());
+// prints:
+//Mutation OK
+//{"messages":[{"body":"Hello!","from":"management"}],
+// "address":["123 Main St","Reno","NV","USA"],
+// "interest":["A","B","C","D","sitting","E","F"],
+// "email":"mnunberg2000@juno.com",
+// "likes":["falling","running"]}
+```
 
 # Unresolved Questions
 
