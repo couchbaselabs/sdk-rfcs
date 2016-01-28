@@ -139,8 +139,29 @@ For SDKs with an idiomatic asynchronous API (eg. Java with RxJava), an asynchron
 
 For SDKs with configurable logging semantics, a mean of toggling a DEBUG log of the different polling attempts may be offered.
 
-# Language Specifics
+# Language Quick Example and Specifics
 ## Java
+
+```java
+//create a primary index, if there is none
+bucketManager.createPrimaryIndex(true, false);
+
+//make sure "byDescAndToto" will be recreated from scratch by dropping it if it exists
+bucketManager.dropIndex("byDescAndToto", true);
+
+//defer creation of the secondary index on field toto and desc.
+//note that DESC is a keyword, but the field is escaped when provided as a String.
+bucketManager.createIndex("byDescAndToto", false, true, x("toto"), "desc");
+
+//since one of the indexes was built with defer, trigger the build and wait for it to finish in maximum 1 minute
+bucketManager.watchIndexes(bucketManager.buildDeferredIndexes(), 1, TimeUnit.MINUTES);
+
+//list the indexes and their state after (max.) 1 minute
+System.out.println(bucketManager.listIndexes());
+```
+
+*Java Specificities:*
+
  - For secondary index creation, since the Java SDK has an `Expression` type, it could accept `List<Object>` as a `fields` parameter. Each element must then either be an `Expression` or a `String` representing the field to be indexed.
 
  - For convenience, `createIndex` will offer a signature with varargs syntax (`boolean createIndex(String indexName, boolean ignoreIfExist, boolean defer, Object... fields)`).
@@ -148,7 +169,7 @@ For SDKs with configurable logging semantics, a mean of toggling a DEBUG log of 
  - For `watchIndexes`, the polling is done with a linearly augmenting delay, from 50ms to 1000ms by steps of 500ms. Only the watch timeout should limit the polling (no maximum number of attempts)
 
  - The async version of `watchIndexes` would return an `Observable<IndexInfo>` with a single emission for each index **that exists** and becomes "online". The Observable can be empty if no such event could be observed (or no index exist).
- 
+
  - `watchIndexes` logs polling attempts in the `indexWatch` logger at `DEBUG` level. Activate this logger to see traces of the polling cycles.
 
 ## Unresolved SDK specifics
