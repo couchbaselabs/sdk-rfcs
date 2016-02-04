@@ -27,6 +27,7 @@ RFC #  | Description | Status
 9 | 2i Query Support | IDENTIFIED 
 10 | CB Full Text API | IDENTIFIED 
 11 | [Connection String](rfc/0011-connection-string.md) | ACCEPTED
+12 | Adapt memcached error code handling for future proofing | IDENTIFIED
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
