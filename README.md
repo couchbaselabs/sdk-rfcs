@@ -20,7 +20,7 @@ RFC #  | Description | Status
 1  | [The RFC Process](rfc/0001-rfc-process.md) | ACCEPTED 
 2  | [SubDocument API](rfc/0002-subdocapi.md) | DRAFT 
 3  | [Index Management](https://github.com/couchbaselabs/sdk-rfcs/issues/6) | DRAFT 
-4 | RYW Consistent Queries– at_plus | IDENTIFIED 
+4 | [RYW Consistent Queries – at_plus](https://github.com/daschl/sdk-rfcs/blob/drafts/0004-at_plus/rfc/0004-at_plus.md) | DRAFT 
 5 | [VBucket Retry Logic](https://github.com/couchbaselabs/sdk-rfcs/issues/10) | DRAFT 
 7 | Cluster Level Authentication | IDENTIFIED 
 8 | Datastructures | IDENTIFIED 
