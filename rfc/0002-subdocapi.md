@@ -153,6 +153,14 @@ has a different CAS), there are additional sub-document specific error codes.
 
 Be aware that for lookup operations which fail partially in languages which can return both an error and a value, the error returned should be MULTI_ERROR.  In languages where this is not possible, no high-level MULTI_ERROR error should be returned.
 
+Errors can be thrown for these reasons:
+
+* Path-based: Bad input provided to the command (for example, an invalid path for an operation)
+* Document-based: Bad document provided to command (for example, not json, or too deep)
+* Execution-based: The document and path are ok, but an execution error resulted when trying to apply a given operation to a given document (e.g. path does not exist).
+
+Some error codes straddle the line between execution and path-based, most notably `PathMismatch`.
+
 ### Generic Errors
 * PathNotFound: Received when a path does not exist in the document. The exact meaning of
   path existence depends on the operation and inputs.
@@ -179,11 +187,12 @@ Be aware that for lookup operations which fail partially in languages which can 
 These errors are only received for `counter_in` operations:
 
 * NumberTooBig: Existing number value in document is too big (out of range between `INT64_MIN` and `INT64_MAX`
-* ZeroDelta: Got a zero value for a delta
+* BadDelta: This corresponds to the `PROTOCOL_BINARY_RESPONSE_DELTA_ERANGE`
+  error code and indicates that the delta is either 0, not a number, or too
+  big (i.e. exceeds the int64 range)
 * BadNumber: Value provided as delta cannot be parsed as an integer. This error should
   usually not be seen with high level SDKs
-* DeltaTooBig: The delta itself is too big, or the result of the operation would yield
-  a number too big.
+* NumberTooBig: The number or the result of the operation would yield a number too big.
 
 
 # Language Specifics
