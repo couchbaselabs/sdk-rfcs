@@ -4,7 +4,7 @@
  - RFC ID: 0001
  - Start Date: 2015-10-23
  - Owner: Michael Nitschinger
- - Current Status: Review
+ - Current Status: Accepted
 
 # Summary
 This RFC describes the newly established RFC process.
