@@ -57,7 +57,7 @@ String name
 boolean isPrimary
 IndexType type //enum type GSI/VIEW
 String rawType //raw string type in case a new index type is introduced, for forward-compatibility
-String state //eg. "online", "pending"
+String state //eg. "online", "pending" or "deferred"/"building"
 String keyspace
 String namespace
 JsonArray indexKey //or equivalent Json representation
@@ -69,7 +69,7 @@ There are two specificities for index creation (both of primary and secondary in
 In the first specificity, it makes sense to offer two alternatives: either this is considered an error (as N1QL does) or the creation should be purely and simply ignored.
 This choice can be made through a first `boolean` parameter, `ignoreIfExist`. If it is `false`, then a SDK-related exception, `IndexAlreadyExistsException`, should be raised for SDKs that rely on exceptions.
 
-The second specificity can be triggered by another `boolean` parameter, `defer`. If set to true, the N1QL query will use the "with defer" syntax and the index will simply be "pending".
+The second specificity can be triggered by another `boolean` parameter, `defer`. If set to true, the N1QL query will use the "with defer" syntax and the index will simply be "pending" (prior to 4.5) or "deferred" (at and after 4.5, see [MB-14679](https://issues.couchbase.com/browse/MB-14679)).
 
 Signatures:
 
@@ -100,9 +100,9 @@ List<String> buildDeferredIndexes()
 ```
 
 Remarks:
-The returned list is the list of indexes that were in **`pending`** state at the time of the call.
+The returned list is the list of indexes that were in **`pending`** or **`deferred`** state at the time of the call.
 
-The method will first list indexes, only keeping the `pending` ones. It then issues the appropriate N1QL statement from the list of pending indexes (here `INDEX_NAME1` and `INDEX_NAME3`):
+The method will first list indexes, only keeping the `pending`/`deferred` ones. It then issues the appropriate N1QL statement from the list of pending indexes (here `INDEX_NAME1` and `INDEX_NAME3`):
 
 ```sql
 BUILD INDEX ON `BUCKET_NAME_INJECTED_HERE`(`INDEX_NAME1`, `INDEX_NAME3`)
@@ -131,7 +131,7 @@ An index that doesn't exist is ignored. `watchIndexes` returns the `List<IndexIn
  1. were already online or...
  2. became online during the watch timeframe.
 
-Thus it can be empty if indexes were all "pending" and failed to be built during the watch timeframe, or if no index in the provided list exists.
+Thus it can be empty if indexes were all "pending"/"deferred"/"building" and failed to be built during the watch timeframe, or if no index in the provided list exists.
 
 If this is easy to implement, `watchIndexes` should rely on a polling with a linearly augmenting delay (50ms to 1000ms by steps of 500ms is deemed a good retry pattern). In such a case, each poll cycle may rely on a `IndexesNotReadyException` internally to signal that current cycle didn't observe all requested indexes.
 
