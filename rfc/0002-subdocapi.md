@@ -123,6 +123,36 @@ This builder exposes the creation of a set of mutation operations to be performe
 
 `MutateInBuilder.Do() -> DocumentFragment`
 
+### SubdocMultiValue Class
+
+This special class serves as a container to allow the insertion of _multiple_ values for array
+operations (`Insert`, `PushFirst`, `PushLast`).
+
+```
+class MultiValue {
+    MultiValue(Object objs...)
+    MultiValue(Collection<Object> objs)
+};
+```
+
+This should be mentioned as the _preferred_ way to add multiple values to an array, rather
+than use multiple `PushXXX` or `ArrayInsert` operations.
+
+The `SubdocMultiValue` class should be accepted as a valid input for `value` for the `PushFirst`,
+`PushLast`, and `ArrayInsert` methods. SDKs should take care to ensure that the `MultiValue`
+is _not serializable_ to JSON so that it will result in an error if passed to any other
+subdoc command.
+
+SDKs may also choose to overload the `PushXXX` methods to accept variable length argument
+lists, however this may result in being unintuitive when considering that the input items
+themselves may _already_ be a list (and then manually unpacking the arguments may not
+be particularly sightly).
+
+At the protocol layer, values encapsulated by `SubdocMultiValue` should be serialized as follows:
+
+1. `SubdocMultiValue([1,2,3,4])` should be serialized to a JSON array, yielding `[1,2,3,4]`
+2. The enclosing brackets of the array should be stripped, yielding `1,2,3,4`
+
 ### `DocumentFragment`
 This object represents a result of any sub-document operation.
 
