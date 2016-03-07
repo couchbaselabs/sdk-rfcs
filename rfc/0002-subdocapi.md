@@ -186,14 +186,9 @@ Some error codes straddle the line between execution and path-based, most notabl
 ### Numeric Errors
 These errors are only received for `counter_in` operations:
 
-* NumberTooBig: Existing number value in document is too big (out of range between `INT64_MIN` and `INT64_MAX`
-* BadDelta: This corresponds to the `PROTOCOL_BINARY_RESPONSE_DELTA_ERANGE`
-  error code and indicates that the delta is either 0, not a number, or too
-  big (i.e. exceeds the int64 range)
-* BadNumber: Value provided as delta cannot be parsed as an integer. This error should
-  usually not be seen with high level SDKs
-* NumberTooBig: The number or the result of the operation would yield a number too big.
-
+* NumberTooBig: Existing number value in document is too big (out of range between `INT64_MIN` and `INT64_MAX`)
+* WouldOverflow: Combining delta and existing number would result in overflow/underflow
+* BadDelta: Delta is 0, not a number, or beyond range of `int64_t`
 
 # Language Specifics
 In this section, the abstract design parts need to be broken down on the SDK level by each maintainer and signed off eventually.
