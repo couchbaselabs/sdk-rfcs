@@ -190,6 +190,26 @@ These errors are only received for `counter_in` operations:
 * WouldOverflow: Combining delta and existing number would result in overflow/underflow
 * BadDelta: Delta is 0, not a number, or beyond range of `int64_t`
 
+## Error Propagation
+Internally, multi subdoc commands will fail with `MULTI_FAILURE` if one of the
+sub-specifications failed. However with single commands (at the protocol layer) the
+`MULTI_FAILURE` error code is absent, and instead, the error code is encoded as the
+top-level error code.
+
+SDKs should ensure that error behavior between multi and single commands
+is transparent, which according to the API above, means that a `MULTI_FAILURE`
+error code should be returned per above. SDKs should ensure that `MULTI_FAILURE`
+behavior is _only_ emulated when the top-level code is indeed a subdoc error
+code and not a general document-access error code. A subdoc error code may be
+defined as:
+
+> An error code which, if received in the context of a multi-operation, would
+> not prevent the successful execution of other operations in that packet.
+
+Thus, `PATH_NOT_FOUND` is a subdoc error code and would not prevent the execution
+of other operations; whereas `KEY_EEXISTS` is a document access error code and
+would inherently invalidate any other operation within the theoretical packet.
+
 # Language Specifics
 In this section, the abstract design parts need to be broken down on the SDK level by each maintainer and signed off eventually.
 
