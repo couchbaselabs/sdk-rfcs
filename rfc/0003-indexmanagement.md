@@ -20,12 +20,14 @@ However, the scope is not comprehensive coverage of all index creation possibili
 In case new index-related semantics are added in a version of Couchbase Server 4.0 (from which this RFC is designed), or if support for one of the "out-of-scope" features is heavily requested by users, a new RFC will be needed to augment this RFC.
 
 # General Design
-The API will be added to the `BucketManager` class of each SDK. In its blocking form, the API is made up of at least **6** base methods:
+The API will be added to the `BucketManager` class of each SDK. In its blocking form, the API is made up of at least **8** base methods:
 
  - `listIndexes`: lists all the indexes relating to the current `Bucket` using the `system:indexes` N1QL view.
  - `createPrimaryIndex`: create a primary index on the current Bucket.
+ - `createNamedPrimaryIndex`: create a named primary index on the current Bucket.
  - `createIndex`: create a secondary GSI index on the current Bucket.
  - `dropPrimaryIndex`: drop the current Bucket's primary index.
+ - `dropNamedPrimaryIndex`: drop a named primary index from the current Bucket.
  - `dropIndex`: drop a specific secondary index of the current Bucket.
  - `buildDeferredIndexes`: trigger the build of indexes that were created in a deferred fashion (see below).
 
@@ -76,6 +78,8 @@ Signatures:
 ```java
 boolean createPrimaryIndex(boolean ignoreIfExist, boolean defer)
 
+boolean createNamedPrimaryIndex(String customName, boolean ignoreIfExist, boolean defer)
+
 boolean createIndex(String indexName, List<String> fields, boolean ignoreIfExist, boolean defer)
 ```
 
@@ -86,6 +90,8 @@ Signatures:
 
 ```java
 boolean dropPrimaryIndex(boolean ignoreIfNotExist)
+
+boolean dropNamedPrimaryIndex(String customName, boolean ignoreIfNotExist)
 
 boolean dropIndex(String name, boolean ignoreIfNotExist)
 ```
