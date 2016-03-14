@@ -83,6 +83,8 @@ boolean createNamedPrimaryIndex(String customName, boolean ignoreIfExist, boolea
 boolean createIndex(String indexName, List<String> fields, boolean ignoreIfExist, boolean defer)
 ```
 
+For languages that permit it, the list of fields in `createIndex` could also accept `Expression` objects (or any relevant equivalent). Rather than interpreting the entry as a field name to be escaped, the entry could then be used "as is", allowing for more complex constructions (like an index defined as "`DISTINCT ARRAY v FOR v IN schedule END`" for instance).
+
 ## Dropping Indexes
 For index removal, the inverse of `ignoreIfExist` must be put in place: N1QL considers it an error to attempt dropping an index that doesn't exist. So the `ignoreIfNotExist` will drive the behavior of the API in such a case: either `false` and an `IndexDoesNotExistException` should be thrown (or equivalent for SDKs that don't rely on exceptions), or `true` and the invocation will do nothing.
 
@@ -168,7 +170,7 @@ System.out.println(bucketManager.listIndexes());
 
 *Java Specificities:*
 
- - For secondary index creation, since the Java SDK has an `Expression` type, it could accept `List<Object>` as a `fields` parameter. Each element must then either be an `Expression` or a `String` representing the field to be indexed.
+ - For secondary index creation, since the Java SDK has an `Expression` type, it could accept `List<Object>` as a `fields` parameter. Each element must then either be an `Expression` or a `String` representing the field to be indexed. Expressions are not escaped and allow for complex index construction.
 
  - For convenience, `createIndex` will offer a signature with varargs syntax (`boolean createIndex(String indexName, boolean ignoreIfExist, boolean defer, Object... fields)`).
 
