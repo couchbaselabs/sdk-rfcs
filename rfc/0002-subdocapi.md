@@ -1,3 +1,5 @@
+#### This is an older version of the document. Go to [Google Drive](https://docs.google.com/document/d/1ZXq-JgWW8ywU03Tx51A3jFTysYmlkv2W4ko0kepb3_M/edit#) for the latest version.
+
 # Meta
 
  - RFC Name: SubDocument API for clients
