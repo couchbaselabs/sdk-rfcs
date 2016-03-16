@@ -22,7 +22,7 @@ RFC #  | Description | Status
 3  | [Index Management](https://github.com/couchbaselabs/sdk-rfcs/issues/6) | DRAFT 
 4 | [RYW Consistent Queries – at_plus](https://github.com/daschl/sdk-rfcs/blob/drafts/0004-at_plus/rfc/0004-at_plus.md) | DRAFT 
 5 | VBucket Retry Logic [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/10) [\[draft\]](https://docs.google.com/document/d/1_arBwv6udzIctdaCt6PaW19URm0c0eljsyPPw8I6VkE/edit) | DRAFT 
-7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) | IDENTIFIED 
+7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | DRAFT 
 8 | Datastructures | IDENTIFIED 
 9 | 2i Query Support | IDENTIFIED 
 10 | CB Full Text API | IDENTIFIED 
