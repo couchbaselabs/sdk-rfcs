@@ -4,7 +4,7 @@
  - RFC ID: 0004-at_plus
  - Start Date: 2015-12-16
  - Owner: Michael Nitschinger (@daschl)
- - Current Status: Draft
+ - Current Status: Review
 
 # Summary
 This RFC specifies the user API and interaction with the server for enhanced
