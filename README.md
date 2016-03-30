@@ -28,6 +28,7 @@ RFC #  | Description | Status
 10 | [CB Full Text API](https://github.com/couchbaselabs/sdk-rfcs/issues/17) | DRAFT 
 11 | [Connection String](rfc/0011-connection-string.md) | ACCEPTED
 12 | Adapt memcached error code handling for future proofing | IDENTIFIED
+13 | Define Error Code Bracketing [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/32) | IDENTIFIED
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
