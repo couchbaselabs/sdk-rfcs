@@ -4,7 +4,7 @@
  - RFC ID: 0003-indexmanagement
  - Start Date: 2015-12-14
  - Owner: Simon Baslé (@simonbasle)
- - Current Status: Draft
+ - Current Status: REVIEW
 
 # Summary
 The aim of **RFC3**, **"`Index Management`"**, is to offer a simplified API in the `BucketManager` to list, create and drop indexes, for the majority of use cases. In this sense, it is focused on GSI indexes and assumes a few other givens. For cases that don't fit in this picture, the fallback for the user is to craft appropriate `N1QL` queries (eg. in Java using the `Index` fluent API).
@@ -185,16 +185,24 @@ System.out.println(bucketManager.listIndexes());
  * NodeJS
  * Go
  * C
- * PHP
  * Python
- * Ruby
 
 ## SDK without specifics (signed off)
 
 # Unresolved Questions
+Should the PHP and Ruby SDKs cover this RFC?
 
 # Final signoff
 If signed off, each representative agrees both the API and the behavior will be implemented as specified.
 
-| Language | Representative | Date       |
-| -------- | -------------- | ---------- |
+| Language | Representative | Date (YYYY/MM/DD) |
+| -------- | -------------- | ----------------- |
+| Java     | Simon Baslé    | 2016/03/31        |
+| .NET     | Jeffry Morris  | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
+| NodeJS   | Brett Lawson   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
+| Go       | Brett Lawson   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
+| C        | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
+| Python   | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
+
+
+<b id="iad">1</b> *implicit*: Implicitly accepted by lack of signoff by the end of the draft phase deadline.
