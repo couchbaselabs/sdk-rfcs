@@ -23,20 +23,20 @@ In case new index-related semantics are added in a version of Couchbase Server 4
 The API will be added to the `BucketManager` class of each SDK. In its blocking form, the API is made up of at least **8** base methods:
 
  - `listIndexes`: lists all the indexes relating to the current `Bucket` using the `system:indexes` N1QL view.
- - `createPrimaryIndex`: create a primary index on the current Bucket.
- - `createNamedPrimaryIndex`: create a named primary index on the current Bucket.
+ - `createPrimaryIndex`: create a primary index on the current Bucket. If a name is provided through an overload, creates a custom-named primary index on the current Bucket.
  - `createIndex`: create a secondary GSI index on the current Bucket.
- - `dropPrimaryIndex`: drop the current Bucket's primary index.
- - `dropNamedPrimaryIndex`: drop a named primary index from the current Bucket.
+ - `dropPrimaryIndex`: drop the current Bucket's primary index. If a name is given in an overload, drop a named primary index from the current Bucket.
  - `dropIndex`: drop a specific secondary index of the current Bucket.
  - `buildDeferredIndexes`: trigger the build of indexes that were created in a deferred fashion (see below).
 
-Additionally it is open for discussion wether or not this RFC should also include the following method in a cross-SDK fashion, or if it should be optional:
+Additionally, the following method is considered optional but would provide good value to customers if it is implemented:
 
   - `watchIndexes`: poll the `system:indexes` N1QL view until a given list of index all become "online" (or a maximum amount of time has passed).
 
+Implementation of `watchIndexes` should be idiomatic to each SDK. Note that an asynchronous version of it makes a lot of sense, but one can chose to implement it in a synchronous blocking fashion (or both) as well.
 
-The underlying design would be to rely on existing `N1QL` verbs and, for the listing and polling part, to use the `system:indexes` keyspace. Each method will internally create and execute a specific N1QL query according to its parameter and the name of the current Bucket.
+
+The underlying global design would be to rely on existing `N1QL` verbs and, for the listing and polling part, to use the `system:indexes` keyspace. Each method will internally create and execute a specific N1QL query according to its parameter and the name of the current Bucket.
 
 Each method will offer a bit of tuning with a couple of parameters, so let's detail a more complete signature for each one (syntax is pseudo-code closer to Java).
 
@@ -78,7 +78,7 @@ Signatures:
 ```java
 boolean createPrimaryIndex(boolean ignoreIfExist, boolean defer)
 
-boolean createNamedPrimaryIndex(String customName, boolean ignoreIfExist, boolean defer)
+boolean createPrimaryIndex(String customName, boolean ignoreIfExist, boolean defer)
 
 boolean createIndex(String indexName, List<String> fields, boolean ignoreIfExist, boolean defer)
 ```
@@ -93,7 +93,7 @@ Signatures:
 ```java
 boolean dropPrimaryIndex(boolean ignoreIfNotExist)
 
-boolean dropNamedPrimaryIndex(String customName, boolean ignoreIfNotExist)
+boolean dropPrimaryIndex(String customName, boolean ignoreIfNotExist)
 
 boolean dropIndex(String name, boolean ignoreIfNotExist)
 ```
@@ -192,7 +192,6 @@ System.out.println(bucketManager.listIndexes());
 ## SDK without specifics (signed off)
 
 # Unresolved Questions
- * Can the `watchIndexes` feature be implemented easily in each SDK and should it be part of the mandatory implementation of this RFC?
 
 # Final signoff
 If signed off, each representative agrees both the API and the behavior will be implemented as specified.
