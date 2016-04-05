@@ -49,7 +49,7 @@ List<IndexInfo> listIndexes()
 Remarks:
 The method relies on `system:indexes` with the following N1QL statement:
 ```sql
-SELECT idx.* FROM system:indexes AS idx WHERE keyspace_id = `BUCKET_NAME_INJECTED_HERE` ORDER BY is_primary DESC, name ASC;
+SELECT idx.* FROM system:indexes AS idx WHERE keyspace_id = `BUCKET_NAME_INJECTED_HERE` AND `using` = "gsi" ORDER BY is_primary DESC, name ASC;
 ```
 
 For SDK in language with no dynamic typing, each row will be converted to a `IndexInfo` object with the following attributes:
@@ -83,6 +83,18 @@ boolean createPrimaryIndex(String customName, boolean ignoreIfExist, boolean def
 boolean createIndex(String indexName, List<String> fields, boolean ignoreIfExist, boolean defer)
 ```
 
+N1QL statements examples:
+
+```sql
+CREATE PRIMARY INDEX ON `bucketName` WITH {"defer_build": true};
+
+CREATE PRIMARY INDEX `indexName` ON `bucketName` WITH {"defer_build": true};
+
+CREATE INDEX `indexName` ON `bucketName` (`field1`, `field2`) USING GSI WITH {"defer_build": true};
+```
+
+Note that the default is `USING GSI` but it can be explicitly added to the statements.
+
 For languages that permit it, the list of fields in `createIndex` could also accept `Expression` objects (or any relevant equivalent). Rather than interpreting the entry as a field name to be escaped, the entry could then be used "as is", allowing for more complex constructions (like an index defined as "`DISTINCT ARRAY v FOR v IN schedule END`" for instance).
 
 ## Dropping Indexes
@@ -96,6 +108,16 @@ boolean dropPrimaryIndex(boolean ignoreIfNotExist)
 boolean dropPrimaryIndex(String customName, boolean ignoreIfNotExist)
 
 boolean dropIndex(String name, boolean ignoreIfNotExist)
+```
+
+N1QL statements examples:
+
+```sql
+DROP PRIMARY INDEX ON `bucketName` USING GSI;
+
+DROP INDEX `bucketName`.`primaryIndexName` USING GSI;
+
+DROP INDEX `bucketName`.`indexName` USING GSI;
 ```
 
 > **Note**: Unlike index creation, deferring the drop of an index is not possible
@@ -113,7 +135,7 @@ The returned list is the list of indexes that were in **`pending`** or **`deferr
 The method will first list indexes, only keeping the `pending`/`deferred` ones. It then issues the appropriate N1QL statement from the list of pending indexes (here `INDEX_NAME1` and `INDEX_NAME3`):
 
 ```sql
-BUILD INDEX ON `BUCKET_NAME_INJECTED_HERE`(`INDEX_NAME1`, `INDEX_NAME3`)
+BUILD INDEX ON `BUCKET_NAME_INJECTED_HERE`(`INDEX_NAME1`, `INDEX_NAME3`) USING GSI;
 ```
 
 # Watching Indexes
@@ -184,7 +206,7 @@ System.out.println(bucketManager.listIndexes());
     //create a primary index if there is none and default to deferred=false
     var result = bucketManager.CreatePrimaryIndex();
 
-	//create a primary index if there is none and defer = true 
+	//create a primary index if there is none and defer = true
 	var result = bucketManager.CreatePrimaryIndex(true);
 
 	//drop the index "byDescAndToto" if it exists
@@ -194,18 +216,18 @@ System.out.println(bucketManager.listIndexes());
     //note that DESC is a keyword, but the field is escaped when provided as a string.
 	var result = bucketManager.CreateIndex("byDescAndToto", true, "toto", "desc");
 
-	//list the indexes 
+	//list the indexes
 	manager.ListIndexes().ToList().ForEach(Console.WriteLine);
 
 *.NET Specificities:*
 
 
-- `ignoreIfExist` and `ignoreIfNotExists` are not included since the .NET SDK does not explicitly throw exceptions as a convention (good or bad). The IResult returned by the message does contain the exception that was raised and can be thrown by the calling application if desired. 
+- `ignoreIfExist` and `ignoreIfNotExists` are not included since the .NET SDK does not explicitly throw exceptions as a convention (good or bad). The IResult returned by the message does contain the exception that was raised and can be thrown by the calling application if desired.
 - For methods which include a `boolean` `defer` parameter, default parameters are used, so if omitted the value for `defer` is `false`.
 - `async` versions for all methods are included in the API and behave the same with the exception of require that they be *awaited* and that the return value is `Task<IResult>`.
 - WatchIndexes is not implemented as of SDK version 2.2.7 (planned for 2.2.8).
 - Overloads for lambda expressions are forthcoming and will require a Type T field to use as for building the expression from the POCO properties: `var result = CreateIndex<Person>("personbyIdAndName_idx", true, x=>x.Id, x=>x.Name);`
-	
+
 ## Unresolved SDK specifics
  * .NET
  * NodeJS
