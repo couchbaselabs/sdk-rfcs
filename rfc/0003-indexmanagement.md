@@ -180,6 +180,32 @@ System.out.println(bucketManager.listIndexes());
 
  - `watchIndexes` logs polling attempts in the `indexWatch` logger at `DEBUG` level. Activate this logger to see traces of the polling cycles.
 
+## .NET
+    //create a primary index if there is none and default to deferred=false
+    var result = bucketManager.CreatePrimaryIndex();
+
+	//create a primary index if there is none and defer = true 
+	var result = bucketManager.CreatePrimaryIndex(true);
+
+	//drop the index "byDescAndToto" if it exists
+	var result = bucketManager.DropIndex("byDescAndToto")
+
+	//defer creation of the secondary index on field toto and desc.
+    //note that DESC is a keyword, but the field is escaped when provided as a string.
+	var result = bucketManager.CreateIndex("byDescAndToto", true, "toto", "desc");
+
+	//list the indexes 
+	manager.ListIndexes().ToList().ForEach(Console.WriteLine);
+
+*.NET Specificities:*
+
+
+- `ignoreIfExist` and `ignoreIfNotExists` are not included since the .NET SDK does not explicitly throw exceptions as a convention (good or bad). The IResult returned by the message does contain the exception that was raised and can be thrown by the calling application if desired. 
+- For methods which include a `boolean` `defer` parameter, default parameters are used, so if omitted the value for `defer` is `false`.
+- `async` versions for all methods are included in the API and behave the same with the exception of require that they be *awaited* and that the return value is `Task<IResult>`.
+- WatchIndexes is not implemented as of SDK version 2.2.7 (planned for 2.2.8).
+- Overloads for lambda expressions are forthcoming and will require a Type T field to use as for building the expression from the POCO properties: `var result = CreateIndex<Person>("personbyIdAndName_idx", true, x=>x.Id, x=>x.Name);`
+	
 ## Unresolved SDK specifics
  * .NET
  * NodeJS
@@ -198,7 +224,7 @@ If signed off, each representative agrees both the API and the behavior will be 
 | Language | Representative | Date (YYYY/MM/DD) |
 | -------- | -------------- | ----------------- |
 | Java     | Simon Baslé    | 2016/03/31        |
-| .NET     | Jeffry Morris  | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
+| .NET     | Jeffry Morris  | 2016/03/31 - *explicit* |
 | NodeJS   | Brett Lawson   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
 | Go       | Brett Lawson   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
 | C        | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
