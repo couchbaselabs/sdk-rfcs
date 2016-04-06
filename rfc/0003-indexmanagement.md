@@ -4,7 +4,7 @@
  - RFC ID: 0003-indexmanagement
  - Start Date: 2015-12-14
  - Owner: Simon Baslé (@simonbasle)
- - Current Status: REVIEW
+ - Current Status: ACCEPTED
 
 # Summary
 The aim of **RFC3**, **"`Index Management`"**, is to offer a simplified API in the `BucketManager` to list, create and drop indexes, for the majority of use cases. In this sense, it is focused on GSI indexes and assumes a few other givens. For cases that don't fit in this picture, the fallback for the user is to craft appropriate `N1QL` queries (eg. in Java using the `Index` fluent API).
