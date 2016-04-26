@@ -228,12 +228,34 @@ System.out.println(bucketManager.listIndexes());
 - WatchIndexes is not implemented as of SDK version 2.2.7 (planned for 2.2.8).
 - Overloads for lambda expressions are forthcoming and will require a Type T field to use as for building the expression from the POCO properties: `var result = CreateIndex<Person>("personbyIdAndName_idx", true, x=>x.Id, x=>x.Name);`
 
+*Python*
+
+```python
+cb = Bucket()
+
+mgr = cb.bucket_manager()
+indexes = mgr.list_indexes()
+pprint(tuple(x.raw for x in indexes))
+
+for ix in indexes:
+    mgr.drop_index(ix)
+
+mgr.create_primary_index()
+mgr.drop_primary_index()
+mgr.create_primary_index(defer=True)
+to_build = mgr.build_deferred_indexes()
+print(to_build)
+mgr.watch_indexes(to_build)
+```
+
+In Python one can also pass `other_buckets=True` to `list_indexes()`
+which will cause it to enumerate other buckets as well, if it can access them.
+
 ## Unresolved SDK specifics
  * .NET
  * NodeJS
  * Go
  * C
- * Python
 
 ## SDK without specifics (signed off)
 
