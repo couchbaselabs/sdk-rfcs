@@ -200,6 +200,6 @@ None.
 | C        | Mark N.| - |
 | Go       | Brett L.| - |
 | Java     | Michael N.| May 3rd, 2016 |
-| .NET     | Jeff M.| - |
+| .NET     | Jeff M.| - May 3rd, 2016|
 | NodeJS   | Brett L.| - |
 | Python   | Mark N.| - |
