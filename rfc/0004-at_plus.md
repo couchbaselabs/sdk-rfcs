@@ -197,9 +197,9 @@ None.
 
 | Language | Representative | Date       |
 | -------- | -------------- | ---------- |
-| C        | Mark N.| - |
+| C        | Mark N.| May 3rd, 2016 |
 | Go       | Brett L.| - |
 | Java     | Michael N.| May 3rd, 2016 |
 | .NET     | Jeff M.| - May 3rd, 2016|
 | NodeJS   | Brett L.| - |
-| Python   | Mark N.| - |
+| Python   | Mark N.| May 3rd, 2016 |
