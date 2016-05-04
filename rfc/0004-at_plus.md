@@ -198,8 +198,8 @@ None.
 | Language | Representative | Date       |
 | -------- | -------------- | ---------- |
 | C        | Mark N.| May 3rd, 2016 |
-| Go       | Brett L.| - |
+| Go       | Brett L.|  May 3rd, 2016 |
 | Java     | Michael N.| May 3rd, 2016 |
-| .NET     | Jeff M.| - May 3rd, 2016|
-| NodeJS   | Brett L.| - |
+| .NET     | Jeff M.| May 3rd, 2016|
+| NodeJS   | Brett L.| May 3rd, 2016 |
 | Python   | Mark N.| May 3rd, 2016 |
