@@ -4,7 +4,7 @@
  - RFC ID: 0003-indexmanagement
  - Start Date: 2015-12-14
  - Owner: Simon Baslé (@simonbasle)
- - Current Status: REVIEW
+ - Current Status: ACCEPTED
 
 # Summary
 The aim of **RFC3**, **"`Index Management`"**, is to offer a simplified API in the `BucketManager` to list, create and drop indexes, for the majority of use cases. In this sense, it is focused on GSI indexes and assumes a few other givens. For cases that don't fit in this picture, the fallback for the user is to craft appropriate `N1QL` queries (eg. in Java using the `Index` fluent API).
@@ -15,25 +15,26 @@ The goal is to abstract away regularly needed queries relative to indexes and pr
 However, the scope is not comprehensive coverage of all index creation possibilities in N1QL. Most complex use cases would still need careful crafting of `N1QL` queries from the user instead of relying on this API. Notably:
 
  - no support for index types other than GSI.
- - no support for `WHERE` clauses in secondary indexes (only the list of fields to index).
 
 In case new index-related semantics are added in a version of Couchbase Server 4.0 (from which this RFC is designed), or if support for one of the "out-of-scope" features is heavily requested by users, a new RFC will be needed to augment this RFC.
 
-# General Design
-The API will be added to the `BucketManager` class of each SDK. In its blocking form, the API is made up of at least **8** base methods:
+Provision is made for future types of indexation (eg. FTS) by including the "N1ql" word in each method's name.
 
- - `listIndexes`: lists all the indexes relating to the current `Bucket` using the `system:indexes` N1QL view.
- - `createPrimaryIndex`: create a primary index on the current Bucket. If a name is provided through an overload, creates a custom-named primary index on the current Bucket.
- - `createIndex`: create a secondary GSI index on the current Bucket.
- - `dropPrimaryIndex`: drop the current Bucket's primary index. If a name is given in an overload, drop a named primary index from the current Bucket.
- - `dropIndex`: drop a specific secondary index of the current Bucket.
- - `buildDeferredIndexes`: trigger the build of indexes that were created in a deferred fashion (see below).
+# General Design
+The API will be added to the `BucketManager` class of each SDK. In its blocking form, the API is made up of at least **6** base methods:
+
+ - `listN1qlIndexes`: lists all the indexes relating to the current `Bucket` using the `system:indexes` N1QL view.
+ - `createN1qlPrimaryIndex`: create a primary index on the current Bucket. If a name is provided through an overload, creates a custom-named primary index on the current Bucket.
+ - `createN1qlIndex`: create a secondary GSI index on the current Bucket.
+ - `dropN1qlPrimaryIndex`: drop the current Bucket's primary index. If a name is given in an overload, drop a named primary index from the current Bucket.
+ - `dropN1qlIndex`: drop a specific secondary index of the current Bucket.
+ - `buildN1qlDeferredIndexes`: trigger the build of indexes that were created in a deferred fashion (see below).
 
 Additionally, the following method is considered optional but would provide good value to customers if it is implemented:
 
-  - `watchIndexes`: poll the `system:indexes` N1QL view until a given list of index all become "online" (or a maximum amount of time has passed).
+  - `watchN1qlIndexes`: poll the `system:indexes` N1QL view until a given list of index all become "online" (or a maximum amount of time has passed).
 
-Implementation of `watchIndexes` should be idiomatic to each SDK. Note that an asynchronous version of it makes a lot of sense, but one can chose to implement it in a synchronous blocking fashion (or both) as well.
+Implementation of `watchN1qlIndexes` should be idiomatic to each SDK. Note that an asynchronous version of it makes a lot of sense, but one can chose to implement it in a synchronous blocking fashion (or both) as well.
 
 
 The underlying global design would be to rely on existing `N1QL` verbs and, for the listing and polling part, to use the `system:indexes` keyspace. Each method will internally create and execute a specific N1QL query according to its parameter and the name of the current Bucket.
@@ -43,7 +44,7 @@ Each method will offer a bit of tuning with a couple of parameters, so let's det
 ## Listing Indexes
 Signature:
 ```java
-List<IndexInfo> listIndexes()
+List<IndexInfo> listN1qlIndexes()
 ```
 
 Remarks:
@@ -52,7 +53,7 @@ The method relies on `system:indexes` with the following N1QL statement:
 SELECT idx.* FROM system:indexes AS idx WHERE keyspace_id = `BUCKET_NAME_INJECTED_HERE` AND `using` = "gsi" ORDER BY is_primary DESC, name ASC;
 ```
 
-For SDK in language with no dynamic typing, each row will be converted to a `IndexInfo` object with the following attributes:
+For SDK in language with no dynamic typing, where value objects are idiomatic, each row will be converted to a `IndexInfo` object with the following attributes:
 
 ```java
 String name
@@ -63,6 +64,7 @@ String state //eg. "online", "pending" or "deferred"/"building"
 String keyspace
 String namespace
 JsonArray indexKey //or equivalent Json representation
+String condition //empty string if the index has no WHERE clause
 ```
 
 ## Creating Indexes
@@ -76,12 +78,14 @@ The second specificity can be triggered by another `boolean` parameter, `defer`.
 Signatures:
 
 ```java
-boolean createPrimaryIndex(boolean ignoreIfExist, boolean defer)
+boolean createN1qlPrimaryIndex(boolean ignoreIfExist, boolean defer)
 
-boolean createPrimaryIndex(String customName, boolean ignoreIfExist, boolean defer)
+boolean createN1qlPrimaryIndex(String customName, boolean ignoreIfExist, boolean defer)
 
-boolean createIndex(String indexName, List<String> fields, boolean ignoreIfExist, boolean defer)
+boolean createN1qlIndex(String indexName, List<String> fields, Expression whereClause, boolean ignoreIfExist, boolean defer)
 ```
+
+Note that in the last signature, the `Expression` represents a way to declare the WHERE clause, or condition, of the index. `null` should be used if not applicable.
 
 N1QL statements examples:
 
@@ -91,11 +95,13 @@ CREATE PRIMARY INDEX ON `bucketName` WITH {"defer_build": true};
 CREATE PRIMARY INDEX `indexName` ON `bucketName` WITH {"defer_build": true};
 
 CREATE INDEX `indexName` ON `bucketName` (`field1`, `field2`) USING GSI WITH {"defer_build": true};
+
+CREATE INDEX `indexName` ON `bucketName` (`field1`, `field2`) WHERE `field1` > 0 USING GSI WITH {"defer_build": true};
 ```
 
 Note that the default is `USING GSI` but it can be explicitly added to the statements.
 
-For languages that permit it, the list of fields in `createIndex` could also accept `Expression` objects (or any relevant equivalent). Rather than interpreting the entry as a field name to be escaped, the entry could then be used "as is", allowing for more complex constructions (like an index defined as "`DISTINCT ARRAY v FOR v IN schedule END`" for instance).
+For languages that permit it, the list of fields in `createN1qlIndex` could also accept `Expression` objects (or any relevant equivalent). Rather than interpreting the entry as a field name to be escaped, the entry could then be used "as is", allowing for more complex constructions (like an index defined as "`DISTINCT ARRAY v FOR v IN schedule END`" for instance).
 
 ## Dropping Indexes
 For index removal, the inverse of `ignoreIfExist` must be put in place: N1QL considers it an error to attempt dropping an index that doesn't exist. So the `ignoreIfNotExist` will drive the behavior of the API in such a case: either `false` and an `IndexDoesNotExistException` should be thrown (or equivalent for SDKs that don't rely on exceptions), or `true` and the invocation will do nothing.
@@ -103,11 +109,11 @@ For index removal, the inverse of `ignoreIfExist` must be put in place: N1QL con
 Signatures:
 
 ```java
-boolean dropPrimaryIndex(boolean ignoreIfNotExist)
+boolean dropN1qlPrimaryIndex(boolean ignoreIfNotExist)
 
-boolean dropPrimaryIndex(String customName, boolean ignoreIfNotExist)
+boolean dropN1qlPrimaryIndex(String customName, boolean ignoreIfNotExist)
 
-boolean dropIndex(String name, boolean ignoreIfNotExist)
+boolean dropN1qlIndex(String name, boolean ignoreIfNotExist)
 ```
 
 N1QL statements examples:
@@ -126,7 +132,7 @@ DROP INDEX `bucketName`.`indexName` USING GSI;
 Signature:
 
 ```java
-List<String> buildDeferredIndexes()
+List<String> buildN1qlDeferredIndexes()
 ```
 
 Remarks:
@@ -146,13 +152,13 @@ Since the process of building a deferred index is asynchronous, the server immed
 Signature:
 
 ```java
-List<IndexInfo> watchIndexes(List<String> watchList, boolean watchPrimary, long watchTimeout, TimeUnit watchTimeUnit)
+List<IndexInfo> watchN1qlIndexes(List<String> watchList, long watchTimeout, TimeUnit watchTimeUnit)
 ```
 
 Remarks:
 The implementation would be based on regularly polling the index view (using `listIndexes()` for instance) until a specific index (or a list of indexes) is seen as `online`.
 
-`boolean watchPrimary`, if set to `true`, would have the effect of adding the default primary name **`#primary`** to the watchList. It is recommended to have that name as a constant somewhere and reference it in the method inline documentation (for instance in Java this is in `Index.PRIMARY_NAME` in the dsl).
+In order to watch the primary index, the default primary name **`#primary`** must be added to the watchList. It is recommended to have that name as a constant somewhere and reference it in the method inline documentation (for instance in Java this is in `Index.PRIMARY_NAME` in the dsl).
 
 The `watchTimeout` and `watchTimeUnit` are a way to express a maximum **duration** for the poll. This can be replaced by a language-idiomatic way of representing a duration in each SDK.
 
@@ -174,50 +180,51 @@ For SDKs with configurable logging semantics, a mean of toggling a DEBUG log of 
 
 ```java
 //create a primary index, if there is none
-bucketManager.createPrimaryIndex(true, false);
+bucketManager.createN1qlPrimaryIndex(true, false);
 
 //make sure "byDescAndToto" will be recreated from scratch by dropping it if it exists
-bucketManager.dropIndex("byDescAndToto", true);
+bucketManager.dropN1qlIndex("byDescAndToto", true);
 
+//convenience method with a vararg (limitation: no WHERE clause)
 //defer creation of the secondary index on field toto and desc.
 //note that DESC is a keyword, but the field is escaped when provided as a String.
-bucketManager.createIndex("byDescAndToto", false, true, x("toto"), "desc");
+bucketManager.createN1qlIndex("byDescAndToto", false, true, x("toto"), "desc");
 
 //since one of the indexes was built with defer, trigger the build and wait for it to finish in maximum 1 minute
-bucketManager.watchIndexes(bucketManager.buildDeferredIndexes(), 1, TimeUnit.MINUTES);
+bucketManager.watchN1qlIndexes(bucketManager.buildDeferredIndexes(), 1, TimeUnit.MINUTES);
 
 //list the indexes and their state after (max.) 1 minute
-System.out.println(bucketManager.listIndexes());
+System.out.println(bucketManager.listN1qlIndexes());
 ```
 
 *Java Specificities:*
 
  - For secondary index creation, since the Java SDK has an `Expression` type, it could accept `List<Object>` as a `fields` parameter. Each element must then either be an `Expression` or a `String` representing the field to be indexed. Expressions are not escaped and allow for complex index construction.
 
- - For convenience, `createIndex` will offer a signature with varargs syntax (`boolean createIndex(String indexName, boolean ignoreIfExist, boolean defer, Object... fields)`).
+ - For convenience, `createN1qlIndex` will offer a signature with varargs syntax (`boolean createIndex(String indexName, boolean ignoreIfExist, boolean defer, Object... fields)`). This has the limitation that the WHERE clause cannot be set with this signature.
 
- - For `watchIndexes`, the polling is done with a linearly augmenting delay, from 50ms to 1000ms by steps of 500ms. Only the watch timeout should limit the polling (no maximum number of attempts)
+ - For `watchN1qlIndexes`, the polling is done with a linearly augmenting delay, from 50ms to 1000ms by steps of 500ms. Only the watch timeout should limit the polling (no maximum number of attempts)
 
- - The async version of `watchIndexes` would return an `Observable<IndexInfo>` with a single emission for each index **that exists** and becomes "online". The Observable can be empty if no such event could be observed (or no index exist).
+ - The async version of `watchN1qlIndexes` would return an `Observable<IndexInfo>` with a single emission for each index **that exists** and becomes "online". The Observable can be empty if no such event could be observed (or no index exist).
 
- - `watchIndexes` logs polling attempts in the `indexWatch` logger at `DEBUG` level. Activate this logger to see traces of the polling cycles.
+ - `watchN1qlIndexes` logs polling attempts in the `indexWatch` logger at `DEBUG` level. Activate this logger to see traces of the polling cycles.
 
 ## .NET
     //create a primary index if there is none and default to deferred=false
-    var result = bucketManager.CreatePrimaryIndex();
+    var result = bucketManager.CreateN1qlPrimaryIndex();
 
 	//create a primary index if there is none and defer = true
-	var result = bucketManager.CreatePrimaryIndex(true);
+	var result = bucketManager.CreateN1qlPrimaryIndex(true);
 
 	//drop the index "byDescAndToto" if it exists
-	var result = bucketManager.DropIndex("byDescAndToto")
+	var result = bucketManager.DropN1qlIndex("byDescAndToto")
 
 	//defer creation of the secondary index on field toto and desc.
     //note that DESC is a keyword, but the field is escaped when provided as a string.
-	var result = bucketManager.CreateIndex("byDescAndToto", true, "toto", "desc");
+	var result = bucketManager.CreateN1qlIndex("byDescAndToto", true, "toto", "desc");
 
 	//list the indexes
-	manager.ListIndexes().ToList().ForEach(Console.WriteLine);
+	manager.ListN1qlIndexes().ToList().ForEach(Console.WriteLine);
 
 *.NET Specificities:*
 
@@ -225,8 +232,8 @@ System.out.println(bucketManager.listIndexes());
 - `ignoreIfExist` and `ignoreIfNotExists` are not included since the .NET SDK does not explicitly throw exceptions as a convention (good or bad). The IResult returned by the message does contain the exception that was raised and can be thrown by the calling application if desired.
 - For methods which include a `boolean` `defer` parameter, default parameters are used, so if omitted the value for `defer` is `false`.
 - `async` versions for all methods are included in the API and behave the same with the exception of require that they be *awaited* and that the return value is `Task<IResult>`.
-- WatchIndexes is not implemented as of SDK version 2.2.7 (planned for 2.2.8).
-- Overloads for lambda expressions are forthcoming and will require a Type T field to use as for building the expression from the POCO properties: `var result = CreateIndex<Person>("personbyIdAndName_idx", true, x=>x.Id, x=>x.Name);`
+- `WatchN1qlIndexes` is not implemented as of SDK version 2.2.7 (planned for 2.2.8).
+- The whereClause expression is replaced with overloads for lambda expressions. These are forthcoming and will require a Type T field to use as for building the expression from the POCO properties: `var result = CreateN1qlIndex<Person>("personbyIdAndName_idx", true, x=>x.Id, x=>x.Name);`
 
 *Python*
 
@@ -252,7 +259,6 @@ In Python one can also pass `other_buckets=True` to `list_indexes()`
 which will cause it to enumerate other buckets as well, if it can access them.
 
 ## Unresolved SDK specifics
- * .NET
  * NodeJS
  * Go
  * C
@@ -265,14 +271,14 @@ Should the PHP and Ruby SDKs cover this RFC?
 # Final signoff
 If signed off, each representative agrees both the API and the behavior will be implemented as specified.
 
-| Language | Representative | Date (YYYY/MM/DD) |
-| -------- | -------------- | ----------------- |
-| Java     | Simon Baslé    | 2016/03/31        |
-| .NET     | Jeffry Morris  | 2016/03/31 - *explicit* |
-| NodeJS   | Brett Lawson   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
-| Go       | Brett Lawson   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
-| C        | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
-| Python   | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |
+| Language | Representative | REVIEWED (YYYY/MM/DD) | ACCEPTED Final Signoff |
+| -------- | -------------- | --------------------------- | -------- |
+| Java     | Simon Baslé    | 2016/03/31                  |          |
+| .NET     | Jeffry Morris  | 2016/04/01                  |          |
+| NodeJS   | Brett Lawson   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |          |
+| Go       | Brett Lawson   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |          |
+| C        | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |          |
+| Python   | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |          |
 
 
 <b id="iad">1</b> *implicit*: Implicitly accepted by lack of signoff by the end of the draft phase deadline.
