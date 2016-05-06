@@ -177,12 +177,24 @@ The following user errors need to be covered by the SDKs:
 ## Setting Scan Consistency with Document
 
  - **Generic:** `consistent_with(mutationState: MutationState)`
- - **C:** ``
+ - **C:**
+
+    ```c
+    lcb_n1p_setconsistent_handle(lcb_N1QLPARAMS*, const lcb_t);
+    lcb_n1p_setconsistent_token(lcb_N1QLPARAMS*, const lcb_MUTATION_TOKEN*);
+    token = lcb_resp_get_muation_token(int cbtype, const lcb_RESPBASE* resp);
+    ```
  - **Go:** ``
  - **Java:** `N1qlParams consistentWith(MutationState mutationState)`
  - **.NET:** `ConsistentWith(MutationState.From(document1, document2, document3));`
  - **NodeJS:** ``
- - **Python:** ``
+ - **Python:**
+
+    ```python
+    ms = MutationState()
+    ms.add_results(*results)  # A `Result` is the Python equivalent of a Document
+    q.consistent_with(ms)
+    ```
  - **PHP:** *not included*
  - **Ruby:** *not included*
 
