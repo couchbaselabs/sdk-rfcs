@@ -180,7 +180,7 @@ The following user errors need to be covered by the SDKs:
  - **C:** ``
  - **Go:** ``
  - **Java:** `N1qlParams consistentWith(MutationState mutationState)`
- - **.NET:** ``
+ - **.NET:** `ConsistentWith(MutationState.From(document1, document2, document3));`
  - **NodeJS:** ``
  - **Python:** ``
  - **PHP:** *not included*
