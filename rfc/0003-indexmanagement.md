@@ -235,7 +235,7 @@ System.out.println(bucketManager.listN1qlIndexes());
 - `WatchN1qlIndexes` is not implemented as of SDK version 2.2.7 (planned for 2.2.8).
 - The whereClause expression is replaced with overloads for lambda expressions. These are forthcoming and will require a Type T field to use as for building the expression from the POCO properties: `var result = CreateN1qlIndex<Person>("personbyIdAndName_idx", true, x=>x.Id, x=>x.Name);`
 
-*Python*
+## Python
 
 ```python
 cb = Bucket()
@@ -257,6 +257,40 @@ mgr.watch_indexes(to_build)
 
 In Python one can also pass `other_buckets=True` to `list_indexes()`
 which will cause it to enumerate other buckets as well, if it can access them.
+
+## Node.js
+
+```javascript
+var bucketManager = bucket.manager()
+
+bucketManager.createPrimaryIndex({
+  name: '',
+  ignoreIfExists: false,
+  deferred: false
+}, function(err){})
+
+bucketManager.createIndex(NAME, FIELDS, {
+  ignoreIfExists: false,
+  deferred: false
+}, function(err){})
+
+bucketManager.dropIndex(NAME, {
+  ignoreIfNotExists: false
+}, function(err){})
+
+bucketManager.dropPrimaryIndex({
+  name: '',
+  ignoreIfNotExists: false
+}, function(err){})
+
+bucketManager.getIndexes(function(err, indexes){})
+
+bucketManager.buildDeferredIndexes(function(err, indexes){})
+
+bucketManager.watchIndexes(WATCH_LIST, {
+  timeout: 0
+}, function(err){})
+```
 
 ## Unresolved SDK specifics
  * NodeJS
