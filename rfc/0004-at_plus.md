@@ -22,14 +22,14 @@ been indexed instead of waiting for all of them up to the latest one. Also, the
 likelihood of the indexer already having indexed the mutation is directly
 proportional to the time delta between mutation and subsequent query. This also
 means that a performance win will be marginal if the `AT_PLUS` query immediately
-follows the mutations, in this case the programmatic and runtime overhead of using 
+follows the mutations, in this case the programmatic and runtime overhead of using
 the tokens might not be worth the tradeoff.
 
-`AT_PLUS` is treated as a pure optimization over `REQUEST_PLUS` and has no semantic 
-difference to it in terms of correctness inside the bounds specified through the 
-mutation tokens. One cannot use `REQUEST_PLUS` and `AT_PLUS` together in the same 
-query. Note that as described further below, the main tradeoff here is increased 
-network utilization because the client needs to send more information to the server 
+`AT_PLUS` is treated as a pure optimization over `REQUEST_PLUS` and has no semantic
+difference to it in terms of correctness inside the bounds specified through the
+mutation tokens. One cannot use `REQUEST_PLUS` and `AT_PLUS` together in the same
+query. Note that as described further below, the main tradeoff here is increased
+network utilization because the client needs to send more information to the server
 as part of the query request.
 
 # General Design
@@ -80,8 +80,8 @@ The `MutationState` exposes the following methods used to aggragate multiple `Mu
 ```
 MutationState {
   static from(docs: Document...) -> MutationState
-  static from(fragments: DocumentFragment...) -> MutationState       
-  
+  static from(fragments: DocumentFragment...) -> MutationState
+
   add(docs: Document...) -> MutationState
   add(fragments: DocumentFragment...) -> MutationState
   add(state: MutationState) -> MutationState
@@ -195,7 +195,18 @@ The following user errors need to be covered by the SDKs:
     ms.add_results(*results)  # A `Result` is the Python equivalent of a Document
     q.consistent_with(ms)
     ```
- - **PHP:** *not included*
+ - **PHP:**
+
+    ```php
+    # $source is either CouchbaseMetaDoc or CouchbaseDocumentFragment
+    MutationState::from($source, ...) #-> MutationState
+
+    $ms = new MutationState()
+    # $source is either CouchbaseMetaDoc or CouchbaseDocumentFragment,
+    # or another MutationState
+    $ms.add($source, ...) #-> MutationState
+    $q.consistent_with($ms)
+    ```
  - **Ruby:** *not included*
 
 # Unresolved Questions
@@ -215,4 +226,4 @@ None.
 | .NET     | Jeff M.| May 3rd, 2016|
 | NodeJS   | Brett L.| May 3rd, 2016 |
 | Python   | Mark N.| May 3rd, 2016 |
-| PHP      | Sergey A. | - |
+| PHP      | Sergey A. | May 13th, 2016 |
