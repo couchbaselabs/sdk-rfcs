@@ -241,22 +241,29 @@ System.out.println(bucketManager.listN1qlIndexes());
 cb = Bucket()
 
 mgr = cb.bucket_manager()
-indexes = mgr.list_indexes()
+indexes = mgr.n1ql_indexes_list()
 pprint(tuple(x.raw for x in indexes))
 
 for ix in indexes:
-    mgr.drop_index(ix)
+    mgr.n1ql_index_drop(ix)
 
-mgr.create_primary_index()
-mgr.drop_primary_index()
-mgr.create_primary_index(defer=True)
-to_build = mgr.build_deferred_indexes()
+mgr.n1ql_index_create_primary()
+mgr.n1ql_index_drop_primary()
+mgr.n1ql_index_create_primary(defer=True)
+mgr.n1ql_index_create('ix_fields', fields=['field1', 'field2'])
+mgr.n1ql_index_drop('ix_fields')
+to_build = mgr.n1ql_index_build_deferred()
 print(to_build)
-mgr.watch_indexes(to_build)
+mgr.n1ql_index_watch(to_build)
+mgr.n1ql_index_watch(['ix_fields'], watch_primary=True)
 ```
 
 In Python one can also pass `other_buckets=True` to `list_indexes()`
 which will cause it to enumerate other buckets as well, if it can access them.
+
+The method naming is by default `n1ql_index_XXX` because the other bucketmanager
+methods are in the form of `designXXX`. There are additional aliases so that
+`create_n1ql_index = n1ql_create_inxex`
 
 ## Node.js
 
