@@ -299,10 +299,74 @@ bucketManager.watchIndexes(WATCH_LIST, {
 }, function(err){})
 ```
 
+## C
+
+```c
+typedef struct {
+    /** Raw index definition */
+    const char *rawjson;
+    size_t nrawjson;
+    const char *name;
+    size_t nname;
+    const char *keyspace;
+    size_t nkeyspace;
+    /** Output parameter only. State of index */
+    const char *state;
+    size_t nstate;
+
+    /** Actual index text. For raw JSON use the `index_key` property */
+    const char *fields;
+    size_t nfields;
+
+    /**
+     * Modifiers for the index itself. This might be
+     * LCB_IXSPEC_F_PRIMARY if the index is primary. For raw JSON,
+     * use `"is_primary":true`
+     *
+     * For creation the LCB_IXSPEC_F_DEFER option is also accepted to
+     * indicate that the building of this index should be deferred.
+     */
+    unsigned flags;
+
+    /**
+     * Type of this index, Can be T_DEFAULT for the default server type, or
+     * an explicit T_GSI or T_VIEW.
+     * When using JSON, specify `"using":"gsi"`
+     */
+    unsigned ixtype;
+} lcb_N1INDEXSPEC;
+
+typedef struct {
+    lcb_N1INDEXSPEC spec;
+    lcb_N1IXMGMTCALLBACK callback;
+} lcb_CMDN1IXMGMT;
+
+lcb_n1ixmgmt_list(lcb_t instance, const void *cookie, const lcb_CMDN1IXMGMT *cmd);
+lcb_n1ixmgmt_mkindex(lcb_t instance, const void *cookie, const lcb_CMDN1IXMGMT *cmd);
+lcb_n1ixmgmt_rmindex(lcb_t instance, const void *cookie, const lcb_CMDN1IXMGMT *cmd);
+lcb_n1ixmgmt_build_begin(lcb_t instance, const void *cookie, const lcb_CMDN1IXMGMT *cmd);
+
+typedef struct {
+    const lcb_N1INDEXSPEC * const *specs;
+    size_t nspec;
+    lcb_U32 timeout;
+    lcb_U32 interval;
+    lcb_N1IXMGMTCALLBACK callback;
+} lcb_N1CMDIXWATCH;
+lcb_n1ixmgmt_build_watch(lcb_t instance, const void *cookie, const lcb_CMDN1IXWATCH *cmd);
+```
+
+### C SDK Specifics
+
+C index management operations communicate by the `INDEXSPEC` structure which contains
+discreet fields for analysis and also the `rawjson` field which represents how the
+index entry is represented in JSON. Wrapping SDKs can simply serialize the parameters
+in JSON and then set the `rawjson` field, eliminating the need to set discreet
+parameters.
+
 ## Unresolved SDK specifics
  * NodeJS
  * Go
- * C
 
 ## SDK without specifics (signed off)
 
