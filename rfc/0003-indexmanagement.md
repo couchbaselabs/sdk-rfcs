@@ -7,44 +7,64 @@
  - Current Status: ACCEPTED
 
 # Summary
-The aim of **RFC3**, **"`Index Management`"**, is to offer a simplified API in the `BucketManager` to list, create and drop indexes, for the majority of use cases. In this sense, it is focused on GSI indexes and assumes a few other givens. For cases that don't fit in this picture, the fallback for the user is to craft appropriate `N1QL` queries (eg. in Java using the `Index` fluent API).
+The aim of **RFC3**, **"`Index Management`"**, is to offer a simplified API in the `BucketManager` to list, create and
+drop indexes, for the majority of use cases. In this sense, it is focused on GSI indexes and assumes a few other
+givens. For cases that don't fit in this picture, the fallback for the user is to craft appropriate `N1QL` queries
+(eg. in Java using the `Index` fluent API).
 
 # Motivation and scope
-The goal is to abstract away regularly needed queries relative to indexes and provide a simple API. This way the user can focus on his business related `N1QL` queries, without having to think twice about the boilerplate of creating indexes.
+The goal is to abstract away regularly needed queries relative to indexes and provide a simple API. This way the user
+can focus on his business related `N1QL` queries, without having to think twice about the boilerplate of creating
+indexes.
 
-However, the scope is not comprehensive coverage of all index creation possibilities in N1QL. Most complex use cases would still need careful crafting of `N1QL` queries from the user instead of relying on this API. Notably:
+However, the scope is not comprehensive coverage of all index creation possibilities in N1QL. Most complex use cases
+would still need careful crafting of `N1QL` queries from the user instead of relying on this API. Notably:
 
  - no support for index types other than GSI.
 
-In case new index-related semantics are added in a version of Couchbase Server 4.0 (from which this RFC is designed), or if support for one of the "out-of-scope" features is heavily requested by users, a new RFC will be needed to augment this RFC.
+In case new index-related semantics are added in a version of Couchbase Server 4.0 (from which this RFC is designed), or
+if support for one of the "out-of-scope" features is heavily requested by users, a new RFC will be needed to augment
+this RFC.
 
 Provision is made for future types of indexation (eg. FTS) by including the "N1ql" word in each method's name.
 
 # General Design
-The API will be added to the `BucketManager` class of each SDK. In its blocking form, the API is made up of at least **6** base methods:
+The API will be added to the `BucketManager` class of each SDK. In its blocking form, the API is made up of at least
+**6** base methods:
 
  - `listN1qlIndexes`: lists all the indexes relating to the current `Bucket` using the `system:indexes` N1QL view.
- - `createN1qlPrimaryIndex`: create a primary index on the current Bucket. If a name is provided through an overload, creates a custom-named primary index on the current Bucket.
+ - `createN1qlPrimaryIndex`: create a primary index on the current Bucket. If a name is provided through an overload,
+   creates a custom-named primary index on the current Bucket.
  - `createN1qlIndex`: create a secondary GSI index on the current Bucket.
- - `dropN1qlPrimaryIndex`: drop the current Bucket's primary index. If a name is given in an overload, drop a named primary index from the current Bucket.
+ - `dropN1qlPrimaryIndex`: drop the current Bucket's primary index. If a name is given in an overload, drop a named
+   primary index from the current Bucket.
  - `dropN1qlIndex`: drop a specific secondary index of the current Bucket.
  - `buildN1qlDeferredIndexes`: trigger the build of indexes that were created in a deferred fashion (see below).
 
-Additionally, the following method is considered optional but would provide good value to customers if it is implemented:
+Additionally, the following method is considered optional but would provide good value to customers if it is
+implemented:
 
-  - `watchN1qlIndexes`: poll the `system:indexes` N1QL view until a given list of index all become "online" (or a maximum amount of time has passed).
+  - `watchN1qlIndexes`: poll the `system:indexes` N1QL view until a given list of index all become "online" (or a
+    maximum amount of time has passed).
 
-Implementation of `watchN1qlIndexes` should be idiomatic to each SDK. Note that an asynchronous version of it makes a lot of sense, but one can chose to implement it in a synchronous blocking fashion (or both) as well.
+Implementation of `watchN1qlIndexes` should be idiomatic to each SDK. Note that an asynchronous version of it makes a
+lot of sense, but one can chose to implement it in a synchronous blocking fashion (or both) as well.
 
+The underlying global design would be to rely on existing `N1QL` verbs and, for the listing and polling part, to use the
+`system:indexes` keyspace. Each method will internally create and execute a specific N1QL query according to its
+parameter and the name of the current Bucket.
 
-The underlying global design would be to rely on existing `N1QL` verbs and, for the listing and polling part, to use the `system:indexes` keyspace. Each method will internally create and execute a specific N1QL query according to its parameter and the name of the current Bucket.
-
-Each method will offer a bit of tuning with a couple of parameters, so let's detail a more complete signature for each one (syntax is pseudo-code closer to Java).
+Each method will offer a bit of tuning with a couple of parameters, so let's detail a more complete signature for each
+one (syntax is pseudo-code closer to Java).
 
 ## Listing Indexes
 Signature:
 ```java
 List<IndexInfo> listN1qlIndexes()
+```
+
+```php
+listN1qlIndexes() #-> returns array of associative arrays
 ```
 
 Remarks:
@@ -53,7 +73,8 @@ The method relies on `system:indexes` with the following N1QL statement:
 SELECT idx.* FROM system:indexes AS idx WHERE keyspace_id = `BUCKET_NAME_INJECTED_HERE` AND `using` = "gsi" ORDER BY is_primary DESC, name ASC;
 ```
 
-For SDK in language with no dynamic typing, where value objects are idiomatic, each row will be converted to a `IndexInfo` object with the following attributes:
+For SDK in language with no dynamic typing, where value objects are idiomatic, each row will be converted to a
+`IndexInfo` object with the following attributes:
 
 ```java
 String name
@@ -68,12 +89,17 @@ String condition //empty string if the index has no WHERE clause
 ```
 
 ## Creating Indexes
-There are two specificities for index creation (both of primary and secondary indexes): the index could already exist and there is the possibility of deferring the build.
+There are two specificities for index creation (both of primary and secondary indexes): the index could already exist
+and there is the possibility of deferring the build.
 
-In the first specificity, it makes sense to offer two alternatives: either this is considered an error (as N1QL does) or the creation should be purely and simply ignored.
-This choice can be made through a first `boolean` parameter, `ignoreIfExist`. If it is `false`, then a SDK-related exception, `IndexAlreadyExistsException`, should be raised for SDKs that rely on exceptions.
+In the first specificity, it makes sense to offer two alternatives: either this is considered an error (as N1QL does) or
+the creation should be purely and simply ignored. This choice can be made through a first `boolean` parameter,
+`ignoreIfExist`. If it is `false`, then a SDK-related exception, `IndexAlreadyExistsException`, should be raised for
+SDKs that rely on exceptions.
 
-The second specificity can be triggered by another `boolean` parameter, `defer`. If set to true, the N1QL query will use the "with defer" syntax and the index will simply be "pending" (prior to 4.5) or "deferred" (at and after 4.5, see [MB-14679](https://issues.couchbase.com/browse/MB-14679)).
+The second specificity can be triggered by another `boolean` parameter, `defer`. If set to true, the N1QL query will use
+the "with defer" syntax and the index will simply be "pending" (prior to 4.5) or "deferred" (at and after 4.5, see
+[MB-14679](https://issues.couchbase.com/browse/MB-14679)).
 
 Signatures:
 
@@ -85,7 +111,14 @@ boolean createN1qlPrimaryIndex(String customName, boolean ignoreIfExist, boolean
 boolean createN1qlIndex(String indexName, List<String> fields, Expression whereClause, boolean ignoreIfExist, boolean defer)
 ```
 
-Note that in the last signature, the `Expression` represents a way to declare the WHERE clause, or condition, of the index. `null` should be used if not applicable.
+```php
+createN1qlPrimaryIndex(string $customName = '', boolean $ignoreIfExist = false, boolean $defer = true)
+
+createN1qlIndex(string $indexName, array $fields, boolean $ignoreIfExist = false, boolean $defer = true)
+```
+
+Note that in the last signature, the `Expression` represents a way to declare the WHERE clause, or condition, of the
+index. `null` should be used if not applicable.
 
 N1QL statements examples:
 
@@ -116,6 +149,12 @@ boolean dropN1qlPrimaryIndex(String customName, boolean ignoreIfNotExist)
 boolean dropN1qlIndex(String name, boolean ignoreIfNotExist)
 ```
 
+```php
+dropN1qlPrimaryIndex(string $customName = '', boolean $ignoreIfNotExist = false)
+
+dropN1qlIndex(string $indexName, boolean $ignoreIfNotExist = false)
+```
+
 N1QL statements examples:
 
 ```sql
@@ -133,6 +172,10 @@ Signature:
 
 ```java
 List<String> buildN1qlDeferredIndexes()
+```
+
+```php
+buildN1qlDeferredIndexes()
 ```
 
 Remarks:
@@ -363,6 +406,24 @@ discreet fields for analysis and also the `rawjson` field which represents how t
 index entry is represented in JSON. Wrapping SDKs can simply serialize the parameters
 in JSON and then set the `rawjson` field, eliminating the need to set discreet
 parameters.
+
+## PHP
+
+```php
+$bucketManager = $bucket.manager();
+
+foreach ($bucketManager.listN1qlIndexes() as $index) {
+  var_dump($index);
+}
+
+$bucketManager.createN1qlPrimaryIndex(true, false);
+
+$bucketManager.dropN1qlIndex("byDescAndToto", true);
+
+$bucketManager.createN1qlIndex("byDescAndToto", array("toto", "desc"), true, false);
+
+$bucketManager.buildDeferredIndexes()
+```
 
 ## Unresolved SDK specifics
  * NodeJS
