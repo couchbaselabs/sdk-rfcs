@@ -431,9 +431,6 @@ $bucketManager.buildDeferredIndexes()
 
 ## SDK without specifics (signed off)
 
-# Unresolved Questions
-Should the PHP and Ruby SDKs cover this RFC?
-
 # Final signoff
 If signed off, each representative agrees both the API and the behavior will be implemented as specified.
 
