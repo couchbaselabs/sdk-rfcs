@@ -184,7 +184,7 @@ The following user errors need to be covered by the SDKs:
     lcb_n1p_setconsistent_token(lcb_N1QLPARAMS*, const lcb_MUTATION_TOKEN*);
     token = lcb_resp_get_muation_token(int cbtype, const lcb_RESPBASE* resp);
     ```
- - **Go:** ``
+ - **Go:** `func (nq *N1qlQuery) ConsistentWith(state *MutationState) *N1qlQuery`
  - **Java:** `N1qlParams consistentWith(MutationState mutationState)`
  - **.NET:** `ConsistentWith(MutationState.From(document1, document2, document3));`
  - **NodeJS:** ``
