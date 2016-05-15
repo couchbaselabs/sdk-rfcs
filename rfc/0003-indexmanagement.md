@@ -58,11 +58,14 @@ Each method will offer a bit of tuning with a couple of parameters, so let's det
 one (syntax is pseudo-code closer to Java).
 
 ## Listing Indexes
-Signature:
+Signatures:
+
+### Java
 ```java
 List<IndexInfo> listN1qlIndexes()
 ```
 
+### PHP
 ```php
 listN1qlIndexes() #-> returns array of associative arrays
 ```
@@ -103,6 +106,7 @@ the "with defer" syntax and the index will simply be "pending" (prior to 4.5) or
 
 Signatures:
 
+### Java
 ```java
 boolean createN1qlPrimaryIndex(boolean ignoreIfExist, boolean defer)
 
@@ -111,10 +115,11 @@ boolean createN1qlPrimaryIndex(String customName, boolean ignoreIfExist, boolean
 boolean createN1qlIndex(String indexName, List<String> fields, Expression whereClause, boolean ignoreIfExist, boolean defer)
 ```
 
+### PHP
 ```php
 createN1qlPrimaryIndex(string $customName = '', boolean $ignoreIfExist = false, boolean $defer = true)
 
-createN1qlIndex(string $indexName, array $fields, boolean $ignoreIfExist = false, boolean $defer = true)
+createN1qlIndex(string $indexName, array $fields, string whereClause = '', boolean $ignoreIfExist = false, boolean $defer = true)
 ```
 
 Note that in the last signature, the `Expression` represents a way to declare the WHERE clause, or condition, of the
@@ -141,6 +146,7 @@ For index removal, the inverse of `ignoreIfExist` must be put in place: N1QL con
 
 Signatures:
 
+### Java
 ```java
 boolean dropN1qlPrimaryIndex(boolean ignoreIfNotExist)
 
@@ -149,6 +155,7 @@ boolean dropN1qlPrimaryIndex(String customName, boolean ignoreIfNotExist)
 boolean dropN1qlIndex(String name, boolean ignoreIfNotExist)
 ```
 
+### PHP
 ```php
 dropN1qlPrimaryIndex(string $customName = '', boolean $ignoreIfNotExist = false)
 
@@ -170,10 +177,12 @@ DROP INDEX `bucketName`.`indexName` USING GSI;
 ## Building deferred indexes
 Signature:
 
+### Java
 ```java
 List<String> buildN1qlDeferredIndexes()
 ```
 
+### PHP
 ```php
 buildN1qlDeferredIndexes()
 ```
@@ -420,7 +429,9 @@ $bucketManager.createN1qlPrimaryIndex(true, false);
 
 $bucketManager.dropN1qlIndex("byDescAndToto", true);
 
-$bucketManager.createN1qlIndex("byDescAndToto", array("toto", "desc"), true, false);
+$bucketManager.createN1qlIndex("byDescAndToto", array("toto", "desc"));
+
+$bucketManager.createN1qlIndex("byDescAndToto", array("toto", "desc"), 'WHERE `stars` > 3', true, false);
 
 $bucketManager.buildDeferredIndexes()
 ```
