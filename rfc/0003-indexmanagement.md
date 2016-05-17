@@ -333,12 +333,12 @@ bucketManager.createIndex(NAME, FIELDS, {
   deferred: false
 }, function(err){})
 
-bucketManager.dropIndex(NAME, {
+bucketManager.dropPrimaryIndex({
+  name: '',
   ignoreIfNotExists: false
 }, function(err){})
 
-bucketManager.dropPrimaryIndex({
-  name: '',
+bucketManager.dropIndex(NAME, {
   ignoreIfNotExists: false
 }, function(err){})
 
@@ -349,6 +349,24 @@ bucketManager.buildDeferredIndexes(function(err, indexes){})
 bucketManager.watchIndexes(WATCH_LIST, {
   timeout: 0
 }, function(err){})
+```
+
+## Go
+
+```go
+func (bm *BucketManager) CreatePrimaryIndex(customName string, ignoreIfExists, deferred bool) error
+
+func (bm *BucketManager) CreateIndex(indexName string, fields []string, ignoreIfExists, deferred bool) error
+
+func (bm *BucketManager) DropPrimaryIndex(customName string, ignoreIfNotExists bool) error
+
+func (bm *BucketManager) DropIndex(indexName string, ignoreIfNotExists bool) error
+
+func (bm *BucketManager) GetIndexes() ([]IndexInfo, error)
+
+func (bm *BucketManager) BuildDeferredIndexes() ([]string, error)
+
+func (bm *BucketManager) WatchIndexes(watchList []string, watchPrimary bool, timeout time.Duration) error
 ```
 
 ## C
@@ -437,8 +455,7 @@ $bucketManager.buildDeferredIndexes()
 ```
 
 ## Unresolved SDK specifics
- * NodeJS
- * Go
+None
 
 ## SDK without specifics (signed off)
 
@@ -449,8 +466,8 @@ If signed off, each representative agrees both the API and the behavior will be 
 | -------- | -------------- | ------------------------------------------- | ---------------------- |
 | Java     | Simon Baslé    | 2016/03/31                                  |                        |
 | .NET     | Jeffry Morris  | 2016/04/01                                  |                        |
-| NodeJS   | Brett Lawson   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |                        |
-| Go       | Brett Lawson   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |                        |
+| NodeJS   | Brett Lawson   | 2016/05/06                                  |                        |
+| Go       | Brett Lawson   | 2016/05/06                                  |                        |
 | C        | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |                        |
 | Python   | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |                        |
 | PHP      | Sergey Avseyev | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> | 2016/05/17             |
