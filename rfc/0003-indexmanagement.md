@@ -354,19 +354,19 @@ bucketManager.watchIndexes(WATCH_LIST, {
 ## Go
 
 ```go
-func (bm *BucketManager) CreatePrimaryIndex(customName string, ignoreIfExists, deferred bool) error
+func (bm *BucketManager) CreatePrimaryIndex(customName string, ignoreIfExists, deferred bool) error {}
 
-func (bm *BucketManager) CreateIndex(indexName string, fields []string, ignoreIfExists, deferred bool) error
+func (bm *BucketManager) CreateIndex(indexName string, fields []string, ignoreIfExists, deferred bool) error {}
 
-func (bm *BucketManager) DropPrimaryIndex(customName string, ignoreIfNotExists bool) error
+func (bm *BucketManager) DropPrimaryIndex(customName string, ignoreIfNotExists bool) error {}
 
-func (bm *BucketManager) DropIndex(indexName string, ignoreIfNotExists bool) error
+func (bm *BucketManager) DropIndex(indexName string, ignoreIfNotExists bool) error {}
 
-func (bm *BucketManager) GetIndexes() ([]IndexInfo, error)
+func (bm *BucketManager) GetIndexes() ([]IndexInfo, error) {}
 
-func (bm *BucketManager) BuildDeferredIndexes() ([]string, error)
+func (bm *BucketManager) BuildDeferredIndexes() ([]string, error) {}
 
-func (bm *BucketManager) WatchIndexes(watchList []string, watchPrimary bool, timeout time.Duration) error
+func (bm *BucketManager) WatchIndexes(watchList []string, watchPrimary bool, timeout time.Duration) error {}
 ```
 
 ## C
