@@ -55,19 +55,13 @@ The underlying global design would be to rely on existing `N1QL` verbs and, for 
 parameter and the name of the current Bucket.
 
 Each method will offer a bit of tuning with a couple of parameters, so let's detail a more complete signature for each
-one (syntax is pseudo-code closer to Java).
+one (**syntax is to be considered pseudo-code, close to Java**).
 
 ## Listing Indexes
 Signatures:
 
-### Java
 ```java
 List<IndexInfo> listN1qlIndexes()
-```
-
-### PHP
-```php
-listN1qlIndexes() #-> returns array of associative arrays
 ```
 
 Remarks:
@@ -88,7 +82,7 @@ String state //eg. "online", "pending" or "deferred"/"building"
 String keyspace
 String namespace
 JsonArray indexKey //or equivalent Json representation
-String condition //empty string if the index has no WHERE clause
+String condition // this is the WHERE clause. empty string if the index has no WHERE clause.
 ```
 
 ## Creating Indexes
@@ -106,20 +100,12 @@ the "with defer" syntax and the index will simply be "pending" (prior to 4.5) or
 
 Signatures:
 
-### Java
 ```java
 boolean createN1qlPrimaryIndex(boolean ignoreIfExist, boolean defer)
 
 boolean createN1qlPrimaryIndex(String customName, boolean ignoreIfExist, boolean defer)
 
 boolean createN1qlIndex(String indexName, List<String> fields, Expression whereClause, boolean ignoreIfExist, boolean defer)
-```
-
-### PHP
-```php
-createN1qlPrimaryIndex(string $customName = '', boolean $ignoreIfExist = false, boolean $defer = true)
-
-createN1qlIndex(string $indexName, array $fields, string whereClause = '', boolean $ignoreIfExist = false, boolean $defer = true)
 ```
 
 Note that in the last signature, the `Expression` represents a way to declare the WHERE clause, or condition, of the
@@ -146,20 +132,12 @@ For index removal, the inverse of `ignoreIfExist` must be put in place: N1QL con
 
 Signatures:
 
-### Java
 ```java
 boolean dropN1qlPrimaryIndex(boolean ignoreIfNotExist)
 
 boolean dropN1qlPrimaryIndex(String customName, boolean ignoreIfNotExist)
 
 boolean dropN1qlIndex(String name, boolean ignoreIfNotExist)
-```
-
-### PHP
-```php
-dropN1qlPrimaryIndex(string $customName = '', boolean $ignoreIfNotExist = false)
-
-dropN1qlIndex(string $indexName, boolean $ignoreIfNotExist = false)
 ```
 
 N1QL statements examples:
@@ -177,14 +155,8 @@ DROP INDEX `bucketName`.`indexName` USING GSI;
 ## Building deferred indexes
 Signature:
 
-### Java
 ```java
 List<String> buildN1qlDeferredIndexes()
-```
-
-### PHP
-```php
-buildN1qlDeferredIndexes()
 ```
 
 Remarks:
@@ -391,7 +363,7 @@ typedef struct {
     /**
      * Modifiers for the index itself. This might be
      * LCB_IXSPEC_F_PRIMARY if the index is primary. For raw JSON,
-     * use `"is_primary":true`
+     * use `"is_primary":true
      *
      * For creation the LCB_IXSPEC_F_DEFER option is also accepted to
      * indicate that the building of this index should be deferred.
@@ -451,7 +423,7 @@ $bucketManager.createN1qlIndex("byDescAndToto", array("toto", "desc"));
 
 $bucketManager.createN1qlIndex("byDescAndToto", array("toto", "desc"), 'WHERE `stars` > 3', true, false);
 
-$bucketManager.buildDeferredIndexes()
+$bucketManager.buildN1qlDeferredIndexes()
 ```
 
 ## Unresolved SDK specifics
@@ -462,15 +434,12 @@ None
 # Final signoff
 If signed off, each representative agrees both the API and the behavior will be implemented as specified.
 
-| Language | Representative | REVIEWED (YYYY/MM/DD)                       | ACCEPTED Final Signoff |
-| -------- | -------------- | ------------------------------------------- | ---------------------- |
-| Java     | Simon Baslé    | 2016/03/31                                  |                        |
-| .NET     | Jeffry Morris  | 2016/04/01                                  |                        |
-| NodeJS   | Brett Lawson   | 2016/05/06                                  |                        |
-| Go       | Brett Lawson   | 2016/05/06                                  |                        |
-| C        | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |                        |
-| Python   | Mark Nunberg   | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> |                        |
-| PHP      | Sergey Avseyev | 2016/03/31 - *implicit*<sup>[1](#iad)</sup> | 2016/05/17             |
-
-
-<b id="iad">1</b> *implicit*: Implicitly accepted by lack of signoff by the end of the draft phase deadline.
+| Language | Representative | ACCEPTED Final Signoff <br/>(YYYY/MM/DD)  |
+| -------- | -------------- | ----------------------- |
+| Java     | Simon Baslé    | 2016/05/12              |
+| .NET     | Jeffry Morris  | 2016/05/17              |
+| NodeJS   | Brett Lawson   | 2016/05/17              |
+| Go       | Brett Lawson   | 2016/05/17              |
+| C        | Mark Nunberg   | 2016/05/12              |
+| Python   | Mark Nunberg   | 2016/05/12              |
+| PHP      | Sergey Avseyev | 2016/05/17              |
