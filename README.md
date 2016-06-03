@@ -22,7 +22,7 @@ RFC #  | Description | Owner | Status
 3  | [Index Management](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0003-indexmanagement.md) | Simon | ACCEPTED
 4 | [RYW Consistent Queries – at_plus](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0004-at_plus.md) | Michael | REVIEW
 5 | VBucket Retry Logic [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/10) [\[draft\]](https://docs.google.com/document/d/1_arBwv6udzIctdaCt6PaW19URm0c0eljsyPPw8I6VkE/edit) | Brett | REVIEW
-7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | Brett | DRAFT
+7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | Brett | REVIEW
 8 | Datastructures | SDK | IDENTIFIED
 9 | 2i Query Support | SDK | IDENTIFIED
 10 | CB Full Text API [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/17) [\[draft discussion\]](https://github.com/couchbaselabs/sdk-rfcs/pull/30) [\[draft\]](https://github.com/couchbaselabs/sdk-rfcs/blob/drafts/0010-cbft/rfc/0010-cbft.md) | Simon | DRAFT
