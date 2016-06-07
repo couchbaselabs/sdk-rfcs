@@ -187,7 +187,7 @@ The following user errors need to be covered by the SDKs:
  - **Go:** `func (nq *N1qlQuery) ConsistentWith(state *MutationState) *N1qlQuery`
  - **Java:** `N1qlParams consistentWith(MutationState mutationState)`
  - **.NET:** `ConsistentWith(MutationState.From(document1, document2, document3));`
- - **NodeJS:** ``
+ - **NodeJS:** `query.consistentWith(new MutationState(document1, document2, document3));`
  - **Python:**
 
     ```python
