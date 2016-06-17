@@ -19,13 +19,13 @@ RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
 1  | [The RFC Process](rfc/0001-rfc-process.md) | Matt | ACCEPTED
 2  | [SubDocument API](https://docs.google.com/document/d/1ZXq-JgWW8ywU03Tx51A3jFTysYmlkv2W4ko0kepb3_M/edit#) | Mark | DRAFT
-3  | [Index Management](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0003-indexmanagement.md) | Simon | REVIEW 
+3  | [Index Management](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0003-indexmanagement.md) | Simon | REVIEW
 4 | [RYW Consistent Queries – at_plus](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0004-at_plus.md) | Michael | REVIEW
 5 | VBucket Retry Logic [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/10) [\[draft\]](https://docs.google.com/document/d/1_arBwv6udzIctdaCt6PaW19URm0c0eljsyPPw8I6VkE/edit) | Brett | DRAFT
 7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | Brett | DRAFT
 8 | Datastructures | SDK | IDENTIFIED
 9 | 2i Query Support | SDK | IDENTIFIED
-10 | [CB Full Text API](https://github.com/couchbaselabs/sdk-rfcs/issues/17) | Simon | DRAFT
+10 | [CB Full Text API](https://github.com/couchbaselabs/sdk-rfcs/issues/17) | Simon | REVIEW
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
 12 | Adapt memcached error code handling for future proofing | SDK | IDENTIFIED
 13 | Define Error Code Bracketing [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/32) | SDK | IDENTIFIED
