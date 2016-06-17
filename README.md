@@ -25,7 +25,7 @@ RFC #  | Description | Owner | Status
 7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | Brett | REVIEW
 8 | Datastructures | SDK | IDENTIFIED
 9 | 2i Query Support | SDK | IDENTIFIED
-10 | CB Full Text API [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/17) [\[draft discussion\]](https://github.com/couchbaselabs/sdk-rfcs/pull/30) [\[draft\]](https://github.com/couchbaselabs/sdk-rfcs/blob/drafts/0010-cbft/rfc/0010-cbft.md) | Simon | DRAFT
+10 | [CB Full Text API](https://github.com/couchbaselabs/sdk-rfcs/issues/17) | Simon | REVIEW
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
 12 | Adapt memcached error code handling for future proofing | SDK | IDENTIFIED
 13 | Define Error Code Bracketing [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/32) | SDK | IDENTIFIED
