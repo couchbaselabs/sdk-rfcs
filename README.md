@@ -29,6 +29,8 @@ RFC #  | Description | Owner | Status
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
 12 | Adapt memcached error code handling for future proofing | SDK | IDENTIFIED
 13 | Define Error Code Bracketing [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/32) | SDK | IDENTIFIED
+14 | LWW Wins XDCR Support | SDK | IDENTIFIED
+15 | Collection Support | SDK | IDENTIFIED
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
