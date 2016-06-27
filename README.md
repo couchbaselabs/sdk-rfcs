@@ -31,6 +31,7 @@ RFC #  | Description | Owner | Status
 13 | Define Error Code Bracketing [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/32) | SDK | IDENTIFIED
 14 | LWW Wins XDCR Support | SDK | IDENTIFIED
 15 | Collection Support | SDK | IDENTIFIED
+16 | RBAC Support [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/46) | Brett | IDENTIFIED
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
