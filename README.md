@@ -34,6 +34,8 @@ RFC #  | Description | Owner | Status
 16 | RBAC Support [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/46) | Brett | IDENTIFIED
 17 | Cluster failover | Michael | IDENTIFIED
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
+19 | [SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A) | Brett | ACCEPTED
+20 | [Common Flags](https://docs.google.com/document/d/1V653a6FF6DOqdT4d-fKIjGkHabDaNGZsvbtsUKJyeLc) | Brett | ACCEPTED
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
