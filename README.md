@@ -33,7 +33,7 @@ RFC #  | Description | Owner | Status
 15 | Collection Support | SDK | IDENTIFIED
 16 | RBAC Support [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/46) | Brett | IDENTIFIED
 17 | Cluster failover | Michael | IDENTIFIED
-18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED.
+18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
