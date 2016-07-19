@@ -23,7 +23,7 @@ RFC #  | Description | Owner | Status
 4 | [RYW Consistent Queries – at_plus](rfc/0004-at_plus.md) | Michael | ACCEPTED
 5 | [VBucket Retry Logic](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0005-vbucket-retries.md) | Brett | ACCEPTED
 7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | Brett | REVIEW
-8 | Datastructures | Mark | IDENTIFIED
+8 | [Datastructures](https://docs.google.com/document/d/1v9wvotQbTD9YCqw6pFaaeU7mYldWi_MayafcPlQk5oE/edit#heading=h.f1ni9bubrrfs) | Mark | DRAFT
 9 | 2i Query Support | SDK | IDENTIFIED
 10 | CB Full Text API [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/17) [\[Review discussion\]](https://github.com/couchbaselabs/sdk-rfcs/pull/47) | Simon | REVIEW
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
