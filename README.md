@@ -29,10 +29,10 @@ RFC #  | Description | Owner | Status
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
 12 | Adapt memcached error code handling for future proofing (superseded by RFC 13) | SDK | SUPERSEDED
 13 | KV Error Map [\[draft\]](https://docs.google.com/document/d/12VpZPhWYHf69QtGKKTLlZG6j9sc3K9D1bMcbnM1F5Uk/edit#) [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/32) | Mark | IDENTIFIED
-14 | LWW Wins XDCR Support | SDK | IDENTIFIED
+14 | LWW Wins XDCR Support (superseded by RFC 17) | SDK | SUPERSEDED
 15 | Collection Support | SDK | IDENTIFIED
 16 | RBAC Support [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/46) | Brett | IDENTIFIED
-17 | Cluster failover | Michael | IDENTIFIED
+17 | Cross-Cluster Failover | Michael | IDENTIFIED
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 19 | [SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A) | Brett | ACCEPTED
 20 | [Common Flags](https://docs.google.com/document/d/1V653a6FF6DOqdT4d-fKIjGkHabDaNGZsvbtsUKJyeLc) | Brett | ACCEPTED
