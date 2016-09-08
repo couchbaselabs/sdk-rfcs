@@ -26,7 +26,7 @@ JsonObject example = JsonObject.create()
     .put("lastname", "Doe")
     .put("age", 21);
 
-N1qlQueryResult result = bucket.findAll(example);
+N1qlQueryResult result = bucket.findAllLike(example);
 ```
 
 Which would translate, in the `Bucket` "foo", to the following N1QL:
@@ -38,9 +38,9 @@ SELECT * FROM `foo` WHERE lastname = 'Doe' AND age = 21;
 ## Matching on criterias other than `equals`
 By default, all fields in the provided JSON example are matched against by using the `=` N1QL operator. What if one wants a different criteria? For instance, in our former example, what if I wanted all documents where the name is "Doe" but the age is lesser than 21?
 
-The `findAll` method could in fact be based on a map between JSON dict keys and Matchers. Each Matcher would wrap the operator and the value(s) to match against.
+The `findAllLike` method could in fact be based on a map between JSON dict keys and Matchers. Each Matcher would wrap the operator and the value(s) to match against.
 
-The default simplified version of `findAll` would convert the provided example into such a map where all matchers are simple `EQUALS` matchers.
+The default simplified version of `findAllLike` would convert the provided example into such a map where all matchers are simple `EQUALS` matchers.
 
 ```java
 JsonObject example = JsonObject.create()
@@ -48,7 +48,7 @@ JsonObject example = JsonObject.create()
     .put("age", 21);
 Map<String, Operator> matchers = Collections.singletonMap("age", Operator.LESS_THAN);
 
-N1qlQueryResult result = bucket.findAll(example, matchers);
+N1qlQueryResult result = bucket.findAllLike(example, matchers);
 ```
 
 In the background, both `example` and `matchers` would be combined to produce the following matchers specifications:
@@ -82,7 +82,7 @@ As a third alternative, a *builder* like interface could be provided as a fluent
 Example example = Example.of("lastname", not(equals("Doe")))
     .and("age", between(10, 20));
 
-N1qlQueryResult result = bucket.findAll(example);
+N1qlQueryResult result = bucket.findAllLike(example);
 ```
 
 Would translate to these matcher specifications:
