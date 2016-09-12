@@ -36,7 +36,7 @@ RFC #  | Description | Owner | Status
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 19 | [SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A) | Brett | ACCEPTED
 20 | [Common Flags](https://docs.google.com/document/d/1V653a6FF6DOqdT4d-fKIjGkHabDaNGZsvbtsUKJyeLc) | Brett | ACCEPTED
-21 | Generic find Queries | Michael | IDENTIFIED
+21 | Generic find Queries ([draft discussion](https://github.com/couchbaselabs/sdk-rfcs/pull/54)) | Simon | DRAFT
 22 | User Management API | Jeff | IDENTIFIED
 23 | [Subdoc `GET_COUNT` and `MKDOC`](https://docs.google.com/document/d/1uF2qcd96SKUrCixqz38EN98LWrzGThIAu86Qymq2THQ) | Mark | IDENTIFIED
 
