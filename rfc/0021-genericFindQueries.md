@@ -134,6 +134,8 @@ by hand or using any available DSL).
 This goes for example for functions, array construction operators, CASE
 constructs, ...
 
+Criterias are for now only linked by a logical AND.
+
 ## Errors
 N/A so far. The results are presented in the same form and with same error
 handling conditions as with `Bucket#query`.
@@ -145,6 +147,7 @@ Probably needs its own section in the querying using the SDK pages.
 TBD
 
 # Questions
+ - Should `or` be supported? (note this can increase the complexity for the builder API)
 
 # Changelog
  - 2016-09-07: Initial draft publication
