@@ -152,7 +152,7 @@ TBD
 # Changelog
  - 2016-09-07: Initial draft publication
  - 2016-09-08: reworked the matchers/operators idea and builder, removed BETWEEN (added to open questions), added explicit list of "NOT" Operators.
- - 2016-09-15: Re-added between, expressed two alternatives to specify operators (JSON convention and builder API).
+ - 2016-09-15: Re-added between, expressed two alternatives to specify operators (JSON convention and builder API). CONTAINS should be used for the “is value x in the array field y?” case rather than a convenience method over LIKE.
 
 # Signoff
 If signed off, each representative agrees both the API and the behavior will be implemented as specified.
