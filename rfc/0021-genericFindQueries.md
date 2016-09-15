@@ -48,23 +48,14 @@ using the `=` N1QL operator. What if one wants a different criteria? For
 instance, in our former example, what if I wanted all documents where the name
 is "Doe" but the age is lesser than 21?
 
-The `findAllLike` method could in fact be based on both a `JsonObject`
-reference example and a map between JSON dict keys and Operators.
+An alternative API for constructing the example could be proposed, that would
+allow to both specify a value and an operator for each criteria.
 
-The default simplified version of `findAllLike` would not fill the operators
-map, defaulting in effect each field to an `EQUALS` operator.
+The default simplified version of `findAllLike` would not provide the
+operators, defaulting in effect each field to an `EQUALS` operator.
 
-```java
-JsonObject example = JsonObject.create()
-    .put("lastname", "Doe")
-    .put("age", 21);
-Map<String, Operator> matchers = Collections.singletonMap("age", Operator.LESS_THAN_EQUALS);
-
-N1qlQueryResult result = bucket.findAllLike(example, matchers);
-```
-
-In the background, both `example` and `matchers` would be combined by
-`findAllLike` (or a `toN1ql()` method) to produce the following N1QL:
+When done expressing the criterias, `findAllLike` would call on a `toN1ql()`
+method to produce the full N1QL, for example:
 
 ```sql
 SELECT * FROM `foo` WHERE lastname = "Doe" AND age <= 21;
@@ -73,7 +64,7 @@ SELECT * FROM `foo` WHERE lastname = "Doe" AND age <= 21;
 The following operators would need to be supported:
  * `EQUALS`: implicit one used if a field from the example isn't found in the operators map.
  * `LIKE`
- * `CONTAINS`: similar to `LIKE`, but automatically convert the example value to string and encloses it with `%` if not present (ie. `nickname CONTAINS 2` will give `WHERE nickname LIKE '%2%'`).
+ * `CONTAINS`: translates to an `IN` keyword, inverted logic to be able to write something like "array CONTAINS aValue".
  * `IS_NULL`
  * `IS_MISSING`
  * `IS_VALUED`
@@ -81,14 +72,16 @@ The following operators would need to be supported:
  * `GREATER_THAN_EQUALS`
  * `LESSER_THAN`
  * `LESSER_THAN_EQUALS`
+ * `BETWEEN` (needs 2 values)
  * The negation of most of the above: `NOT_EQUALS`, `NOT_LIKE`, `NOT_CONTAINS`,
-    `IS_NOT_NULL`, `IS_NOT_MISSING`, `IS_NOT_VALUED`
+    `IS_NOT_NULL`, `IS_NOT_MISSING`, `IS_NOT_VALUED`, `NOT_BETWEEN`
 
-As a third alternative, a *builder* like interface could be provided as a
-fluent API to specify both fields, values and operators in one go:
+### API alternative 1 (builder-friendly SDKs)
+A *builder* like interface could be provided as a fluent API to specify both
+fields, values and operators in one go:
 
 ```java
-Example example = Example.of("lastname").notEqualTo("Doe")
+Example example = Example.of("lastname").not().equalTo("Doe")
     .and("age").greaterThan(20);
 
 N1qlQueryResult result = bucket.findAllLike(example);
@@ -100,13 +93,46 @@ Would translate to this N1QL:
 SELECT * FROM `foo` WHERE lastname != 'Doe' AND age > 20;
 ```
 
+The builder methods in Java for each "positive" operator above would be:
+
+```java
+Criteria.of("a").equalTo("foo")
+    .and("b").greaterThan(1)
+    .and("c").greaterThanOrEqualTo(2)
+    .and("d").lesserThan(4)
+    .and("e").lesserThanOrEqualTo(3)
+    .and("f").like("%toto%")
+    .and("g").isNull()
+    .and("h").isValued()
+    .and("i").isMissing()
+    .and("j").contains("bar")
+    .and("k").between(100, 200);
+```
+
+### API alternative 2
+For languages for which a builder API isn't practical, an alternative JSON
+convention can be integrated.
+
+Each operator mentioned above would be affected a string representation with a
+`$` prefix, like `$gte` for `GREATER_THAN_EQUALS`. This string could then be
+combined with the value in the JSON object passed to `findAllLike()`, as a sub
+object with the operator as key and the value as value. For example in Node:
+
+`findAllLike({ "lastName": { "$neq": "Doe" }, "age": { "$gt": 20 } })`
+
+Which would also translate to this N1QL:
+
+```sql
+SELECT * FROM `foo` WHERE lastname != 'Doe' AND age > 20;
+```
+
 ## Limitations
 Anything other than a basic comparison operation as listed above is out of
 scope for this RFC, and users must then craft their own N1QL statements (either
 by hand or using any available DSL).
 
 This goes for example for functions, array construction operators, CASE
-constructs, BETWEEN...
+constructs, ...
 
 ## Errors
 N/A so far. The results are presented in the same form and with same error
@@ -119,13 +145,11 @@ Probably needs its own section in the querying using the SDK pages.
 TBD
 
 # Questions
- - Should `BETWEEN` be included? This is challenging as the JSON example based
- method cannot store 2 values for the BETWEEN (a ternary operator). I would
- exclude BETWEEN for now (I've put it as a limitation).
 
 # Changelog
  - 2016-09-07: Initial draft publication
  - 2016-09-08: reworked the matchers/operators idea and builder, removed BETWEEN (added to open questions), added explicit list of "NOT" Operators.
+ - 2016-09-15: Re-added between, expressed two alternatives to specify operators (JSON convention and builder API).
 
 # Signoff
 If signed off, each representative agrees both the API and the behavior will be implemented as specified.
