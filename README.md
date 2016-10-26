@@ -25,7 +25,7 @@ RFC #  | Description | Owner | Status
 7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | Brett | REVIEW
 8 | [Datastructures](https://docs.google.com/document/d/14A4CJ8SJuOGzx9l89CxfoaEonqX_Vt2sEBXGGhykS9Y) | Mark | DRAFT
 9 | 2i Query Support | SDK | IDENTIFIED
-10 | CB Full Text API [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/17) [\[Review discussion\]](https://github.com/couchbaselabs/sdk-rfcs/pull/47) | Simon | REVIEW
+10 | CB Full Text API [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/17) [\[Review discussion\]](https://github.com/couchbaselabs/sdk-rfcs/pull/47) | Michael | REVIEW
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
 12 | Adapt memcached error code handling for future proofing (superseded by RFC 13) | SDK | SUPERSEDED
 13 | KV Error Map [\[draft\]](https://docs.google.com/document/d/12VpZPhWYHf69QtGKKTLlZG6j9sc3K9D1bMcbnM1F5Uk/edit#) [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/32) | Mark | IDENTIFIED
@@ -36,7 +36,7 @@ RFC #  | Description | Owner | Status
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 19 | [SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A) | Brett | ACCEPTED
 20 | [Common Flags](https://docs.google.com/document/d/1V653a6FF6DOqdT4d-fKIjGkHabDaNGZsvbtsUKJyeLc) | Brett | ACCEPTED
-21 | Generic find Queries ([draft discussion](https://github.com/couchbaselabs/sdk-rfcs/pull/54)) | Simon | DRAFT
+21 | Generic find Queries ([draft discussion](https://github.com/couchbaselabs/sdk-rfcs/pull/54)) | Brett | DRAFT
 22 | User Management API | Jeff | IDENTIFIED
 23 | [Subdoc `GET_COUNT` and `MKDOC`](https://docs.google.com/document/d/1uF2qcd96SKUrCixqz38EN98LWrzGThIAu86Qymq2THQ) | Mark | IDENTIFIED
 
