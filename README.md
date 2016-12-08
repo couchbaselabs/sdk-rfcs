@@ -37,8 +37,12 @@ RFC #  | Description | Owner | Status
 19 | [SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A) | Brett | ACCEPTED
 20 | [Common Flags](https://docs.google.com/document/d/1V653a6FF6DOqdT4d-fKIjGkHabDaNGZsvbtsUKJyeLc) | Brett | ACCEPTED
 21 | Generic find Queries ([draft discussion](https://github.com/couchbaselabs/sdk-rfcs/pull/54)) | Brett | DRAFT
-22 | User Management API | Jeff | IDENTIFIED
+22 | User Management API | Subhashni | IDENTIFIED
 23 | [Subdoc `GET_COUNT` and `MKDOC`](https://docs.google.com/document/d/1uF2qcd96SKUrCixqz38EN98LWrzGThIAu86Qymq2THQ) | Mark | IDENTIFIED
+24 | Fast failover configuration and behavior | Jeff | IDENTIFIED
+25 | XATTR Support | Mark | IDENTIFIED
+
+
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
