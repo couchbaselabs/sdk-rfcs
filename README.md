@@ -41,6 +41,7 @@ RFC #  | Description | Owner | Status
 23 | [Subdoc `GET_COUNT` and `MKDOC`](https://docs.google.com/document/d/1uF2qcd96SKUrCixqz38EN98LWrzGThIAu86Qymq2THQ) | Mark | IDENTIFIED
 24 | Fast failover configuration and behavior | Jeff | IDENTIFIED
 25 | XATTR Support | Mark | IDENTIFIED
+26 | Ketama Hashing [[issue]](https://github.com/couchbaselabs/sdk-rfcs/issues/56)  [[draft]](https://docs.google.com/document/d/129q1Eu6uKZD06UHMgermw1-A-oEsTIvA2a8_rdNKfew/edit?usp=sharing) | Mike G | DRAFT
 
 
 
