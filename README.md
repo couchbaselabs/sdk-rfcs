@@ -40,7 +40,7 @@ RFC #  | Description | Owner | Status
 22 | User Management API | Subhashni | IDENTIFIED
 23 | [Subdoc `GET_COUNT` and `MKDOC`](https://docs.google.com/document/d/1uF2qcd96SKUrCixqz38EN98LWrzGThIAu86Qymq2THQ) | Mark | IDENTIFIED
 24 | Fast failover configuration and behavior | Jeff | IDENTIFIED
-25 | XATTR Support | Mark | IDENTIFIED
+25 | [XATTR Support](https://docs.google.com/document/d/1z3pJCPg77PZ8U8rFAyABuEhHSl68j1n42zP2RyflWZs/edit#heading=h.z5vaan7obomq) | Mark | DRAFT
 26 | Ketama Hashing [[issue]](https://github.com/couchbaselabs/sdk-rfcs/issues/56)  [[draft]](https://docs.google.com/document/d/129q1Eu6uKZD06UHMgermw1-A-oEsTIvA2a8_rdNKfew/edit?usp=sharing) | Mike G | DRAFT
 
 
