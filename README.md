@@ -28,7 +28,7 @@ RFC #  | Description | Owner | Status
 10 | [Full Text Search (FTS) API](rfc/0010-cbft.md) [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/17) [\[Review PR\]](https://github.com/couchbaselabs/sdk-rfcs/pull/47) | Michael | REVIEW
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
 12 | Adapt memcached error code handling for future proofing (superseded by RFC 13) | SDK | SUPERSEDED
-13 | KV Error Map [\[draft\]](https://docs.google.com/document/d/1OaOeQ2ex5anB2uNhQcOFMuYN2sbuvOSt20Cl7lTnj64/edit#heading=h.wmtpv6z0vz4w) [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/32) | Mark | IDENTIFIED
+13 | [KV Error Map](https://docs.google.com/document/d/1OaOeQ2ex5anB2uNhQcOFMuYN2sbuvOSt20Cl7lTnj64/edit#heading=h.wmtpv6z0vz4w) | Mark | DRAFT
 14 | LWW Wins XDCR Support (superseded by RFC 17) | SDK | SUPERSEDED
 15 | Collection Support | SDK | IDENTIFIED
 16 | RBAC Support [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/46) [\[draft\]](https://docs.google.com/document/d/1SUFKCRIX8jp8q-NZy9ZpP4vs0pjLHkUlJFvZjcKr-DU/edit?usp=sharing) | Mike G | DRAFT
