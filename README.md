@@ -42,7 +42,7 @@ RFC #  | Description | Owner | Status
 24 | Fast failover configuration and behavior | Jeff | IDENTIFIED
 25 | [XATTR Support](https://docs.google.com/document/d/1z3pJCPg77PZ8U8rFAyABuEhHSl68j1n42zP2RyflWZs/edit#heading=h.z5vaan7obomq) | Mark | DRAFT
 26 | Ketama Hashing [[issue]](https://github.com/couchbaselabs/sdk-rfcs/issues/56)  [[draft]](https://docs.google.com/document/d/129q1Eu6uKZD06UHMgermw1-A-oEsTIvA2a8_rdNKfew/edit?usp=sharing) | Mike G | DRAFT
-27 | CBAS Querying [[draft]](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Brett L | DRAFT
+27 | [[CBAS Querying]](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Brett L | DRAFT
 
 
 
