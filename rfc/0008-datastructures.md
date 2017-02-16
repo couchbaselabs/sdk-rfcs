@@ -295,7 +295,7 @@ Mutator methods may also accept CAS and durability requirements in situations wh
 <tr><th>Datastructure API</th><th>Subdocument API</th></tr>
 <tr>
     <td><code>MapGet(String key, String mapkey)</code></td>
-    <td><code>L(key).get(mapkey</code></td>
+    <td><code>L(key).get(mapkey)</code></td>
 </tr>
 <tr>
     <td><code>MapRemove(String key, String mapkey)</code></td>
