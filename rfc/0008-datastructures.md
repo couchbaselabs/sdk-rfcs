@@ -51,11 +51,11 @@ Fetch the entire list. When removing an item (while iterating over it), the CAS 
 
 ```
 iteration():
-  Items = mc_get(“key”);
+  Items = mc_get("key");
   For item in items: yield item
 ```
 
-If a ‘List’ is not a first class object (i.e. datastructures are implemented using discreet functions), then it may suffice to simply document how to access the underlying JSON array.
+If a 'List' is not a first class object (i.e. datastructures are implemented using discreet functions), then it may suffice to simply document how to access the underlying JSON array.
 
 
 #### Element Access
@@ -65,7 +65,7 @@ Subdoc natively supports element access:
 
 ```
 __getitem__( index):
-  Return subdoc_get(“key”, “[“ + index + “]”);
+  Return subdoc_get("key", "[" + index + "]");
 ```
 
 
@@ -115,7 +115,7 @@ Spock will contain support for `ARRAY_CONTAINS`, which will return the index of 
 
 ```
 contains(item String):
-  Rv = subdoc_contains(“key”, “”, item);
+  Rv = subdoc_contains("key", "", item);
   If rv < 0: Return false
   Return true
 ```
@@ -131,11 +131,11 @@ Use ARRAY_CONTAINS with CAS and then employ the returned index:
 ```
 remove(value):
   While true:
-    Rv = subdoc_contains(“key”, “”, item)
+    Rv = subdoc_contains("key", "", item)
     If rv.index < 0: break # missing:
     Cas = rv.cas
     Try:
-      subdoc_remove(key, “[“ + rv.index + “]”)
+      subdoc_remove(key, "[" + rv.index + "]")
       return
     Except CasMismatch:
       continue
@@ -177,7 +177,7 @@ Because of current implementation limitations, sets are limited to primitives on
 
 Because subdoc does not have sorting functionality, sets will not be sorted.
 
-Note: SDKs implementing a “Set” API **may** use value-types that are not primitives with the caveat that they document the fact that any sort of non-primitive comparison operation will take place on the client. This should not be permissible for "discreet"-style APIs, however.
+Note: SDKs implementing a "Set" API **may** use value-types that are not primitives with the caveat that they document the fact that any sort of non-primitive comparison operation will take place on the client. This should not be permissible for "discreet"-style APIs, however.
 
 #### Iteration
 
@@ -230,17 +230,17 @@ Retrieve `array[-1]` and remove `array[-1]` using CAS:
 ```
 pop() -> item:
   While true:
-    Rv = subdoc_get(“key”, “[-1]”)
+    Rv = subdoc_get("key", "[-1]")
     Value = rv.value
     Try:
-      subdoc_remove(“key”, “[-1]”, cas=rv.cas)
+      subdoc_remove("key", "[-1]", cas=rv.cas)
       Return value
     Except CasMismatch:
       continue
 ```
 
 The pop operation should not participate in the traditional `mutate_in` chain, since it is a compound operation and its execution is not well defined within the context of the execution chain.
-Put simply, we can’t implement pop with the same atomicity constraints normally expected.
+Put simply, we can't implement pop with the same atomicity constraints normally expected.
 
 
 ## Nesting Levels
@@ -251,7 +251,7 @@ Of course, subdocument and datastructures can be used seamlessly in the same doc
 
 ## Errors
 
-Errors should be manifested and wrapped in the native language’s errors for various conditions when possible. For example, an ENOENT in Memcached should result in a KeyError (Python) or OutOfBoundsException (Java).
+Errors should be manifested and wrapped in the native language's errors for various conditions when possible. For example, an ENOENT in Memcached should result in a KeyError (Python) or OutOfBoundsException (Java).
 If the error is not a typical data error which cannot be translated natively, then the real Couchbase error should be returned, resulting in an exceptional circumstance. These data structures are ones of convenience, not of altering reality.
 
 
@@ -277,14 +277,14 @@ This will happen if the document is modified outside of datastructures, or if th
 
 #### Document Too Big
 
-If a document becomes too big the current behavior should be to propagate the exception. In the future it may be possible to add BigList or BigMap implementations which would span multiple documents, however such implementations may not be entirely “free”.
+If a document becomes too big the current behavior should be to propagate the exception. In the future it may be possible to add BigList or BigMap implementations which would span multiple documents, however such implementations may not be entirely "free".
 
 
 ## Subdocument Method Renaming/Aliasing
 
 For SDKs which do not support the magic wrapping of native data types, data structures can still be implemented at a conceptual level by renaming sub-document API methods. The methods will follow the naming convention of ObjectVerb. This will let users intuitively know which methods are available on which data types.
 
-The return types for all these methods should be of the normal ‘Document’ return type, or something that functions similarly to it. It would be nice if we had a specific return type called ‘Document Fragment’. However that name is already reserved for a collection of ‘document fragments’. The different name would just be for clarification, anyway.
+The return types for all these methods should be of the normal 'Document' return type, or something that functions similarly to it. It would be nice if we had a specific return type called 'Document Fragment'. However that name is already reserved for a collection of 'document fragments'. The different name would just be for clarification, anyway.
 
 Note that in this situation some primitive methods may need to be duplicated multiple times, one for each datatype. For example, Remove may have a ListRemove and DictRemove variant.
 
@@ -417,7 +417,7 @@ Clients may also implement backwards-compatible functionality for features which
 
 ### Java
 
-The datastructure implementations will conform to the JDK’s Collection API. Each collection will at least need the document’s id and a reference to the Bucket object through which to access the subdoc API and in which to store the underlying document.Note the types are for now restricted to JSON simple types (String, boolean, Number, JsonArray, JsonObject…).
+The datastructure implementations will conform to the JDK's Collection API. Each collection will at least need the document's id and a reference to the Bucket object through which to access the subdoc API and in which to store the underlying document.Note the types are for now restricted to JSON simple types (String, boolean, Number, JsonArray, JsonObject…).
 
 Below are quick examples that showcase this:
 
@@ -446,12 +446,12 @@ for (String name : names) {
 
 ```java
 Map<String,String> map = new CouchbaseMap<String>("key", bucket);
-map.put(“subkey”, “subvalue”);
+map.put("subkey", "subvalue");
 ```
 
 ### Python
 
-Python does have a collections API. Two options are offered below, one uses the ‘collections’ API and the other uses an explicit function-based API. Unlike Java, python uses duck-typing APIs, so there is no predetermined set of operations which the SDK `must` support. Generally however, index/key addressing and iteration support is desired.
+Python does have a collections API. Two options are offered below, one uses the 'collections' API and the other uses an explicit function-based API. Unlike Java, python uses duck-typing APIs, so there is no predetermined set of operations which the SDK `must` support. Generally however, index/key addressing and iteration support is desired.
 
 #### Collections-based API:
 
@@ -483,11 +483,11 @@ dd['foo'] = 'bar'
 #### Function-based API
 
 ```
-cb.map_set(‘docid’, ‘email’, ‘m@n.com’, create=True)
-cb.list_append(‘docid’, 1, 2, 3, 4, 5, 6, create=True)
-cb.queue_push(‘docid’, ‘job1234’)
-job = cb.queue_pop(‘docid’).value
-cb.set_remove(‘docid’, value)
+cb.map_set('docid', 'email', 'm@n.com', create=True)
+cb.list_append('docid', 1, 2, 3, 4, 5, 6, create=True)
+cb.queue_push('docid', 'job1234')
+job = cb.queue_pop('docid').value
+cb.set_remove('docid', value)
 ```
 
 **NOTE**: Currently, only the functional API has been implemented
