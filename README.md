@@ -25,7 +25,7 @@ RFC #  | Description | Owner | Status
 7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | Brett | REVIEW
 8 | [Datastructures](rfc/0008-datastructures.md) | Mark | ACCEPTED
 9 | 2i Query Support | SDK | IDENTIFIED
-10 | [Full Text Search (FTS) API](rfc/0010-cbft.md) [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/17) [\[Review PR\]](https://github.com/couchbaselabs/sdk-rfcs/pull/47) | Michael | REVIEW
+10 | [Full Text Search (FTS) API](rfc/0010-cbft.md) | Michael | ACCEPTED
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
 12 | ~~Adapt memcached error code handling for future proofing (superseded by RFC 13)~~ | SDK | SUPERSEDED
 13 | [KV Error Map](https://docs.google.com/document/d/1OaOeQ2ex5anB2uNhQcOFMuYN2sbuvOSt20Cl7lTnj64/edit#heading=h.wmtpv6z0vz4w) | Mark | DRAFT
