@@ -18,7 +18,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
 1  | [The RFC Process](rfc/0001-rfc-process.md) | Matt | ACCEPTED
-2  | [SubDocument API](https://docs.google.com/document/d/1ZXq-JgWW8ywU03Tx51A3jFTysYmlkv2W4ko0kepb3_M/edit#) | Mark | ACCEPTED
+2  | [SubDocument API](rfc/0002-subdocapi.md) | Mark | ACCEPTED
 3  | [Index Management](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0003-indexmanagement.md) | Simon | ACCEPTED
 4 | [RYW Consistent Queries – at_plus](rfc/0004-at_plus.md) | Michael | ACCEPTED
 5 | [VBucket Retry Logic](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0005-vbucket-retries.md) | Brett | ACCEPTED
