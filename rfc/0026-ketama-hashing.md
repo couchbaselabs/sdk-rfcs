@@ -1,9 +1,9 @@
 # Meta
-- RFC Name: [Ketama Hashing]
-- RFC ID: [26]
-- Start Date: [2016-12-21]
-- Owner: [Mike Goldsmith]
-- Current Status: [Draft]
+- RFC Name: Ketama Hashing
+- RFC ID: 26
+- Start Date: 2016-12-21
+- Owner: Mike Goldsmith
+- Current Status: Accepted
 
 # Summary
 When storing documents in a Memcached bucket, the SDKs use a Ketama hashing algorithm to generate a ring of servers that can be used in to locate a server given a document key to create a robust and evenly distributed list of servers in the cluster.
@@ -11,24 +11,34 @@ When storing documents in a Memcached bucket, the SDKs use a Ketama hashing algo
 # Hashed Values
 The server hashes are MD5 hashes constructed using a server’s IP, port and a repetition value, in the form:
 
-`<ip>:<port>-<repetition>*`
+`<ip>:<port>-<repetition>`
 
 For example:
-127.0.0.1:80910-0
-127.0.0.1:80910-1
-127.0.0.1:80910-2
+```
+127.0.0.1:8091-0
+127.0.0.1:8091-1
+127.0.0.1:8091-2
+```
 
 # Repetitions
 40 hashes for each server in the cluster with the data server are generated.
 
 # Verification Process
-Add unit test to ensure a four node cluster generates the correct hashes that point to the correct server. The following json file contains a list of hash and hostname combinations that each SDK is expected to produce. The SDK should read the contents of the file and compare the generated hashes.
+Add unit test to ensure a four node cluster generates the correct hashes that point to the correct server. The following JSON file contains a list of hash and hostname combinations that each SDK is expected to produce. The SDK should read the contents of the file and compare the generated hashes.
+
+Hostnames:
+```
+192.168.1.101:11210
+192.168.1.102:11210
+192.168.1.103:11210
+192.168.1.104:11210
+```
 
 [Expected Hashes](ketama-hashes.json)
 
 # Code Examples
 ## .NET
-```
+```csharp
 using (var md5 = MD5.Create())
 {
     foreach (var server in _servers.Values.Where(x => x.IsDataNode))
@@ -53,7 +63,7 @@ using (var md5 = MD5.Create())
 ```
 
 ## Java
-```
+```java
 private void populateKetamaNodes() {
     for (NodeInfo node : nodes()) {
         if (!node.services().containsKey(ServiceType.BINARY)) {
