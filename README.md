@@ -41,7 +41,7 @@ RFC #  | Description | Owner | Status
 23 | [Subdoc `GET_COUNT` and `MKDOC`](https://docs.google.com/document/d/1RDhEs651weAoXVFuDkKRjZwxY9Q4rXhtA1zE49gRKQs) | Mark | DRAFT
 24 | [Fast failover configuration and behavior](https://docs.google.com/document/d/1LLJBBYWDVBwINZfvN51cmz4H-xLbEP17f13CNYQIp6Y/edit) | Jeff | IDENTIFIED
 25 | [XATTR Support](https://docs.google.com/document/d/1z3pJCPg77PZ8U8rFAyABuEhHSl68j1n42zP2RyflWZs/edit#heading=h.z5vaan7obomq) | Mark | DRAFT
-26 | [Ketama Hashing](https://docs.google.com/document/d/129q1Eu6uKZD06UHMgermw1-A-oEsTIvA2a8_rdNKfew/edit?usp=sharing) [[issue]](https://github.com/couchbaselabs/sdk-rfcs/issues/56) | Mike G | REVIEW
+26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
 27 | [CBAS Querying](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Brett L | DRAFT
 
 
