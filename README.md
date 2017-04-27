@@ -43,7 +43,7 @@ RFC #  | Description | Owner | Status
 25 | [XATTR Support](https://docs.google.com/document/d/1z3pJCPg77PZ8U8rFAyABuEhHSl68j1n42zP2RyflWZs/edit#heading=h.z5vaan7obomq) | Mark | DRAFT
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
 27 | [Analytics Querying](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Brett L | DRAFT
-
+28 | [Enhanced Error Messages](https://docs.google.com/document/d/1KvT63TGzVH2vTgB2Ox1bBAELSkj4d0LwEoyLpOHbHA8) | Brett L | DRAFT
 
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
