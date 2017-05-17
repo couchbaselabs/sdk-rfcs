@@ -4,7 +4,7 @@
  - RFC ID: 0001
  - Start Date: 2015-10-23
  - Owner: Michael Nitschinger
- - Current Status: Review
+ - Current Status: Accepted
 
 # Summary
 This RFC describes the newly established RFC process.
@@ -38,16 +38,26 @@ When it is not clear if an RFC needs to be created, a quick email or discussion 
 
 # General Design
 
- 1. Look at latest issue to determine the rfc number (4 digits) - the `RFCID` is in the form *`rfcNumber`***-***`rfcShortName`*
- 2. open an issue titled `RFCID`, short description of the rfc, does the owner think it requires sdk specifics, etc... tag as appropriate (if we decide to put tags in). the issue allows to "reserve" the rfc number prior to any file being added publicly to the repo.
+The RFC must always be in one of the following states, and transition through them in the given order:
+
+ 1. *Identified*: The need for an RFC has been identified, but none actually drafted yet.
+ 2. *Draft*: The RFC is currently being drafted and subject to heavy modifications.
+ 3. *Review*: The RFC is believed to be complete (by stakeholders) and is broadcasted for a wider circle for final remarks.
+ 4. *Accepted*: The RFC is accepted, no further changes can be made to this RFC version. Subsequent changes need to be lifecycled again.
+
+**Note:** Please see for subsequent changes to this process. The one described in this section is not accurate anymore, but left in place for traceability.
+
+ 1. Look at latest drafted rfc to determine the rfc number (4 digits) - the `RFCID` is in the form *`rfcNumber`***-***`rfcShortName`*
+ 2. open an issue titled `RFCID`, short description of the rfc, does the owner think it requires sdk specifics, etc. (the issue allows to "reserve" the rfc number prior to any file being added publicly to the repo).
+ 3. The issue is now in IDENTIFIED state - modify the README.md (https://github.com/couchbaselabs/sdk-rfcs/blob/master/README.md) to include it and push it into master. The link of the ticket should reference the github issue, which should reference the PR for the rfc later. This allows for easy discoverability.
  3. create the rfc branch: `drafts/RFCID`
  4. create the rfc file as `RFCID.md`in `/rfc` directory
- 5. start the discussion by doing a Pull Request to master
- 6. **phase one** iterates on the global idea + "proof of concept" sdk specifics proposed by the owner
- 7. *end of this phase should probably be marked by a first informal round of votes?*
- 8. **phase two** iterates on sdk specifics: each sdk team/representative can then push commits in the branch to improve on his own sdk specifics
- 9. once everyone has contributed sdk specifics, the RFC must be signed off by a message following this convention:
- 
+ 5. Write the first version of the rfc.
+ 6. start the discussion by doing a Pull Request to master
+ 7. the rfc is now in draft state. Update the README and set the state to Draft.
+ 8. **phase one** iterates on the global idea + "proof of concept" sdk specifics proposed by the owners.
+ 9. Stakeholders (SDK Team + different people depending on the RFC) need to sign it before it goes into Review.
+
  ```
  rfc is (:+1:|:-1:) for `teamname` *anything after is a vote comment*
  ```
@@ -58,15 +68,23 @@ When it is not clear if an RFC needs to be created, a quick email or discussion 
  > rfc is :-1: for `java` - I'm not happy with the java specifics after toying with it
  > rfc is :+1: for `python`
  ```
- 
-Once content is :+1: by all teams, merge into master using the following strategy (it retains discussion on intermediate commits, but produces a linear history in master):
 
+ 10. the rfc is now in review state. Assign a minimum review period of one week (managed by the rfc owner), optionally longer.
+ 11. Once there are no objections, the rfc is accepted. 
+ 12. Merge the RFC into master, making it visible permanently. Update the README to reflect the latest change and link directly to the RFC instead of the issue.
+
+ Once content is :+1: by all teams, merge into master using the following strategy (it retains discussion on intermediate commits, but produces a linear history in master):
+
+```
  - `git merge --squash -e drafts/RFCID`
  - `git commit`
  - commit message with
    - user that signed off for each `team`
    - link to PR: `Close #XX (see link for discussion)` (also closes the pr since github won't detect a merge --squash)
    - `Close #YY` (to close the issue)
+```
+
+ 13. Issue needs to be closed.
 
 See the template in 0000-template.md.
 
@@ -88,3 +106,7 @@ Note that this signoff includes every SDK team member.
 | -     | Mark N. | 2015-12-09 |
 | -     | Todd G. | not voted |
 | -     | Matt I. | not voted |
+
+# Errata
+
+ - *2016-01-20*: Workflow Changes in the Process & States added (Michael N.)
