@@ -38,7 +38,7 @@ RFC #  | Description | Owner | Status
 20 | [Common Flags](https://docs.google.com/document/d/1V653a6FF6DOqdT4d-fKIjGkHabDaNGZsvbtsUKJyeLc) | Brett | ACCEPTED
 21 | Generic find Queries ([draft discussion](https://github.com/couchbaselabs/sdk-rfcs/pull/54)) | Brett | DRAFT
 22 | [User Management API](https://docs.google.com/document/d/1azNxFNLmcTvmhGc9-cAdswFgCyQR_s_lcfKCBE54gWE/edit?usp=sharing) | Subhashni | DRAFT
-23 | ~~[Subdoc `GET_COUNT` and `MKDOC`](https://docs.google.com/document/d/1RDhEs651weAoXVFuDkKRjZwxY9Q4rXhtA1zE49gRKQs)~~ | Mark | SUPERSEDED (By 25)
+23 | ~~Subdoc `GET_COUNT` and `MKDOC`~~ | Mark | SUPERSEDED (By 25)
 24 | [Fast failover configuration and behavior](https://docs.google.com/document/d/1LLJBBYWDVBwINZfvN51cmz4H-xLbEP17f13CNYQIp6Y/edit) | Jeff | IDENTIFIED
 25 | [Spock additions for Subdoc (including XATTRs)](https://docs.google.com/document/d/1z3pJCPg77PZ8U8rFAyABuEhHSl68j1n42zP2RyflWZs/edit#heading=h.z5vaan7obomq) | Mark | DRAFT
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
