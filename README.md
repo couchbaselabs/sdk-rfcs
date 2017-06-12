@@ -31,7 +31,7 @@ RFC #  | Description | Owner | Status
 13 | [KV Error Map](https://docs.google.com/document/d/1OaOeQ2ex5anB2uNhQcOFMuYN2sbuvOSt20Cl7lTnj64/edit#heading=h.wmtpv6z0vz4w) | Mark | DRAFT
 14 | ~~LWW Wins XDCR Support (superseded by RFC 17)~~ | SDK | SUPERSEDED
 15 | Collection Support | SDK | IDENTIFIED
-16 | [RBAC Support](https://docs.google.com/document/d/1SUFKCRIX8jp8q-NZy9ZpP4vs0pjLHkUlJFvZjcKr-DU/edit?usp=sharing) [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/46) | Mike G | DRAFT
+16 | [RBAC Support](https://docs.google.com/document/d/1SUFKCRIX8jp8q-NZy9ZpP4vs0pjLHkUlJFvZjcKr-DU/edit?usp=sharing) [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/46) | Mike G | REVIEW
 17 | Cross-Cluster Failover | Michael | IDENTIFIED
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 19 | [SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A) | Brett | ACCEPTED
