@@ -27,11 +27,11 @@ RFC #  | Description | Owner | Status
 8 | [Datastructures](rfc/0008-datastructures.md) | Mark | ACCEPTED
 10 | [Full Text Search (FTS) API](rfc/0010-cbft.md) | Michael | ACCEPTED
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
-12 | ~~Adapt memcached error code handling for future proofing (superseded by RFC 13)~~ | SDK | SUPERSEDED
-14 | ~~LWW Wins XDCR Support (superseded by RFC 17)~~ | SDK | SUPERSEDED
+12 | ~~Adapt memcached error code handling for future proofing~~ (see RFC 13) | SDK | SUPERSEDED
+14 | ~~LWW Wins XDCR Support~~ (see RFC 17) | SDK | SUPERSEDED
 19 | [SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A) | Brett | ACCEPTED
 20 | [Common Flags](https://docs.google.com/document/d/1V653a6FF6DOqdT4d-fKIjGkHabDaNGZsvbtsUKJyeLc) | Brett | ACCEPTED
-23 | ~~Subdoc `GET_COUNT` and `MKDOC`~~ | Mark | SUPERSEDED (By 25)
+23 | ~~Subdoc `GET_COUNT` and `MKDOC`~~ (see RFC 25) | Mark | SUPERSEDED
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
 
 ### Draft, Review & Identified RFCs
