@@ -34,7 +34,7 @@ Functionality may be divided into two categories:
 * Discreet functionality. This is for languages which do not have generic interfaces to implement. In such
   cases, a `List` is a concept which can be manipulated using various discreet functions such as
   `list_append`, `list_prepend` and so on. Examples of such languages are Go and PHP.
-  
+
 The following sections include functionality applicable to one or both of the above categories. See below
 (in API reference) for required functionality.
 
@@ -271,7 +271,7 @@ Handle as normal (i.e. propagate). This would likely result from user interventi
 #### Path Mismatch
 
 - If the document is modified outside of datastructures (e.g. used to be a list and is now a dictionary),
-- If a wrong input type was supplied 
+- If a wrong input type was supplied
 
 This will happen if the document is modified outside of datastructures, or if there is a bug within the datastructure implementation, or if the wrong type is supplied (e.g. non-primitive for set addition).
 
@@ -323,7 +323,7 @@ while True:
         except KeyExistsError:
             # Race condition. We'll just do a normal mutate_in in the next iteration
             continue
-        
+
 </pre></code></td>
 </tr>
 
@@ -356,7 +356,7 @@ while True:
 
 <tr>
     <td><code>SetAdd(String key, String value, boolean createSet</code></td>
-    
+
     <td><code>M(key).add_unique(key, value)</code>. See <code>MapAdd</code> for
     how to handle the <code>create</code> argument.</td>
 </tr>
@@ -417,7 +417,7 @@ Clients may also implement backwards-compatible functionality for features which
 
 ### Java
 
-The datastructure implementations will conform to the JDK's Collection API. Each collection will at least need the document's id and a reference to the Bucket object through which to access the subdoc API and in which to store the underlying document.Note the types are for now restricted to JSON simple types (String, boolean, Number, JsonArray, JsonObject…).
+The datastructure implementations will conform to the JDK's Collection API. Each collection will at least need the document's id and a reference to the Bucket object through which to access the subdoc API and in which to store the underlying document.Note the types are for now restricted to JSON simple types (String, boolean, Number, JsonArray, JsonObject...).
 
 Below are quick examples that showcase this:
 
@@ -547,7 +547,7 @@ These ideas were floated while discussing datastructures, but were deemed out of
 * **Bitwise operations**
   The ability to use integers rather than explicit JSON for boolean values.
   this may save storage and bandwidth. _Requires server support_.
-  
+
 * **Large Queues**
   Many people require large scalable job queues. The queue currently implemented
   in datastructures/subdoc is simply an array with pop/push functionality and is not designed to
@@ -560,4 +560,3 @@ These ideas were floated while discussing datastructures, but were deemed out of
   Currently we only support things like adding and membership checking.
   A "proper" set API usually contains things like intersection, union,
   and so on.
-  

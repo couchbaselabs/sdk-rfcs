@@ -9,9 +9,9 @@
 When storing documents in a Memcached bucket, the SDKs use a Ketama hashing algorithm to generate a ring of servers that can be used in to locate a server given a document key to create a robust and evenly distributed list of servers in the cluster.
 
 # Hashed Values
-The server hashes are MD5 hashes constructed using a server’s IP, port and a repetition value, in the form:
+The server hashes are MD5 hashes constructed using a server's IP, port and a repetition value, in the form:
 
-`<ip>:<port>-<repetition>`
+    <ip>:<port>-<repetition>
 
 For example:
 ```

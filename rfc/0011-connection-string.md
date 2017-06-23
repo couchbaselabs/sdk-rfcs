@@ -12,14 +12,14 @@ Define a URI-like connection string format for specifying bootstrapping and conn
 # Motivation
 Currently there is a number of variables that define the way that a cluster can be connected to.  This can be defined as a matrix with 3 axes: SSL/Plain, HTTP/CCCP, SRV/Direct.  Currently we are planning to provide a number of different specifications between client libraries to connect to a cluster, whereas we should be providing one unified specification which defines all neccessary details and semantics explicitly.  Additionally, this proposal will attempt to define the precise semantics for some edge scenarios which have not yet been defined.
 
-# General Design 
+# General Design
 A connection string will be consist of a scheme followed by host list (which potentially includes a port) along with a a set of key-value pairs.  This should follow the existing format for a URI, except multiple hosts-port pairs will be supported by using a `,` separated.  Additionally, `;` must be supported as a valid seperator for backwards compatiblity.
 
 Two base URI schemes must be supported by all clients, these are the `couchbase` scheme along with the `http` scheme for backwards compatability.  The `couchbase` scheme should use CCCP only to perform connections and is expected to be used with all new clusters.  The `http` scheme will behave as current clients do, performing neccessary heuristics to attempt CCCP connections prior to HTTP fallback (exact heuristics defined below).  If no scheme is provided, the `http` scheme should be assumed, including all related heuristics.
 
 In addition to the two base URI schemes, there will be an additional supported scheme `couchbases`, this will utilize the exact bootstrap and connection semantics as the `couchbase`, but will utilize SSL encrypted channels only for cluster communication.  Note that the use of `couchbase` means the client must not use SSL, and `couchbases` means the client must use SSL.  Note that the https scheme is not valid.
 
-Following the scheme, a list of hosts should be provided, with optional ports specified on a per-host basis.  This list should be delimited by a ‘,’, or alternatively a ‘;’ for backwards compatability.  In addition, a single host with no optional port being specified should cause a SRV-record lookup to be performed prior to attempting A-record lookup.  See below for the layout of SRV-records.  Should no port be explicitly specified, the services default canonical port should be used.
+Following the scheme, a list of hosts should be provided, with optional ports specified on a per-host basis.  This list should be delimited by a `,`, or alternatively a `;` for backwards compatability.  In addition, a single host with no optional port being specified should cause a SRV-record lookup to be performed prior to attempting A-record lookup.  See below for the layout of SRV-records.  Should no port be explicitly specified, the services default canonical port should be used.
 
 ### HTTP Scheme Heuristics
 If a client specifies the `http` scheme, and does not specify a port or specifies the default canonical service port (8091), then an attempt should be made to utilize CCCP via 11210 prior to attempting to request the configuration via HTTP.  Should a non-default port be specified, a HTTP request should be made immediately without attemping CCCP first.  Additionally, when performing bootstrapping with this heuristic mode, all hosts should be attempted for CCCP prior to HTTP.
@@ -91,7 +91,7 @@ None
    - Update to using URI schemes.
  - June 20, 2014
    - Various minor changes related to open questions.
-   
+
 
 > This document is copy of the document available below and was converted to an sdk-rfc on Jan 18th, 2016.
 > https://docs.google.com/document/d/172ausWsYt3eYYOZ1lYHVS8ccbrrVJaGwHIRsf_O_Hyc

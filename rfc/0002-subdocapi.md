@@ -93,7 +93,7 @@ Creates a **LookupInBuilder** object which you can then use method-chaining to p
 
 Creates a **MutateInBuilder** object which you can then use method-chaining to populate with mutation operations and then later execute.
 
-#### Bucket.RetrieveIn(doc_id, paths…) -> DocumentFragment [OPTIONAL]
+#### Bucket.RetrieveIn(doc_id, paths...) -> DocumentFragment [OPTIONAL]
 
 This is a shorthand alternative to constructing a builder, for allowing simple, idiomatic retrieval of items.
 
@@ -101,7 +101,7 @@ This is a shorthand alternative to constructing a builder, for allowing simple, 
 
 is equivalent to:
 
-	LookupIn(docid).Get(path1).Get(path2).Get(path3).Do()
+    LookupIn(docid).Get(path1).Get(path2).Get(path3).Do()
 
 In some languages `RetrieveIn` may offer significant syntactic simplicity, and is therefore optional
 
@@ -111,9 +111,9 @@ Details on how operations should be encoded may be found within the protocol. No
 
 *single command* encoding saves 7 bytes
 
-> NOTE:  For the request: `{npath(2)+flag(1)}` in extras for single, vs `{opcode(1),npath(2),flag(1)}` in multi, saving one byte. For the response: `{status(2)+nvalue(4)}` vs `{...implicit…}` saving 6 bytes, saving a total of 7 bytes overall.) per operation for lookups and 5-12 bytes
+> NOTE:  For the request: `{npath(2)+flag(1)}` in extras for single, vs `{opcode(1),npath(2),flag(1)}` in multi, saving one byte. For the response: `{status(2)+nvalue(4)}` vs `{...implicit...}` saving 6 bytes, saving a total of 7 bytes overall.) per operation for lookups and 5-12 bytes
 
-> NOTE:  For the request: `{npath(2)+flag(1)}` in extras for single, vs `{opcode(1),npath(2),flag(1),nvalue(4)}` in multi, saving 5 bytes. For non-counter responses, the payload is empty; for counter responses the response contains `{index(1),status(2),nvalue(4)}`, which is 7 bytes, vs empty (excluding the actual data) for single).) per operation for mutations. Because subdoc’s primary goal is to save bandwidth, the SDK should ensure to maximize its encoding features.
+> NOTE:  For the request: `{npath(2)+flag(1)}` in extras for single, vs `{opcode(1),npath(2),flag(1),nvalue(4)}` in multi, saving 5 bytes. For non-counter responses, the payload is empty; for counter responses the response contains `{index(1),status(2),nvalue(4)}`, which is 7 bytes, vs empty (excluding the actual data) for single).) per operation for mutations. Because subdoc`s primary goal is to save bandwidth, the SDK should ensure to maximize its encoding features.
 
 #### Expiration
 
@@ -125,7 +125,7 @@ This builder exposes the creation of a set of lookup operations to be performed.
 
 #### L.Get(path) -> L
 
-Retrieves a path’s value from a document. Refer to [GET](https://docs.google.com/document/d/1hOQIPMTEFTmdNgWftSZddMtoc57Zi_yuKJ8BW-QJSiQ/edit#heading=h.hfbqcirlfdhy) in the spec. In Memcached this is `PROTOCOL_BINARY_CMD_SUBDOC_GET`
+Retrieves a path's value from a document. Refer to [GET](https://docs.google.com/document/d/1hOQIPMTEFTmdNgWftSZddMtoc57Zi_yuKJ8BW-QJSiQ/edit#heading=h.hfbqcirlfdhy) in the spec. In Memcached this is `PROTOCOL_BINARY_CMD_SUBDOC_GET`
 
 #### L.Exists(path) -> L
 
@@ -197,11 +197,11 @@ The list above just gives some ideas and should not be thought of as limiting th
 
 In python this can be expressed as:
 
-Assuming the existing path contains: `["Hello", “World”, null]`
+Assuming the existing path contains: `["Hello", "World", null]`
 
-* `array_append(path, 1, 2, 3, 4)` => results in `["Hello", “World”, null, 1, 2, 3, 4]`
+* `array_append(path, 1, 2, 3, 4)` => results in `["Hello", "World", null, 1, 2, 3, 4]`
 
-* `array_append(path, [1,2,3,4])` => results in `["Hello", “World”, [1,2,3,4]]`
+* `array_append(path, [1,2,3,4])` => results in `["Hello", "World", [1,2,3,4]]`
 
 ### DocumentFragment
 
@@ -291,7 +291,7 @@ These errors are returned by Memcached and should not be exposed to users. They 
 
 * `EINVAL` (0x04). This is received if the command was not properly encoded. Notably this also includes specifying an empty path for commands which do not allow it.
 
-* `SUBDOC_INVALID_COMBO` (0xCB). This is received if an invalid opcode was specified in a multi operation. This usually means that the SDK didn’t do proper input validation to ensure that mutation and lookup commands weren’t mixed in the same builder.
+* `SUBDOC_INVALID_COMBO` (0xCB). This is received if an invalid opcode was specified in a multi operation. This usually means that the SDK didn't do proper input validation to ensure that mutation and lookup commands weren't mixed in the same builder.
 
 ### Error Propagation
 
@@ -318,14 +318,35 @@ The C SDK will not use these verbs, and will instead model the subdoc operations
 ### Go
 
 ```code golang
-// -- MUTATE IN EXAMPLE --res, err := bucket.MutateIn('testjson', 0, 0).    Replace('invalid', 'Frederick').    Do()//err: Subdocument mutation 0 failed (Sub-document path does not exist)//res==nil: true// -- LOOKUP IN EXAMPLE --res, err := bucket.LookupIn('testjson').    Get('name').    Get('invalid').    Do()//err: Could not execute one or more multi lookups or mutations.//res==nil: falseerr = res.Content('name', &value)//err: <nil>//value: Frederickerr = res.Content('invalid', &value)//err: Sub-document path does not exist//value:
+// -- MUTATE IN EXAMPLE --
+res, err := bucket.MutateIn('testjson', 0, 0).
+    Replace('invalid', 'Frederick').
+    Do()
+//err: Subdocument mutation 0 failed (Sub-document path does not exist)
+//res==nil: true
+
+// -- LOOKUP IN EXAMPLE --
+res, err := bucket.LookupIn('testjson').
+    Get('name').
+    Get('invalid').
+    Do()
+//err: Could not execute one or more multi lookups or mutations.
+//res==nil: false
+
+err = res.Content('name', &value)
+//err: <nil>
+//value: Frederick
+
+err = res.Content('invalid', &value)
+//err: Sub-document path does not exist
+//value:
 ```
 
 ### Java
 
 * The *Do()* method for execution of builders will be implemented in Java as *execute()*.
 
-* The *Bucket.retrieveIn()* method won’t be implemented in Java, as it doesn’t offer that much value with Java verbosity. If users keep wondering why it is not there, then we’ll come back to it.
+* The *Bucket.retrieveIn()* method won't be implemented in Java, as it doesn't offer that much value with Java verbosity. If users keep wondering why it is not there, then we'll come back to it.
 
 ### .NET
 
@@ -333,7 +354,7 @@ The C SDK will not use these verbs, and will instead model the subdoc operations
 
 ### Python
 
-* Does not use a "builder pattern" but rather a list of “command specs” which are constructed in a similar fashion.
+* Does not use a "builder pattern" but rather a list of "command specs" which are constructed in a similar fashion.
 
 # **Unresolved Questions**
 
@@ -404,4 +425,3 @@ If signed off, each representative agrees both the API and the behavior will be 
 * Specify that either *Do* or *Execute* actually sends the commands to the server
 
 * Clarify common semantics with error handling: Both single and multi results should always return a top-level MULTI_FAILURE (or equivalent) error code.
-

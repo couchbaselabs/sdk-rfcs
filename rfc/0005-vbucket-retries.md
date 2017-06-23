@@ -29,7 +29,7 @@ This will result in an operation following these steps:
 1. Go to step 6
 
 ### Why 100ms linear retry?
-The reason 100ms was chosen was because, it seemed conservative enough that it would definitely throttle the client talking to the network, so we don’t end up in a pathological situation.  But it is aggressive enough that a normal application probably would not notice the latency from a retry.  The reason behind not making it exponential, because of the rate of new incoming requests, if it is on a per-request basis, incoming operations could cause a pathological state where incoming requests continue to build on the load already causing the server to fail requests.
+The reason 100ms was chosen was because, it seemed conservative enough that it would definitely throttle the client talking to the network, so we don't end up in a pathological situation.  But it is aggressive enough that a normal application probably would not notice the latency from a retry.  The reason behind not making it exponential, because of the rate of new incoming requests, if it is on a per-request basis, incoming operations could cause a pathological state where incoming requests continue to build on the load already causing the server to fail requests.
 
 ## Errors
 No errors will be changed by this proposal. NMV replies MUST be caught and handled within the SDKs (never leaked to users).
