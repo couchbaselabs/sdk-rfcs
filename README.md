@@ -52,6 +52,10 @@ RFC #  | Description | Owner | Status
 27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Brett L | DRAFT
 28 | Enhanced Error Messages [\[draft\]](https://docs.google.com/document/d/1KvT63TGzVH2vTgB2Ox1bBAELSkj4d0LwEoyLpOHbHA8) | Brett L | REVIEW
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
+30 | Client-Side Compression | Brett | IDENTIFIED
+31 | Custom Transcoders | Mike G | IDENTIFIED
+32 | Field-Level Encryption | Jeff | IDENTIFIED
+33 | Circuit Breakers | Subhashni | IDENTIFIED
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
