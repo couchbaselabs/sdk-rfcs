@@ -41,7 +41,7 @@ RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
 7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | Brett | REVIEW
 9 | 2i Query Support | SDK | IDENTIFIED
-13 | KV Error Map [\[draft\]](https://docs.google.com/document/d/1OaOeQ2ex5anB2uNhQcOFMuYN2sbuvOSt20Cl7lTnj64/edit#heading=h.wmtpv6z0vz4w) | Brett (Mark) | DRAFT
+13 | KV Error Map [\[draft\]](https://docs.google.com/document/d/1OaOeQ2ex5anB2uNhQcOFMuYN2sbuvOSt20Cl7lTnj64/edit#heading=h.wmtpv6z0vz4w) | Brett (Mark) | REVIEW
 15 | Collection Support | SDK | IDENTIFIED
 17 | Cross-Cluster Failover | Michael | IDENTIFIED
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
