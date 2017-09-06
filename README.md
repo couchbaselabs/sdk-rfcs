@@ -56,6 +56,7 @@ RFC #  | Description | Owner | Status
 31 | Custom Transcoders | Mike G | IDENTIFIED
 32 | Field-Level Encryption | Jeff | IDENTIFIED
 33 | Circuit Breakers | Subhashni | IDENTIFIED
+34 | Health Check [\[draft\]](https://docs.google.com/document/d/1lnoYAFXSsXFfkRmH7UeTvaf5I1oGF2mPYUHnCbDQ8k4/edit) | Sergey | DRAFT 
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
