@@ -80,7 +80,7 @@ None
 | NodeJS   | Brett Lawson       | ~2014-07-01 |
 | PHP      | Brett Lawson       | ~2014-07-01 |
 | Python   | Mark Nunberg       | ~2014-07-01 |
-| Ruby     | Sergey Avsej       | ~2014-07-01 |
+| Ruby     | Sergey Avseyev     | ~2014-07-01 |
 
 
 # Change Log
