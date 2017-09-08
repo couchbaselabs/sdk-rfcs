@@ -41,14 +41,14 @@ RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
 7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | Brett | REVIEW
 9 | 2i Query Support | SDK | IDENTIFIED
-13 | KV Error Map [\[draft\]](https://docs.google.com/document/d/1OaOeQ2ex5anB2uNhQcOFMuYN2sbuvOSt20Cl7lTnj64/edit#heading=h.wmtpv6z0vz4w) | Brett (Mark) | DRAFT
+13 | KV Error Map [\[draft\]](https://docs.google.com/document/d/1OaOeQ2ex5anB2uNhQcOFMuYN2sbuvOSt20Cl7lTnj64/edit#heading=h.wmtpv6z0vz4w) | Brett (Mark) | REVIEW
 15 | Collection Support | SDK | IDENTIFIED
 17 | Cross-Cluster Failover | Michael | IDENTIFIED
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
-22 | User Management API [\[draft\]](https://docs.google.com/document/d/1azNxFNLmcTvmhGc9-cAdswFgCyQR_s_lcfKCBE54gWE/edit?usp=sharing) | Subhashni | DRAFT
-24 | Fast failover configuration and behavior [\[draft\]](https://docs.google.com/document/d/1LLJBBYWDVBwINZfvN51cmz4H-xLbEP17f13CNYQIp6Y/edit) | Jeff | DRAFT
-25 | Spock additions for Subdoc (including XATTRs) [\[draft\]](https://docs.google.com/document/d/1z3pJCPg77PZ8U8rFAyABuEhHSl68j1n42zP2RyflWZs/edit#heading=h.z5vaan7obomq) | Brett (Mark) | DRAFT
+22 | User Management API [\[draft\]](https://docs.google.com/document/d/1azNxFNLmcTvmhGc9-cAdswFgCyQR_s_lcfKCBE54gWE/edit?usp=sharing) | Subhashni | REVIEW
+24 | Fast failover configuration and behavior [\[draft\]](https://docs.google.com/document/d/1LLJBBYWDVBwINZfvN51cmz4H-xLbEP17f13CNYQIp6Y/edit) | Jeff | REVIEW
+25 | Spock additions for Subdoc (including XATTRs) [\[draft\]](https://docs.google.com/document/d/1z3pJCPg77PZ8U8rFAyABuEhHSl68j1n42zP2RyflWZs/edit#heading=h.z5vaan7obomq) | Brett (Mark) | REVIEW
 27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Michael N (Brett) | DRAFT
 28 | Enhanced Error Messages [\[draft\]](https://docs.google.com/document/d/1KvT63TGzVH2vTgB2Ox1bBAELSkj4d0LwEoyLpOHbHA8) | Brett L | REVIEW
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
