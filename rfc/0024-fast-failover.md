@@ -80,7 +80,7 @@ bool CompareAndSwap(config){
 }
 
 void CheckConfigs(excluded) {
-  If(lastCheckedTime + checkFloorInterval < Time.Now()) {
+  If(lastCheckedTime + ConfigPollFoorInterval < Time.Now()) {
     foreach(server in cluster) {
       If(server != excluded) {
         var config = new ConfigRequest();         	
@@ -114,7 +114,7 @@ For continuous polling for config changes, the following pseudocode illustrates:
 ```
 startIndex = -1;
 while (true) {
-  Time.Sleep(ConfigCheckInterval);
+  Time.Sleep(ConfigPollInterval);
   if (startIndex < 0){
     startIndex = rand(_currentConfig.NodeCount);
   }
@@ -123,7 +123,7 @@ while (true) {
     index = (startIndex + i) % _currentConfig.NodeCount;
     server = _currentConfig.GetServer(index);
 
-    if (server.LastCheckedTime + ConfigCheckFoorInterval < time.Now) {
+    if (server.LastCheckedTime + ConfigPollFoorInterval < time.Now) {
       newConfig = server.Send(new ConfigRequest());
       if (CompareAndSwap(newConfig())) {
 				break;
@@ -167,8 +167,8 @@ The following configuration properties and default values are defined - note tha
 
 | Name                         | Default Value |
 | ---------------------------- | ------------- |
-| ConfigCheckInterval          | 2.5s          |
-| ConfigCheckFloorInterval     | 50ms          |
+| ConfigPollInterval           | 2.5s          |
+| ConfigPollFloorInterval      | 50ms          |
 
 Note that these values must be tunable. The individual SDK naming conventions for configuration names may be applied.
 
@@ -177,6 +177,10 @@ No questions recorded.
 
 # Changelog
  - 7/6/2017: Initial draft publication
+ - 10/3/2017
+	- Change ConfigCheckInterval to ConfigPollInterval
+	- Change ConfigCheckFloorInterval to ConfigPollFloorInterval
+
 
 # Signoff
 If signed off, each representative agrees both the API and the behavior will be implemented as specified.
