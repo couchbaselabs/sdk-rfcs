@@ -32,8 +32,9 @@ If a client encounters a format or compression type which is unknown, an error s
 The format of the upper 8 bits is as follows:
 The top 3 bits are used to specify the type of compression that is being used, the lower 4 bits are used to define the format, the middle 1 bit is currently reserved to allow expanding of compression or format fields as needed.  The following is a list of all supposed formats, note that the ‘private’ format is used for sdk-specific encodings and the ‘reserved’ format is used to avoid a completely zeroed upper 8 bits which would interfere with detecting the presence of common flags.
 
-flags (32 bits):
-`<compression:3> 0 <format:4> | ? ? ? ? ? ? ? ? | ? ? ? ? ? ? ? ? | ? ? ? ? ? ? ? ?`
+Flags (32 bits):
+
+- `<compression:3> 0 <format:4> | ? ? ? ? ? ? ? ? | ? ? ? ? ? ? ? ? | ? ? ? ? ? ? ? ?`
 
 Formats (All must be supported):
 
