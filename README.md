@@ -31,7 +31,7 @@ RFC #  | Description | Owner | Status
 14 | ~~LWW Wins XDCR Support~~ (see RFC 17) | SDK | SUPERSEDED
 16 | [RBAC](rfc/0016-rbac.md) | Mike G | ACCEPTED
 19 | [SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A) | Brett | ACCEPTED
-20 | [Common Flags](https://docs.google.com/document/d/1V653a6FF6DOqdT4d-fKIjGkHabDaNGZsvbtsUKJyeLc) | Brett | ACCEPTED
+20 | [Common Flags](rfc/0020-common-flags.md) \[[Draft](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A)\]| Brett | ACCEPTED
 23 | ~~Subdoc `GET_COUNT` and `MKDOC`~~ (see RFC 25) | Mark | SUPERSEDED
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
 
