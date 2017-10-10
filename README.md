@@ -39,7 +39,7 @@ RFC #  | Description | Owner | Status
 
 RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
-7 | Cluster Level Authentication [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/issues/13) [\[draft\]](https://docs.google.com/document/d/1CD5OL1ez7euCiLJT91zdWY9R4tW_bkGZ0wsFk1UDtyY/edit) | Brett | REVIEW
+7 | [Cluster Level Authentication](0007-cluster_level_auth.md) | Brett | REVIEW
 9 | 2i Query Support | SDK | IDENTIFIED
 13 | [KV Error Map](rfc/0013-kv-error-map.md) | Brett (Mark) | REVIEW
 15 | Collection Support | SDK | IDENTIFIED
