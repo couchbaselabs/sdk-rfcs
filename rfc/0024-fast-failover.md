@@ -187,6 +187,6 @@ If signed off, each representative agrees both the API and the behavior will be 
 | .NET     | Jeff M.        | 2017-08-17 |
 | Node     | Brett L.       | 2017-08-09 |
 | PHP      | Sergey A.      | 2017-07-26 |
-| Python   | Matt I.        | |
+| Python   | Matt I.        | 2017-08-25 |
 | Go       | Brett L.       | 2017-08-09 |
 | C        | Sergey A.      | 2017-07-26 |
