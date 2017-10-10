@@ -50,7 +50,7 @@ RFC #  | Description | Owner | Status
 24 | [Fast failover configuration and behavior](rfc/0024-fast-failover.md) | Jeff | REVIEW
 25 | [Spock additions for Subdoc (including XATTRs)](rfc/0025-subdoc-xattr.md) | Brett (Mark) | REVIEW
 27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Michael N (Brett) | DRAFT
-28 | Enhanced Error Messages [\[draft\]](https://docs.google.com/document/d/1KvT63TGzVH2vTgB2Ox1bBAELSkj4d0LwEoyLpOHbHA8) | Brett L | REVIEW
+28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | REVIEW
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
 30 | Client-Side Compression | Brett | IDENTIFIED
 31 | Custom Transcoders | Mike G | IDENTIFIED
