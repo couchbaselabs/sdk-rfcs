@@ -4,7 +4,7 @@
  * RFC ID: 25
  * Start Date: 2017-01-12
  * Owner: Brett Lawson (previously Mark Nunberg)
- * Current Status: REVIEW
+ * Current Status: ACCEPTED
 
 # Summary
 
