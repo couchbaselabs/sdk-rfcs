@@ -4,7 +4,7 @@
  - RFC ID: 0013-kv-error-map
  - Start Date: 2016-08-17
  - Owner: Brett Lawson (previously Mark Nunberg)
- - Current Status: REVIEW
+ - Current Status: ACCEPTED
 
 # Summary
 This proposal outlines the SDK handling of error categories and attributes defined by Couchbase Server 5.0 and above (through [kv-engine](https://github.com/couchbase/kv_engine)).
