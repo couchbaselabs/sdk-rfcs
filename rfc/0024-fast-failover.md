@@ -4,7 +4,7 @@
  - RFC ID: 24
  - Start Date: 2017-03-03
  - Owner: Jeffry Morris
- - Current Status: REVIEW
+ - Current Status: ACCEPTED
 
 # Summary
 Fast-failover is a new feature coming with the Couchbase Server "Spock" version (5.0). It allows for a configurable setting on the server side for determining how quickly the server will automatically failover a node. This sdk-rfc defines the method of discovery and recovery for a failed over node from the the perspective of an SDK.
