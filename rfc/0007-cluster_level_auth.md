@@ -3,7 +3,7 @@
 * RFC ID: 0007
 * Start Date: 2016-01-12
 * Owner: Brett Lawson (@brett19)
-* Current Status: Review
+* Current Status: Accepted
 
 # Summary
 This RFC defines an implementation of cluster level authentication for the 2.x series of Couchbase Server client libraries.
