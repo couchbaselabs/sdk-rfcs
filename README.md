@@ -24,33 +24,33 @@ RFC #  | Description | Owner | Status
 3  | [Index Management](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0003-indexmanagement.md) | Simon | ACCEPTED
 4 | [RYW Consistent Queries – at_plus](rfc/0004-at_plus.md) | Michael | ACCEPTED
 5 | [VBucket Retry Logic](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0005-vbucket-retries.md) | Brett | ACCEPTED
+7 | [Cluster Level Authentication](rfc/0007-cluster_level_auth.md) | Brett | ACCEPTED
 8 | [Datastructures](rfc/0008-datastructures.md) | Mark | ACCEPTED
 10 | [Full Text Search (FTS) API](rfc/0010-cbft.md) | Michael | ACCEPTED
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
 12 | ~~Adapt memcached error code handling for future proofing~~ (see RFC 13) | SDK | SUPERSEDED
+13 | [KV Error Map](rfc/0013-kv-error-map.md) | Brett (Mark) | ACCEPTED
 14 | ~~LWW Wins XDCR Support~~ (see RFC 17) | SDK | SUPERSEDED
 16 | [RBAC](rfc/0016-rbac.md) | Mike G | ACCEPTED
 19 | [SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A) | Brett | ACCEPTED
 20 | [Common Flags](rfc/0020-common-flags.md) | Brett | ACCEPTED
+22 | [User Management API](rfc/0022-usermgmt.md) | Subhashni | ACCEPTED
 23 | ~~Subdoc `GET_COUNT` and `MKDOC`~~ (see RFC 25) | Mark | SUPERSEDED
+24 | [Fast failover configuration and behavior](rfc/0024-fast-failover.md) | Jeff | ACCEPTED
+25 | [Spock additions for Subdoc (including XATTRs)](rfc/0025-subdoc-xattr.md) | Brett (Mark) | ACCEPTED
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
+28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | ACCEPTED
 
 ### Draft, Review & Identified RFCs
 
 RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
-7 | [Cluster Level Authentication](rfc/0007-cluster_level_auth.md) | Brett | REVIEW
 9 | 2i Query Support | SDK | IDENTIFIED
-13 | [KV Error Map](rfc/0013-kv-error-map.md) | Brett (Mark) | REVIEW
 15 | Collection Support | SDK | IDENTIFIED
 17 | Cross-Cluster Failover | Michael | IDENTIFIED
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
-22 | [User Management API](rfc/0022-usermgmt.md) | Subhashni | REVIEW
-24 | [Fast failover configuration and behavior](rfc/0024-fast-failover.md) | Jeff | REVIEW
-25 | [Spock additions for Subdoc (including XATTRs)](rfc/0025-subdoc-xattr.md) | Brett (Mark) | REVIEW
 27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Michael N (Brett) | DRAFT
-28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | REVIEW
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
 30 | Client-Side Compression | Brett | IDENTIFIED
 31 | Custom Transcoders | Mike G | IDENTIFIED
