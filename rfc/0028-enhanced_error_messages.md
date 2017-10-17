@@ -3,7 +3,7 @@
  - RFC ID: 0028
  - Start Date: 2017-04-24
  - Owner: Brett Lawson
- - Current Status: REVIEW
+ - Current Status: ACCEPTED
 
 # Summary
 As of Couchbase Server 5.0.0, the server will be improving its error handling behaviours to enable the inclusion of additional, per-operation contextual information.  This will take the form of JSON-formatted error objects included in the response body of server error responses.  This change will not affect operations which already customize the error response body (multi-mutation subdocument operations when status code is SUCCESS (0x00) or SUBDOC_MULTI_PATH_FAILURE (0xCC), and NOT_MY_VBUCKET error responses for other operations).
