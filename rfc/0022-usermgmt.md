@@ -4,7 +4,7 @@
  * RFC ID: 22
  * Start Date: 2017-08-03
  * Owner: Subhashni Balakrishnan
- * Current Status: Review
+ * Current Status: Accepted
 
 ## Summary
 The goal of this RFC is to introduce SDK APIs to manage users for RBAC (Role-Based Access Control).
