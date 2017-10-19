@@ -52,7 +52,7 @@ RFC #  | Description | Owner | Status
 21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
 27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Michael N (Brett) | DRAFT
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
-30 | Client-Side Compression | Brett | IDENTIFIED
+30 | Client-Side Compression | Sergey (Brett) | IDENTIFIED
 31 | Custom Transcoders | Mike G | IDENTIFIED
 32 | Field-Level Encryption | Jeff | IDENTIFIED
 33 | Circuit Breakers | Subhashni | IDENTIFIED
