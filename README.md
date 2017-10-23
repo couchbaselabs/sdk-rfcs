@@ -57,6 +57,7 @@ RFC #  | Description | Owner | Status
 32 | Field-Level Encryption | Jeff | IDENTIFIED
 33 | Circuit Breakers | Subhashni | IDENTIFIED
 34 | Health Check [\[draft\]](https://docs.google.com/document/d/1lnoYAFXSsXFfkRmH7UeTvaf5I1oGF2mPYUHnCbDQ8k4/edit) | Sergey | DRAFT
+35 | Sever-Side Tracing \[[draft]\](https://docs.google.com/a/couchbase.com/document/d/11DysrqT93Ns_LyX9bGd5_64EfqpleDxEoZSmCkj3DCA/edit) | Mike G | DRAFT
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
