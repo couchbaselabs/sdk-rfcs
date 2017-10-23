@@ -53,10 +53,10 @@ RFC #  | Description | Owner | Status
 27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Michael N (Brett) | DRAFT
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
 30 | Client-Side Compression | Sergey (Brett) | IDENTIFIED
-31 | Custom Transcoders | Mike G | IDENTIFIED
+31 | Custom Transcoders \[[draft]\](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit) | Mike G | DRAFT
 32 | Field-Level Encryption | Jeff | IDENTIFIED
 33 | Circuit Breakers | Subhashni | IDENTIFIED
-34 | Health Check [\[draft\]](https://docs.google.com/document/d/1lnoYAFXSsXFfkRmH7UeTvaf5I1oGF2mPYUHnCbDQ8k4/edit) | Sergey | DRAFT 
+34 | Health Check [\[draft\]](https://docs.google.com/document/d/1lnoYAFXSsXFfkRmH7UeTvaf5I1oGF2mPYUHnCbDQ8k4/edit) | Sergey | DRAFT
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
