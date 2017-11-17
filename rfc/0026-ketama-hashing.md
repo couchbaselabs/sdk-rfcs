@@ -91,6 +91,82 @@ private void populateKetamaNodes() {
 }
 ```
 
+## libcouchbase
+```c
+static int
+update_ketama(lcbvb_CONFIG *cfg)
+{
+    char host[MAX_AUTHORITY_SIZE+10] = "";
+    int nhost;
+    unsigned pp, hh, ss, nn;
+    unsigned char digest[16];
+    lcbvb_CONTINUUM *new_continuum, *old_continuum;
+
+    qsort(cfg->servers, cfg->ndatasrv, sizeof(*cfg->servers), server_cmp);
+
+    new_continuum = calloc(160 * cfg->ndatasrv, sizeof(*new_continuum));
+    /* 40 hashes, 4 numbers per hash = 160 points per server */
+    for (ss = 0, pp = 0; ss < cfg->ndatasrv; ++ss) {
+        /* we can add more points to server which have more memory */
+        for (hh = 0; hh < 40; ++hh) {
+            lcbvb_SERVER *srv = cfg->servers + ss;
+            nhost = snprintf(host, MAX_AUTHORITY_SIZE+10, "%s-%u", srv->authority, hh);
+            vb__hash_md5(host, nhost, digest);
+            for (nn = 0; nn < 4; ++nn, ++pp) {
+                new_continuum[pp].index = ss;
+                new_continuum[pp].point = ((uint32_t) (digest[3 + nn * 4] & 0xFF) << 24)
+                                        | ((uint32_t) (digest[2 + nn * 4] & 0xFF) << 16)
+                                        | ((uint32_t) (digest[1 + nn * 4] & 0xFF) << 8)
+                                        | (digest[0 + nn * 4] & 0xFF);
+            }
+        }
+    }
+
+    qsort(new_continuum, pp, sizeof *new_continuum, continuum_item_cmp);
+    old_continuum = cfg->continuum;
+    cfg->continuum = new_continuum;
+    cfg->ncontinuum = pp;
+    free(old_continuum);
+    return 1;
+}
+```
+
+## Go
+```go
+func newKetamaContinuum(serverList []string) *ketamaContinuum {
+	continuum := ketamaContinuum{}
+
+	// Libcouchbase presorts this. Might not strictly be required..
+	sort.Strings(serverList)
+
+	for ss, authority := range serverList {
+		// 160 points per server
+		for hh := 0; hh < 40; hh++ {
+			hostkey := []byte(fmt.Sprintf("%s-%d", authority, hh))
+			digest := md5.Sum(hostkey)
+
+			for nn := 0; nn < 4; nn++ {
+
+				var d1 = uint32(digest[3+nn*4]&0xff) << 24
+				var d2 = uint32(digest[2+nn*4]&0xff) << 16
+				var d3 = uint32(digest[1+nn*4]&0xff) << 8
+				var d4 = uint32(digest[0+nn*4] & 0xff)
+				var point = d1 | d2 | d3 | d4
+
+				continuum.entries = append(continuum.entries, routeKetamaContinuum{
+					point: point,
+					index: uint32(ss),
+				})
+			}
+		}
+	}
+
+	sort.Sort(ketamaSorter{continuum.entries})
+
+	return &continuum
+}
+```
+
 # Signoff
 
 | Language | Representative | Date |
