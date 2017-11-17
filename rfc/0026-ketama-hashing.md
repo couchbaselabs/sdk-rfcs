@@ -43,10 +43,9 @@ using (var md5 = MD5.Create())
 {
     foreach (var server in _servers.Values.Where(x => x.IsDataNode))
     {
-        const long repititions = 40;
-        for (long rep = 0; rep < repititions; rep++)
+        for (var rep = 0; rep < 40; rep++)
         {
-            var bytes = Encoding.UTF8.GetBytes(string.Format("{0}-{1}", server.EndPoint, rep));
+            var bytes = Encoding.UTF8.GetBytes($"{server.EndPoint}-{rep}");
             var hash = md5.ComputeHash(bytes);
             for (var j = 0; j < 4; j++)
             {
