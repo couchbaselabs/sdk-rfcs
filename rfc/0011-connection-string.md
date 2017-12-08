@@ -47,6 +47,9 @@ _couchbase._tcp.* (for non-secured memcached)
 _couchbases._tcp.* (for SSL-secured memcached)
 
 
+### IPv6 Addresses
+IPv6 addresses will be specified similar to the IETF RFC-2732 document.  The literal address will be enclosed within "[" and "]" characters to disambiguate a IPv6 octal separator and an explicit port.  Note that IPv4 addresses written in IPv6 notation (i.e. ::192.9.5.5, ::ffff:192.0.2.128) should still be resolved as IPv4 addresses within a client.
+
 ### Additional Points
 The user-specified bootstrap list should be considered invalid and replaced by the server configuration as soon as the first valid configuration is received from the server.
 Username and passwords should be passed outside of the connection string, and not as part of it.
@@ -60,6 +63,8 @@ All key/value pairs should use lower-case, underscore seperated names.
   - couchbase://10.0.0.1
   - couchbases://10.0.0.1:11222,10.0.0.2,10.0.0.3:11207
   - couchbase://10.0.0.1;10.0.0.2:11210;10.0.0.3
+  - couchbase://[3ffe:2a00:100:7031::1]
+  - couchbases://[::ffff.192.168.0.1]:11207,[::ffff.192.168.0.2]:11207
   - couchbase://test.local:11210?key=value
   - http://fqdn
   - http://fqdn?key=value
@@ -67,6 +72,7 @@ All key/value pairs should use lower-case, underscore seperated names.
 - Invalid
   - http://host1,http://host2
   - https://host2:8091,host3:8091
+  - http://::ffff:00ee:2122
 
 # Unresolved Questions
 None
