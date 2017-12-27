@@ -40,6 +40,7 @@ RFC #  | Description | Owner | Status
 25 | [Spock additions for Subdoc (including XATTRs)](rfc/0025-subdoc-xattr.md) | Brett (Mark) | ACCEPTED
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
 28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | ACCEPTED
+34 | [Health Check](rfc/0034-health-check.md) | Sergey | REVIEW
 
 ### Draft, Review & Identified RFCs
 
@@ -56,7 +57,6 @@ RFC #  | Description | Owner | Status
 31 | Custom Transcoders [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit) | Mike G | DRAFT
 32 | Field-Level Encryption | Jeff | IDENTIFIED
 33 | Circuit Breakers | Subhashni | IDENTIFIED
-34 | Health Check [\[draft\]](https://docs.google.com/document/d/1lnoYAFXSsXFfkRmH7UeTvaf5I1oGF2mPYUHnCbDQ8k4/edit) | Sergey | DRAFT
 35 | Server-side per-operation timing [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/11DysrqT93Ns_LyX9bGd5_64EfqpleDxEoZSmCkj3DCA/edit) | Mike G | DRAFT
 36 | X.509 Authentication [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1jXwYgtdGMGHRUHaTgV4C_AYOIe-RxC0eikddiWpVwmY/edit?usp=sharing) | Michael | DRAFT
 
