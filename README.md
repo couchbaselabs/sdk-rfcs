@@ -59,6 +59,7 @@ RFC #  | Description | Owner | Status
 33 | Circuit Breakers | Subhashni | IDENTIFIED
 35 | Server-side per-operation timing [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/11DysrqT93Ns_LyX9bGd5_64EfqpleDxEoZSmCkj3DCA/edit) | Mike G | DRAFT
 36 | X.509 Authentication [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1jXwYgtdGMGHRUHaTgV4C_AYOIe-RxC0eikddiWpVwmY/edit?usp=sharing) | Michael | DRAFT
+37 | FTS Index Management | Subhashni | IDENTIFIED
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
