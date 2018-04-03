@@ -55,7 +55,7 @@ RFC #  | Description | Owner | Status
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
 30 | Client-Side Compression [\[draft\]](https://docs.google.com/document/d/1LJjE4IHoKVhn8duFDXFhDMYYL2dRhtIkwB2Q1-kDKgY/edit#) | Sergey | DRAFT
 31 | Custom Transcoders [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit) | Mike G | DRAFT
-32 | Field-Level Encryption [\[draft\]](https://docs.google.com/document/d/1qxn-Rv4Uh9wW_9ZGssQGGQElOgxi3FS6-nzy8zJUgdk/edit) | Jeff | DRAFT
+32 | Field-Level Encryption [\[review\]](https://docs.google.com/document/d/1qxn-Rv4Uh9wW_9ZGssQGGQElOgxi3FS6-nzy8zJUgdk/edit) | Jeff | REVIEW
 33 | Circuit Breakers | Subhashni | IDENTIFIED
 35 | Response Time Observability [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/11DysrqT93Ns_LyX9bGd5_64EfqpleDxEoZSmCkj3DCA/edit) | Mike G | DRAFT
 36 | X.509 Authentication [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1jXwYgtdGMGHRUHaTgV4C_AYOIe-RxC0eikddiWpVwmY/edit?usp=sharing) | Michael | DRAFT
