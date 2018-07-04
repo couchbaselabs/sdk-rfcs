@@ -124,7 +124,7 @@ A CertAuthenticator is used AND bucket credentials are specified on openBucket()
 ## Certificate and Credentials
 It is also possible that a certificate is provided which does not contain credentials. The SDK needs to properly react to different circumstances as the following table shows:
 
-   | Certificate With Creds | Certificate Without Creds
--- | ---------------------- | -------------------------
-certAuth Enabled | |
-certAuth Disabled | |
+|                   | Certificate Without Creds                                                                                | Certificate Without Creds                                                                          |
+|-------------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| certAuth Enabled  | - Expected - uses credentials from cert - Errors might still happen to unsupportive services (see above) | - SASL is skippedno http auth header sent,  - leading to auth errors - Doesn’t work                |
+| certAuth Disabled | - SASL errors (see above) - HTTP creds ambiguous                                                         | - Expected - uses credentials from cluster.authenticate() or even from openBucket with old servers |
