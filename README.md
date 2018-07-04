@@ -40,7 +40,7 @@ RFC #  | Description | Owner | Status
 25 | [Spock additions for Subdoc (including XATTRs)](rfc/0025-subdoc-xattr.md) | Brett (Mark) | ACCEPTED
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
 28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | ACCEPTED
-34 | [Health Check](rfc/0034-health-check.md) | Sergey | REVIEW
+34 | [Health Check](rfc/0034-health-check.md) | Sergey | ACCEPTED
 
 ### Draft, Review & Identified RFCs
 

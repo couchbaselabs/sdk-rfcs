@@ -3,7 +3,7 @@
 - RFC ID: 0034
 - Start Date: 2017-09-06
 - Owner: Sergey Avseyev
-- Current Status: REVIEW
+- Current Status: ACCEPTED
 
 # Summary
 There are situations where an end user does not control the entire network and
