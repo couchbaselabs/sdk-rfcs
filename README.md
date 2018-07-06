@@ -58,7 +58,7 @@ RFC #  | Description | Owner | Status
 32 | Field-Level Encryption [\[review\]](https://docs.google.com/document/d/1qxn-Rv4Uh9wW_9ZGssQGGQElOgxi3FS6-nzy8zJUgdk/edit) | Jeff | REVIEW
 33 | Circuit Breakers | Subhashni | IDENTIFIED
 35 | Response Time Observability [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/11DysrqT93Ns_LyX9bGd5_64EfqpleDxEoZSmCkj3DCA/edit) | Mike G | DRAFT
-36 | Client Certificate Authentication [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1jXwYgtdGMGHRUHaTgV4C_AYOIe-RxC0eikddiWpVwmY/edit?usp=sharing) | Michael | DRAFT
+36 | Client Certificate Authentication [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0036-client-cert-auth.md) | Michael | REVIEW
 37 | FTS Index Management [\[draft\]](https://docs.google.com/document/d/1C4yfTj5u6ahRgk3ZIL_AkwPMeu9-hHY_lZcsDNeIP74/edit?usp=sharing) | Subhashni | DRAFT
 38 | Prepared Statements Redux [\[draft\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
 39 | Multi Network Configurations [\[draft\]](https://docs.google.com/document/d/1706x2zMsYoBXQ-8H0cpW0KDYpeBy_FZ9dt1--NnQIzk) | Brett | DRAFT
