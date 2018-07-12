@@ -6,15 +6,15 @@
 * Owner: Jeff Morris
 * Current Status: REVIEW
 
-# Summary
+## Summary
 
 As Couchbase Server continues to add more and more security features, one feature that customers continuously ask for is document and/or field encryption within the SDK. This RFC defines the motivation, general design and language specifics with respect to field encryption providing a blueprint for the implementation across all Couchbase SDK’s and documents any idiomatic differences between the SDK implementations. 
 
-# Motivation
+## Motivation
 
 Customers needing to support [FIPS-140-2](https://en.wikipedia.org/wiki/FIPS_140-2) compliance must at a minimum encrypt data using a FIPS-140-2 compliant cryptography algorithm. Currently, the go to solution has been to use Vormetric. The goal is to provide a built in, field level solution in addition to the parter solution with Vormetric for Couchbase customers.  This would still allow FIPS-140-2 compliance to be met. Additionally, the SDK feature should be extensible so that additional features can be added in the future as customer demands dictate.
 
-## Functional Requirements
+### Functional Requirements
 
 *  The encryption and decryption must happen entirely on the client; the server is completely passive.
 *  The supported algorithms must be FIPS-140-2 compliant; AES-256 and RSA-2048 are supported.
@@ -24,7 +24,7 @@ Customers needing to support [FIPS-140-2](https://en.wikipedia.org/wiki/FIPS_140
 *  K/V only is in-scope for field encryption in this iteration.
 *  The KeyStore must be abstract and pluggable; Java should support the Java Key Store and .NET should support the Windows Certificate Store at a minimum. Future implementations should include Vault and perhaps KMIP.
 
-## What are some approaches to Field Encryption?
+### What are some approaches to Field Encryption?
 
 There are a couple of different ways of doing this, for example (but not exclusively):
 
@@ -36,7 +36,7 @@ There are a couple of different ways of doing this, for example (but not exclusi
 *  As part of event API within the SDK where users can inject behaviour at key points of the couchbase operations request/response cycle: beforeSave, afterSave, beforeSend, afterSend, etc.
 *  There is also JOSE which is an IETF spec https://tools.ietf.org/html/rfc7520 . There is a Javascript implementation here: https://github.com/anvilresearch/jose#usage. This may be useful in terms of being a mature proposal, albeit attached to schema-based documents. Perhaps any non-schema based approach could at least align with its general modus operandi/configuration parameters, etc. 
 
-# General Design
+## General Design
 
 There are three major components which make up the entirety of the solution:
   1. **Key Management** - how keys are created, where they are stored, how they are protected and how they are distributed.
@@ -49,7 +49,7 @@ Above is a high-level architectural model explaining the various actors and thei
 
 It’s important to note that Key Management and initialization of Data Encryption are done during configuration of the SDK and the Data Encryption API is done at runtime while the application is doing its normal read/write operations.
 
-## Key Management
+### Key Management
 
 Nearly every platform has its own standard key and/or certificate store. For instance, Java (and appears GO, Node, Python, etc as well) uses the [Java Keystore](https://en.wikipedia.org/wiki/Keystore) and Windows uses the Windows Registry via The [Certificate Store](https://superuser.com/questions/217719/what-are-the-windows-system-certificate-stores). Other solutions include 3rd party API’s like [Hashicorp Vault](https://www.vaultproject.io/?_ga=2.157641401.2008868641.1512607701-1757330291.1509988984) which are platform agnostic relying on HTTP based API’s.
 
@@ -119,7 +119,7 @@ The ICryptoProvider should have fields equivalent to:
 
 Simple and straightforward, the keys are stored by name in a dictionary and retrieved using the same name. You can imagine a similar key-store which uses a file on disk to store keys as well.
 
-## Data Encryption
+### Data Encryption
 
 The encryption algorithms to support should be the standard asymmetric and symmetric supported by most programming languages and platforms and MUST be a [FIPS 140-2](http://csrc.nist.gov/publications/fips/fips140-2/fips1402annexa.pdf) compliant algorithm. Examples include:
 
@@ -163,7 +163,7 @@ Since this component is largely internal, the underlying interface definition sh
 
 Note, whatever the internal implementation, SDKs MUST be able to encrypt/decrypt fields given the same keys, data, salt, IV, etc. across all SDKs. See section “Example Test Data” below.
 
-### Failure Scenarios and Exceptions
+#### Failure Scenarios and Exceptions
 
 If during a read there is an error while decrypting the field, the entire read should fail to minimize the risk of an SDK writing back a document with “garbled” data. The same goes for a write; the SDK should fail-fast and return an error back to the application without saving the document.
 
@@ -181,11 +181,11 @@ The following are common configuration and runtime exceptions that should be thr
 |CryptoProviderDecryptFailedException|Thrown if an error occurs during decryption.|The decryption of the field failed for the alias: [ALIAS]|
 |CryptoProviderKeySizeException|Thrown if key size does not match the size of the key that the algorithm expects.|The key found does not match the size of the key that the algorithm expects for the alias: [ALIAS]. Expected key size was [EXPECTE_KEYSIZE] and configured key is [CONFIGURED_KEYSIZE]|
 
-## Field Encryption API
+### Field Encryption API
 
 The public API differs slightly between SDK’s, however parameter and method naming must be consistent and follow this RFC.
 
-### Annotation API
+#### Annotation API
 
 For Java, .NET and other SDKs which use annotations to define the fields to be encrypted, the annotation must be named EncryptedField and take a single string parameter named “provider”. The provider name is an alias which maps to the crypto-provider instance that has been configured. Here are examples for .NET and Java:
 
@@ -219,7 +219,7 @@ type Person struct {
 
 ```
 
-### Implicit vs Explicit Encryption/Decryption
+#### Implicit vs Explicit Encryption/Decryption
 
 .NET uses the JSON.NET API to hook into the encryption/decryption process when performing serialization or deserialization a document. There is no explicit requirement for the calling application call any special methods for encryption or decryption. As long as the annotation is in place the encryption or decryption process will happen on the annotated field. For languages or frameworks lacking the sufficient hooks do to this, then the application must explicitly do this by calling special methods and passing in the document to encrypt and decrypt. In this case the method should have the following name and parameters:
 
@@ -254,7 +254,7 @@ var decryptedDoc = cryptoMgr.Decrypt_Fields(encryptedDoc, fields);
 
 Note that the CryptoManager object is an optional, global store for ICryptoProviders and may actually be the configuration object itself. 
 
-### Field Encryption Format
+#### Field Encryption Format
 
 For consistent encryption/decryption of fields on documents between SDKs, a distinct format has been proposed. The idea is that given a format, the SDK can offer a platform idiomatic public API and implementation; the various SDKs must define their own method handling the encryption/decryption of fields.
 
@@ -316,7 +316,7 @@ The document post-encryption would be stored as follows in Couchbase server:
 
 Upon retrieval from Couchbase, the document should resemble its initial, un-encrypted state with the temporary field removed and the original field populated with the decrypted value. Once again it is up to the SDK to implement a platform idiomatic solution. In the next section, we will go over the .NET implementation of field encryption as an example implementation.
 
-### Supported Field Types
+#### Supported Field Types
 
 The encryptable JSON Encoded payload is anything that comes after a field in a JSON document:
 
@@ -331,9 +331,9 @@ The encryptable JSON Encoded payload is anything that comes after a field in a J
 
 Note that it should be an application error for a child field to be identified for encryption if it’s parent has already been identified for encryption. 
 
-# Ciphers
+## Ciphers
 
-## AES-256-CBC-HMAC-SHA256
+### AES-256-CBC-HMAC-SHA256
    * Cipher Mode : CBC
    * padding: PKC7S
    * key size: 256
@@ -342,7 +342,7 @@ Note that it should be an application error for a child field to be identified f
 
 The HMAC signature defined in Table 3 as “sig”, is computed as follows:
 
-### String Example:
+#### String Example:
 
 |   |       |
 | ------------- |:-------------| 
@@ -356,7 +356,7 @@ The HMAC signature defined in Table 3 as “sig”, is computed as follows:
 |HMAC Signature|rT89aCj1WosYjWHHu0mf92S195vYnEGA/reDnYelQsM=|
 |JSON in database|{"__crypt_message":{"alg": "AES-256-HMAC-SHA256","kid": "mypublickey","ciphertext": "sR6AFEIGWS5Fy9QObNOhbCgfg3vXH4NHVRK1qkhKLQqjkByg2n69lot89qFEJuBsVNTXR77PZR6RjN4h4M9evg==","sig": "rT89aCj1WosYjWHHu0mf92S195vYnEGA/reDnYelQsM=","iv": "Cfq84/46Qjet3EEQ1HUwSg=="}}|
 
-### Numeric Example:
+#### Numeric Example:
 
 |   |       |
 | ------------- |:-------------| 
@@ -370,7 +370,7 @@ The HMAC signature defined in Table 3 as “sig”, is computed as follows:
 |HMAC Signature|LAcwxznVSED4zQbuy+UjacQlvtVYvpVmiiAU5gJJASc=|
 |JSON in database|{"__crypt_message": {"alg": "AES-256-HMAC-SHA256","kid": "mypublickey","ciphertext": "bvfUk9qkfCYKS2S5CCJPpg==","sig": "LAcwxznVSED4zQbuy+UjacQlvtVYvpVmiiAU5gJJASc=","iv": "wAg/Z+c81em+to/rR9T3PA=="}}|
 
-### String (numeric) Example:   
+#### String (numeric) Example:   
 
 |   |       |
 | ------------- |:-------------| 
@@ -384,7 +384,7 @@ The HMAC signature defined in Table 3 as “sig”, is computed as follows:
 |HMAC Signature|NdvUTdR6XhRZQnQBWVzZjv9MxNIbzmwslQqP6onNdVk=|
 |JSON in database|{"__crypt_message":{"alg":"AES-256-HMAC-SHA256","kid":"mypublickey","ciphertext":"r6rK6mO0KQ1p9ws/8Feqyg==","sig":"NdvUTdR6XhRZQnQBWVzZjv9MxNIbzmwslQqP6onNdVk=","iv":"jdqfaa9Hjpd5rTi2BaEWWg=="}}|
 
-### Array Example
+#### Array Example
 
 |   |       |
 | ------------- |:-------------| 
@@ -398,7 +398,7 @@ The HMAC signature defined in Table 3 as “sig”, is computed as follows:
 |HMAC Signature|PQ25q0k271CpZ9quOg2m3oAIZVa6Mh9S0mo15nN/hlk=|
 |JSON in database|{"__crypt_message": {"alg": "AES-256-HMAC-SHA256","kid": "mypublickey","ciphertext": "9aTRYMmbNf6tvVFpbedSsS5Hdhk/OjUIz2mEqp5L5EcVNGoKJBhnuaAu35fNVM2YW/7TscXdiUBaeZZv7Zxg1Zve+A1u1/7dmgbkvAilNSo=","sig": "PQ25q0k271CpZ9quOg2m3oAIZVa6Mh9S0mo15nN/hlk=", "iv": "A4OSMlz95cvn6ZDypm58jA==" }}|
 
-### Object Example
+#### Object Example
 
 |   |       |
 | ------------- |:-------------| 
@@ -414,7 +414,7 @@ The HMAC signature defined in Table 3 as “sig”, is computed as follows:
 
 Note that in the table above, IV, Ciphertext and HMAC Signature are all Base64 encoded strings. The Key, Plaintext and HMAC password are UTF8.
 
-## RSA-2048-OAEP-SHA1
+### RSA-2048-OAEP-SHA1
   * KeySize: 2048
   * Padding: OAEP-SHA1
 
@@ -459,7 +459,7 @@ MQsjTdIQR6oQZgaKRlVzPzHlJgp0tISJxvJYXrct7ZEjEFtTLnOMx4E7MbmcN3bs
 DwIDAQAB
 -----END PUBLIC KEY-----
 
-### String Example:
+#### String Example:
 
 |||
 |--- |--- |
@@ -469,7 +469,7 @@ DwIDAQAB
 |JSON|{ "message": "The old grey goose jumped over the wrickety gate."}|
 |JSON in database|{ "__crypt_message": { "alg": "RSA-2048-OAEP-SHA1",  "kid":"MyPublicKeyName", "ciphertext": "JMAfWsDrRdrF/ghjq4xlysN7F6TogIWhkf8Fa6Qvfhqq+syKXmtviIMVSBOXPJvZm8gT/wyryjqBrLFPK9AeeS2mI4FsPCbZzvRS85f12GS0TNIp71wW1R2BNFt+51Oa5jD1SOGT/qrBbpFWICVh2z+8AUbxirrobAFn3L179sAmcj8mP3Hl0+4YeTMx/DI333bsGvpB7bpk4U28/38PMhR8Uc1xjXpW1NUwfqho4PUPMumDPUa5e8p2DMUaGzgl6PVZmX3xqHGpBviWqcKGORQhOsWfI/45IDaWJlk7eHv8yuvJleKKd1cUkkRfZ3R1bui2F9S/HvJdQKClfHc3Ow==" }}|
 
-### Numeric Example
+#### Numeric Example
 
 |||
 |--- |--- |
@@ -479,7 +479,7 @@ DwIDAQAB
 |JSON|{"message":10}|
 |JSON in database|{"__crypt_message": { "alg": "RSA-2048-OAEP-SHA1", "kid": "MyPublicKeyName", "ciphertext": "NTxRjexminStAPC2fv6jXbaLPk4wxOkI8xU4EgmR05qZzmfjN+U1e5Ipi9mC/dOk0RfFklS+30ss45GkpZZnYjlEKQ9gI4ZmTb5Za42SHB6hhrR1ZXCIGfH4UhUwQiM+XzHLvOOiTnxVcSQd3TgL/hlTUbUsIWsqrm5Q9O1R+h8suEjcOnu4mmRI1qMdQLSKXPtqa8N1u00F24QNtS79UeWaZFVqll7FyESyJaz86ZS1/0NXwkfCwPRD0iP7Q/mfKh5+Vtl22PM9k1ar3aHbkJhE11Pm5y7w0Z9K1X73CmcSWYBuOY/SDpIBmqLYtv4o1ANB+bMv7yo+uoCouFrD/A=="}}|
 
-### String (numeric) Example:
+#### String (numeric) Example:
 
 |||
 |--- |--- |
@@ -489,7 +489,7 @@ DwIDAQAB
 |JSON|{"message":"10"}|
 |JSON in database|{ "__crypt_message": {  "alg": "RSA-2048-OAEP-SHA1",  "kid": "MyPublicKeyName",  "ciphertext": "r9y9pGvNYq6/Gv9k6jHQW74/C5zhWmWVlTLQ5cN4KuYDoBNnbZDJ3+bS52Sn14tc4vdHviSAyfm5CelrBu44y3s8nzOVi0D+yeY4rTLCZdEXjncLkS6UaCzr3CjBlzPRyJ6VnWSPayt+ZOi4UJywMSzkIzLXlib0gsjbG5csd4xLgVu+exSsbWkzQSMRnIT6ej87Zawa7rJcNpwk+hl8tsnG1S/4XYi3juq9ddVnULnoJhd7/2PErorgrQ5ol3Gz47t3f6j3kRrtJZlx6XCRwbEw+Mi5sIwZfTweoil9QnIvJHiYb0LMl0oYRA0dVOQNL57fHbT7xINqh8mKuWEjow==" }}|
 
-### Array Example
+#### Array Example
 
 |||
 |--- |--- |
@@ -500,7 +500,7 @@ DwIDAQAB
 |JSON in database|
 {  "__crypt_message": { "alg": "RSA-2048-OAEP-SHA1", "kid": "MyPublicKeyName",  "ciphertext": "KlYYMyaJRZvNr+tyoK5E75lE+QWSrsvmraBoapl/l9RRHkjien7+AqcmVsS/dRRa9Ad8dmyRvaOA9B46TsJ2FbzNJ8cVNTyLPdAeluU9aM0IiIuMfEYFc5XNC2clpQlsVgxMutiO0wiCEvFX3iNIvZFeYUQofKoe0H1VlyGGZbfLLdNfl+Rlui0IULFTW6UZEnmiIlTxffnGdvlwWlaTpJMfTAIYOieZiPbsraGgjIpPrQtXVSyy/bSqmOp2eva+X7dtD7R3vAHlRptvD4Muhp3jaxIQj0J4NsD4Gw+muHFYG1YnsdJERyWlkMQmnJt89XPL2VUD6ni2Q8TyxFm0LA=="}}|
 
-### Object Example
+#### Object Example
 
 |||
 |--- |--- |
@@ -510,9 +510,9 @@ DwIDAQAB
 |JSON|{"Message":{"MyValue":"The old grey goose jumped over the wrickety gate.","MyInt":10}}|
 |JSON in database|{ "__crypt_message": { "alg": "RSA-2048-OAEP-SHA1", "kid": "MyPublicKeyName", "ciphertext": "E2Tlzl6MFTYnnKip7ENdZL8NuA/XkWPllWXu/nws4lYKHxVg8A1XYo+Q229q145glk73S01QmHbB0CZXbzvTo/BgZBb3but1U97qsoPnajFo6BVvigpCt6gaZnYSHuoXsB4L/JBRJuw+0cLX5sr7PsRb5WTV3eTCo/ja2jnqUSOCbWmwasqBY49dvSuJfTwWLcgOWJeg58AZoAGZEqAkuavoxD/+vtRXbFLXO3qdQ4XhsJjnttnaQnjgpKJOzYYwhpF7U0pW0YzT7PvtbJdguMeiYwd0Ypt5L7WiLr89ft0RFDO6K+x66fnxk4hM1c/xeCOAlNR/Mu75ke1/QZpnGg==" }}|
 
-# Language Specifics
+## Language Specifics
 
-## .NET Field Encryption Example
+### .NET Field Encryption Example
 
 ```C#
 public class PocoWithObject
@@ -559,7 +559,7 @@ using (var cluster = new Cluster(config))
 
 ```
 
-## Java Field Encryption Example
+### Java Field Encryption Example
 
 ```Java
 EncryptionConfig encryptionConfig = new EncryptionConfig();
@@ -589,7 +589,7 @@ public static class Entity {
 }
 ```
 
-## Node.js Field Encryption Example
+### Node.js Field Encryption Example
 
 Node.js does not provide any features which would enable document structure annotations or document type deduction.  This means that implementing any method of _automatic_ document encrypt/decrypt is likely not possible.  In its stead, we will implement methods to enable before-store and after-retrieve cryptographics.  For example:
 
@@ -600,9 +600,9 @@ bucket.get(‘somekey’, function(err, res) {
   })
 });
 ```
-## libcouchbase Field Encryption Example
+### libcouchbase Field Encryption Example
 
-### ENCRYPT
+#### ENCRYPT
 
 ```C
 static void store_encrypted(lcb_t instance, const char *key, const char *val)
@@ -646,7 +646,7 @@ static void store_encrypted(lcb_t instance, const char *key, const char *val)
 }
 ```
 
-### DECRYPT
+#### DECRYPT
 
 ```C
 static void get_callback(lcb_t instance, int cbtype, const lcb_RESPBASE *rb)
@@ -697,11 +697,11 @@ static void get_encrypted(lcb_t instance, const char *key)
 }
 ```
 
-# Testing Notes
+## Testing Notes
 
 See: “Ciphers” section above - each table contains necessary data.
 
-# SDK Verification
+## SDK Verification
 
 Verification that each SDK’s implementation of the FLE matches the RFC.
 
@@ -717,7 +717,7 @@ Verification that each SDK’s implementation of the FLE matches the RFC.
 |Python| https://github.com/couchbase/couchbase-python-client/blob/master/couchbase/tests/cases/crypto_t.py||
 
 
-# Future Work
+## Future Work
 
 There are a few items out of scope at this time for v1.0, however they very much likely will be covered in future iterations based upon customer feedback, PM requests, etc:
 
@@ -727,7 +727,7 @@ There are a few items out of scope at this time for v1.0, however they very much
   * Algorithm upgrading - for example going from AES-256 to AES-512
   * Support for KMIP based key stores
 
-# Sign Off
+## Sign Off
 
 |Language|Representative|Date|
 |---|---|---|---|
