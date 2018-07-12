@@ -55,7 +55,7 @@ RFC #  | Description | Owner | Status
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
 30 | Client-Side Compression [\[review\]](rfc/0030-compression.md) | Sergey | REVIEW
 31 | Custom Transcoders [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit) | Mike G | DRAFT
-32 | Field-Level Encryption [\[review\]](https://docs.google.com/document/d/1qxn-Rv4Uh9wW_9ZGssQGGQElOgxi3FS6-nzy8zJUgdk/edit) | Jeff | REVIEW
+32 | Field-Level Encryption [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0032-field-level-encryption.md) | Jeff | REVIEW
 33 | Circuit Breakers | Subhashni | IDENTIFIED
 35 | Response Time Observability [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0035-rto.md) | Mike G | REVIEW
 36 | Client Certificate Authentication [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0036-client-cert-auth.md) | Michael | REVIEW
