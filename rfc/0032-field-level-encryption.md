@@ -43,7 +43,7 @@ There are three major components which make up the entirety of the solution:
   2. **Data Encryption** - which algorithms to support and what/how to encrypt/decrypt
   3. **API Design** - the actual means of encrypting/decrypting data via an API or sub-process within the SDK. Note that the initial implementation is based solely on the K/V API - N1QL, FTS and Analytics are OUT OF SCOPE
 
-![figure 1: general design][figures/rfc32-fig1.png]
+![figure 1: general design](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/figures/rfc32-fig1.PNG)
 
 Above is a high-level architectural model explaining the various actors and their responsibilities. It’s important to note that the current spec is for field encryption is to be client-side only, however, a future enhancement may include server-side collaboration.
 
