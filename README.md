@@ -47,7 +47,7 @@ RFC #  | Description | Owner | Status
 RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
 9 | 2i Query Support | SDK | IDENTIFIED
-15 | Collection Support | SDK | IDENTIFIED
+15 | Collection Support | Brett | IDENTIFIED
 17 | Cross-Cluster Failover | Michael | IDENTIFIED
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
@@ -62,6 +62,11 @@ RFC #  | Description | Owner | Status
 37 | FTS Index Management [\[draft\]](https://docs.google.com/document/d/1C4yfTj5u6ahRgk3ZIL_AkwPMeu9-hHY_lZcsDNeIP74/edit?usp=sharing) | Subhashni | DRAFT
 38 | Prepared Statements Redux [\[draft\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
 39 | Multi Network Configurations [\[draft\]](https://docs.google.com/document/d/1706x2zMsYoBXQ-8H0cpW0KDYpeBy_FZ9dt1--NnQIzk) | Brett | DRAFT
+40 | Feeds | Brett | IDENTIFIED
+41 | Client-Side Transactions | Graham | IDENTIFIED
+42 | Config Publish Interleave | Charlie | IDENTIFIED
+43 | Enhanced Durability Requirements | Michael | IDENTIFIED
+44 | XDCR Durability | SDK | IDENTIFIED
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
