@@ -51,7 +51,7 @@ RFC #  | Description | Owner | Status
 17 | Cross-Cluster Failover | Michael | IDENTIFIED
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
-27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1EjdzVG4hVyunhoVVp7oAlPuNWvSAyqaHAMP0SJdUy0Q) | Michael N (Brett) | DRAFT
+27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1Gd_cR79YATegchR2bVZFSM1-5I7RNStSofS4qaeLWAA) | Michael N (Brett) | DRAFT
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
 30 | Client-Side Compression [\[review\]](rfc/0030-compression.md) | Sergey | REVIEW
 31 | Custom Transcoders [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit) | Mike G | DRAFT
