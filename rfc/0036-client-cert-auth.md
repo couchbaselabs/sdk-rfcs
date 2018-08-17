@@ -4,7 +4,7 @@
 *   RFC ID: 0036-client-cert-auth
 *   Start Date: 2017-12-06
 *   Owner: Michael Nitschinger
-*   Current Status: REVIEW
+*   Current Status: ACCEPTED
 
 # Summary
 
