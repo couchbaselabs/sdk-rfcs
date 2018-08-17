@@ -41,6 +41,7 @@ RFC #  | Description | Owner | Status
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
 28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | ACCEPTED
 34 | [Health Check](rfc/0034-health-check.md) | Sergey | ACCEPTED
+36 | [Client Certificate Authentication](rfc/0036-client-cert-auth.md) | Michael | ACCEPTED
 
 ### Draft, Review & Identified RFCs
 
@@ -58,7 +59,6 @@ RFC #  | Description | Owner | Status
 32 | Field-Level Encryption [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0032-field-level-encryption.md) | Jeff | REVIEW
 33 | Circuit Breakers | Subhashni | IDENTIFIED
 35 | Response Time Observability [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0035-rto.md) | Mike G | REVIEW
-36 | Client Certificate Authentication [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0036-client-cert-auth.md) | Michael | REVIEW
 37 | FTS Index Management [\[draft\]](https://docs.google.com/document/d/1C4yfTj5u6ahRgk3ZIL_AkwPMeu9-hHY_lZcsDNeIP74/edit?usp=sharing) | Subhashni | DRAFT
 38 | Prepared Statements Redux [\[draft\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
 39 | Multi Network Configurations [\[draft\]](https://docs.google.com/document/d/1706x2zMsYoBXQ-8H0cpW0KDYpeBy_FZ9dt1--NnQIzk) | Brett | DRAFT
