@@ -40,6 +40,7 @@ RFC #  | Description | Owner | Status
 25 | [Spock additions for Subdoc (including XATTRs)](rfc/0025-subdoc-xattr.md) | Brett (Mark) | ACCEPTED
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
 28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | ACCEPTED
+30 | [Client-Side Compression](rfc/0030-compression.md) | Sergey | ACCEPTED
 34 | [Health Check](rfc/0034-health-check.md) | Sergey | ACCEPTED
 35 | [Response Time Observability](rfc/0035-rto.md) | Mike G | ACCEPTED
 36 | [Client Certificate Authentication](rfc/0036-client-cert-auth.md) | Michael | ACCEPTED
@@ -55,7 +56,6 @@ RFC #  | Description | Owner | Status
 21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
 27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1Gd_cR79YATegchR2bVZFSM1-5I7RNStSofS4qaeLWAA) | Michael N (Brett) | DRAFT
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
-30 | Client-Side Compression [\[review\]](rfc/0030-compression.md) | Sergey | REVIEW
 31 | Custom Transcoders [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit) | Mike G | DRAFT
 32 | Field-Level Encryption [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0032-field-level-encryption.md) | Jeff | REVIEW
 33 | Circuit Breakers | Subhashni | IDENTIFIED

@@ -3,7 +3,7 @@
 * RFC ID: 0030
 * Start Date: 2017-01-03
 * Owner: Sergey Avseyev
-* Current Status: REVIEW
+* Current Status: ACCEPTED
 
 
 # Summary
