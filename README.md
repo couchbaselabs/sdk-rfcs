@@ -67,6 +67,7 @@ RFC #  | Description | Owner | Status
 42 | Config Publish Interleave | Charlie | IDENTIFIED
 43 | Enhanced Durability Requirements | Michael | IDENTIFIED
 44 | XDCR Durability | SDK | IDENTIFIED
+45 | Advanced Analytics Querying [\[draft\]](https://docs.google.com/document/d/1SRYPk4ATM2PVc2Yi3WP-Ol9_qvFue9IG2uhd0UUq9GY) | Michael | DRAFT
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
