@@ -4,7 +4,7 @@
 * RFC ID: 0032
 * Start date: 12/6/2017
 * Owner: Jeff Morris
-* Current Status: REVIEW
+* Current Status: ACCEPTED
 
 ## Summary
 
