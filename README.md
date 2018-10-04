@@ -41,6 +41,7 @@ RFC #  | Description | Owner | Status
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
 28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | ACCEPTED
 30 | [Client-Side Compression](rfc/0030-compression.md) | Sergey | ACCEPTED
+32 | [Field-Level Encryption](rfc/0032-field-level-encryption.md) | Jeff | ACCEPTED
 34 | [Health Check](rfc/0034-health-check.md) | Sergey | ACCEPTED
 35 | [Response Time Observability](rfc/0035-rto.md) | Mike G | ACCEPTED
 36 | [Client Certificate Authentication](rfc/0036-client-cert-auth.md) | Michael | ACCEPTED
@@ -57,7 +58,6 @@ RFC #  | Description | Owner | Status
 27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1Gd_cR79YATegchR2bVZFSM1-5I7RNStSofS4qaeLWAA) | Michael N (Brett) | DRAFT
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
 31 | Custom Transcoders [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit) | Mike G | DRAFT
-32 | Field-Level Encryption [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0032-field-level-encryption.md) | Jeff | REVIEW
 33 | Circuit Breakers | Subhashni | IDENTIFIED
 37 | FTS Index Management [\[draft\]](https://docs.google.com/document/d/1C4yfTj5u6ahRgk3ZIL_AkwPMeu9-hHY_lZcsDNeIP74/edit?usp=sharing) | Subhashni | DRAFT
 38 | Prepared Statements Redux [\[draft\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
