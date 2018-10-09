@@ -341,26 +341,26 @@ The server responds with a JSON body which has the following fields (which might
 
 ```json
 {
-	"requestID": "a1c4115c-792b-491e-8604-00ab9c12aea6",
+    "requestID": "a1c4115c-792b-491e-8604-00ab9c12aea6",
     "clientContextID": "...",
-	"signature": "*",
-	"results": [ ],
-      "errors": [ ],
-      "warnings": [ ],
-	"status": "...",
-     "plans":{},
-     "handle": "...",
-	"metrics": {
-		"elapsedTime": "22.998514ms",
-		"executionTime": "16.47064ms",
-		"resultCount": 1,
-		"resultSize": 18,
-		"processedObjects": 0,
-           "mutationCount": 0,
-           "sortCount": 0,
-           "errorCount": 0,
-           "warningCount": 0
-	}
+    "signature": "*",
+    "results": [ ],
+    "errors": [ ],
+    "warnings": [ ],
+    "status": "...",
+    "plans":{},
+    "handle": "...",
+    "metrics": {
+        "elapsedTime": "22.998514ms",
+        "executionTime": "16.47064ms",
+        "resultCount": 1,
+        "resultSize": 18,
+        "processedObjects": 0,
+        "mutationCount": 0,
+        "sortCount": 0,
+        "errorCount": 0,
+        "warningCount": 0
+    }
 }
 ```
 
