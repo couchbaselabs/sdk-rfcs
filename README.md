@@ -39,6 +39,7 @@ RFC #  | Description | Owner | Status
 24 | [Fast failover configuration and behavior](rfc/0024-fast-failover.md) | Jeff | ACCEPTED
 25 | [Spock additions for Subdoc (including XATTRs)](rfc/0025-subdoc-xattr.md) | Brett (Mark) | ACCEPTED
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
+27 | [Analytics Querying](rfc/0027-analytics.md) | Michael (Brett) | ACCEPTED
 28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | ACCEPTED
 30 | [Client-Side Compression](rfc/0030-compression.md) | Sergey | ACCEPTED
 32 | [Field-Level Encryption](rfc/0032-field-level-encryption.md) | Jeff | ACCEPTED
@@ -55,7 +56,6 @@ RFC #  | Description | Owner | Status
 17 | Cross-Cluster Failover | Michael | IDENTIFIED
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
-27 | Analytics Querying [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/4a0d642adf534a56d9996465e9c28da823e2810a/rfc/0027-analytics.md) | Michael N (Brett) | REVIEW
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
 31 | Custom Transcoders [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit) | Mike G | DRAFT
 33 | Circuit Breakers | Subhashni | IDENTIFIED
