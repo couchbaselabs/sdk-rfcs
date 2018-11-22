@@ -6,7 +6,7 @@
  - RFC ID: 0027
  - Start Date: 2016-12-30
  - Owner: Michael Nitschinger
- - Current Status: Review
+ - Current Status: Accepted
 
 ## Summary
 
