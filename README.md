@@ -46,6 +46,7 @@ RFC #  | Description | Owner | Status
 34 | [Health Check](rfc/0034-health-check.md) | Sergey | ACCEPTED
 35 | [Response Time Observability](rfc/0035-rto.md) | Mike G | ACCEPTED
 36 | [Client Certificate Authentication](rfc/0036-client-cert-auth.md) | Michael | ACCEPTED
+43 | ~~Enhanced Durability Requirements~~ (see RFC 46)| Michael | SUPERSEDED
 
 ### Draft, Review & Identified RFCs
 
@@ -65,7 +66,6 @@ RFC #  | Description | Owner | Status
 40 | Feeds | Brett | IDENTIFIED
 41 | Multi-Document Atomicity | Graham | IDENTIFIED
 42 | Config Publish Interleave | Charlie | IDENTIFIED
-43 | Enhanced Durability Requirements | Michael | IDENTIFIED
 44 | XDCR Durability | SDK | IDENTIFIED
 45 | Advanced Analytics Querying [\[draft\]](https://docs.google.com/document/d/1SRYPk4ATM2PVc2Yi3WP-Ol9_qvFue9IG2uhd0UUq9GY) | Michael | DRAFT
 46 | Synchronous Replication [\[draft\]](https://docs.google.com/document/d/1_Bn_cKLxvqFBNVcPaPnoXMpt3JEbf_6MDvMHpJDtO_s/edit) | Sergey | DRAFT
