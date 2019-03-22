@@ -192,7 +192,7 @@ If there has been a retry policy in place already for N1QL queries, the same pol
 A couple of remarks on semantics:
 
  - If the server returns a status that is not `success`, the SDK must inspect the errors for the return codes above and handle the retry logic accordingly.
- - A full list of error codes can be found [https://github.com/couchbaselabs/asterix-opt/blob/master/cbas/doc/errors/error-codes.md](here).
+ - A full list of error codes can be found [here](https://github.com/couchbaselabs/asterix-opt/blob/master/cbas/doc/errors/error-codes.md).
  - Note that in addition of the `errors` section, analytics also defines a `warnings` section with the same structure that might or might not be present as well. As of this RFC there are no warnings defined but there will be in future server releases.
  - For the purpose of this RFC, there will be no error code bracketing defined. All error codes must be matched and handled exactly as defined in this RFC.
 
