@@ -64,7 +64,7 @@ RFC #  | Description | Owner | Status
 38 | Enhanced Prepared Statements [\[draft\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
 39 | Multi Network Configurations [\[draft\]](https://docs.google.com/document/d/1706x2zMsYoBXQ-8H0cpW0KDYpeBy_FZ9dt1--NnQIzk) | Brett | DRAFT
 40 | Feeds | Brett | IDENTIFIED
-41 | Multi-Document Atomicity | Graham | IDENTIFIED
+41 | Multi-Document Atomicity [\[draft\]](https://docs.google.com/document/d/1lRC-0VEk4jTPJbY9tN_jHTiqzCbj7Qpt4JdYufwEMwU/edit) | Graham | IDENTIFIED
 42 | Config Publish Interleave | Charlie | IDENTIFIED
 44 | XDCR Durability | SDK | IDENTIFIED
 45 | Advanced Analytics Querying [\[draft\]](https://docs.google.com/document/d/1SRYPk4ATM2PVc2Yi3WP-Ol9_qvFue9IG2uhd0UUq9GY) | Michael | DRAFT
