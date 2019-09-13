@@ -77,6 +77,7 @@ RFC #  | Description | Owner | Status
 52 | SDK3 Full Text Search [\[draft\]](https://docs.google.com/document/d/1El3Kll05woPLxH39YyFUg7lRwfaaini-QS78CpstTLY/edit) | Sergey | DRAFT
 53 | SDK3 Key/Value [\[draft\]](https://docs.google.com/document/d/1_fPJn9trqG6e7iTpzqwCnurvxmBlguFVjh00F2Co7Y8/edit) | Jeff | DRAFT
 54 | SDK3 Management APIs [\[draft\]](https://docs.google.com/document/d/1p6AUV_YKJBqaybt_JFmDTYjjIZ3t4Lp2uqJSFY0VtjY/edit#) | Charles | DRAFT
+55 | SDK3 Transcoders & Serializers[\[draft\]](https://docs.google.com/document/d/1ILMZFHJwiXhEyb4s0BzhpIG-uwcaiREwm7EWuxXUHXg/edit#heading=h.7lqzoj756bub) | Jeff | DRAFT
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
