@@ -4,7 +4,7 @@
 * RFC ID: 0032
 * Start date: 12/6/2017
 * Owner: Jeff Morris
-* Current Status: REVIEW
+* Current Status: ACCEPTED
 
 ## Summary
 
@@ -23,6 +23,7 @@ Customers needing to support [FIPS-140-2](https://en.wikipedia.org/wiki/FIPS_140
 *  Documents with encrypted fields must be discoverable for auditing purposes. The simplest example of auditing is using a N1QL query to select documents with encryption.
 *  K/V only is in-scope for field encryption in this iteration.
 *  The KeyStore must be abstract and pluggable; Java should support the Java Key Store and .NET should support the Windows Certificate Store at a minimum. Future implementations should include Vault and perhaps KMIP.
+* Top-level fields and objects can only be encrypted; nested fields and objects are not supported.
 
 ### What are some approaches to Field Encryption?
 

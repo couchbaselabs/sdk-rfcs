@@ -39,11 +39,14 @@ RFC #  | Description | Owner | Status
 24 | [Fast failover configuration and behavior](rfc/0024-fast-failover.md) | Jeff | ACCEPTED
 25 | [Spock additions for Subdoc (including XATTRs)](rfc/0025-subdoc-xattr.md) | Brett (Mark) | ACCEPTED
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
+27 | [Analytics Querying](rfc/0027-analytics.md) | Michael (Brett) | ACCEPTED
 28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | ACCEPTED
 30 | [Client-Side Compression](rfc/0030-compression.md) | Sergey | ACCEPTED
+32 | [Field-Level Encryption](rfc/0032-field-level-encryption.md) | Jeff | ACCEPTED
 34 | [Health Check](rfc/0034-health-check.md) | Sergey | ACCEPTED
 35 | [Response Time Observability](rfc/0035-rto.md) | Mike G | ACCEPTED
 36 | [Client Certificate Authentication](rfc/0036-client-cert-auth.md) | Michael | ACCEPTED
+43 | ~~Enhanced Durability Requirements~~ (see RFC 46)| Michael | SUPERSEDED
 
 ### Draft, Review & Identified RFCs
 
@@ -54,19 +57,30 @@ RFC #  | Description | Owner | Status
 17 | Cross-Cluster Failover | Michael | IDENTIFIED
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
-27 | Analytics Querying [\[draft\]](https://docs.google.com/document/d/1Gd_cR79YATegchR2bVZFSM1-5I7RNStSofS4qaeLWAA) | Michael N (Brett) | DRAFT
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
 31 | Custom Transcoders [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit) | Mike G | DRAFT
-32 | Field-Level Encryption [\[review\]](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0032-field-level-encryption.md) | Jeff | REVIEW
-33 | Circuit Breakers | Subhashni | IDENTIFIED
+33 | Circuit Breakers [\[draft\]](https://docs.google.com/document/d/1QVXMN2u9RUuOAEPbeRvEA8h6drDJKR9Jy1C1Op17q3U/edit#) | Michael N | DRAFT
 37 | FTS Index Management [\[draft\]](https://docs.google.com/document/d/1C4yfTj5u6ahRgk3ZIL_AkwPMeu9-hHY_lZcsDNeIP74/edit?usp=sharing) | Subhashni | DRAFT
-38 | Prepared Statements Redux [\[draft\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
+38 | Enhanced Prepared Statements [\[draft\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
 39 | Multi Network Configurations [\[draft\]](https://docs.google.com/document/d/1706x2zMsYoBXQ-8H0cpW0KDYpeBy_FZ9dt1--NnQIzk) | Brett | DRAFT
 40 | Feeds | Brett | IDENTIFIED
-41 | Multi-Document Atomicity | Graham | IDENTIFIED
+41 | Multi-Document Atomicity [\[draft\]](https://docs.google.com/document/d/1lRC-0VEk4jTPJbY9tN_jHTiqzCbj7Qpt4JdYufwEMwU/edit) | Graham | IDENTIFIED
 42 | Config Publish Interleave | Charlie | IDENTIFIED
-43 | Enhanced Durability Requirements | Michael | IDENTIFIED
 44 | XDCR Durability | SDK | IDENTIFIED
+45 | Advanced Analytics Querying [\[draft\]](https://docs.google.com/document/d/1SRYPk4ATM2PVc2Yi3WP-Ol9_qvFue9IG2uhd0UUq9GY) | Michael | DRAFT
+46 | Synchronous Replication [\[draft\]](https://docs.google.com/document/d/1_Bn_cKLxvqFBNVcPaPnoXMpt3JEbf_6MDvMHpJDtO_s/edit) | Sergey | DRAFT
+47 | Unified User Agent [\[draft\]](https://docs.google.com/document/d/1B4QM9UO6kz2yjLrBqLjSgArUeM1DvzKnakC_e8KfrmY/edit?usp=sharing) | Michael | DRAFT
+48 | Bootstrapping [\[draft\]](https://docs.google.com/document/d/1SUSBM9XoTnpaeew0bq4ABmgISc76fjzrY2vapZ10XD4/edit#) | Brett | DRAFT
+49 | Retry Handling [\[draft\]](https://docs.google.com/document/d/1h9YL2k8uzNPnxN_XanagEc2d8qRVu6sVDiKaqASqjS4/edit#heading=h.95ju11kiipzo) | Michael | DRAFT
+50 | SDK3 Datastructures [\[draft\]](https://docs.google.com/document/d/1mKk20ScVE8ssF2DvqZTe9xIUvOUanJ7LOARFiCJPkQ0/edit) | Brett | DRAFT
+51 | SDK3 Views [\[draft\]](https://docs.google.com/document/d/10urBYts5kHH7TGnIowoyISYdDie70ARpxbnajfY43C8/edit) | Sergey | DRAFT
+52 | SDK3 Full Text Search [\[draft\]](https://docs.google.com/document/d/1El3Kll05woPLxH39YyFUg7lRwfaaini-QS78CpstTLY/edit) | Sergey | DRAFT
+53 | SDK3 CRUD API [\[draft\]](https://docs.google.com/document/d/1_fPJn9trqG6e7iTpzqwCnurvxmBlguFVjh00F2Co7Y8/edit) | Jeff | DRAFT
+54 | SDK3 Management APIs [\[draft\]](https://docs.google.com/document/d/1p6AUV_YKJBqaybt_JFmDTYjjIZ3t4Lp2uqJSFY0VtjY/edit#) | Charles | DRAFT
+55 | SDK3 Transcoders & Serializers[\[draft\]](https://docs.google.com/document/d/1ILMZFHJwiXhEyb4s0BzhpIG-uwcaiREwm7EWuxXUHXg/edit#heading=h.7lqzoj756bub) | Jeff | DRAFT
+56 | SDK3 Query API [\[draft\]](https://docs.google.com/document/d/1MigpPIoEc-srXRJb7bUel3qTlGPvI-be-hT0jkGNNAY/edit) | Micheal | DRAFT
+57 | SDK3 Analytics API [\[draft\]](https://docs.google.com/document/d/1mpDBR3_-jmMRelWkNUlGazgVWPhF_15vhP5m5mB3wo4/edit) | Micheal | DRAFT
+58 | SDK3 Error Handling [\[draft\]](https://docs.google.com/document/d/1oWyuPIxmErNh9BerU3UYqpFQPnmg9Yl8h7oNJzCVVYM/edit) | Jeff | DRAFT
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
