@@ -1,0 +1,1809 @@
+# Meta
+
+ - RFC Name: SDK3 Full Text Search
+ - RFC ID: 0052-sdk3-full-text-search
+ - Start Date: 2016-03-04
+ - Owner:
+ - Current Status: DRAFT
+
+# Summary
+This RFC describes the SDK API and behavior exposure of the Couchbase Server Full Text Search (FTS) capabilities. It
+describes both the user-facing APIs, as well as the protocol level details which are needed to implement the APIs.
+
+**Table of Contents:**
+
+<!-- TOC depthFrom:1 depthTo:4 withLinks:1 updateOnSave:1 orderedList:0 -->
+<!-- /TOC -->
+
+# Motivation
+Couchbase Server 4.5 ships with FTS support and to provide first-class support for our users and customers we need to
+properly expose it in the SDK APIs.
+
+Note that this RFC does only deal with index querying, not index maintenance and administration.
+
+# General Design
+The general design of using FTS is to expose a "fluent API", similar to other newer features like subdoc. The fluent
+pattern works very well in the FTS case because the user needs to craft the request out of a list of (sometimes complex)
+options. A properly designed API can guide the user the right way and also prevent invalid query option inputs, by
+having constructors take the mandatory parameters and have optional parameters introduced through setters that can be
+chained.
+
+## 1. Query Type Overview
+
+There are different types of queries which can be executed, some of them (compound queries) contain other queries in
+them. They all provide a common set of options and then each one has a unique option set. The following provides an
+overview of the supported query types by the server. Each of them will be detailed later in the request building
+section.
+
+Simple Queries:
+
+ - **Match Query:** A match query analyzes the input text and uses that analyzed text to query the index.
+ - **Match Phrase Query:** The input text is analyzed and a phrase query is built with the terms resulting from the
+   analysis.
+ - **Regexp Query:** Finds documents containing terms that match the specified regular expression.
+ - **Query String Query:** The query string query allows humans to describe complex queries using a simple syntax.
+ - **Wildcard Query:** Interprets * and ? wildcards as found in a lot of applications, for an easy implementation of
+   such a search feature.
+ - **DocId Query:** Allows to restrict matches to a set of specific documents.
+ - **Boolean Field Query:** Allow to match `true`/`false` in a field mapped as boolean.
+
+Range Queries:
+
+ - **Date Range Query:** The date range query finds documents containing a date value in the specified field within the
+   specified range.
+ - **Numeric Range Query:** The numeric range query finds documents containing a numeric value in the specified field
+   within the specified range.
+ - **Term Range Query:** The term range query finds documents containing a string value in the specified field within
+   the specified range.
+
+ Geo Queries:
+
+ - **Geo Distance Query:** Finds `geopoint` indexed matches around a point with the given distance.
+ - **Geo Bounding Box Query:** Finds `geopoint` indexed matches in a given bounding box.
+
+Compound Queries:
+
+ - **Conjunction Query:** Result documents must satisfy all of the child queries.
+ - **Disjunction Query:** Result documents must satisfy a configurable min number of child queries.
+ - **Boolean Query:** The boolean query is a useful combination of conjunction and disjunction queries.
+
+Some queries are more limited and usually used for debugging purposes:
+
+ - **TermQuery:** A query that looks for **exact** matches of the term in the index (no analyzer, no stemming). Useful
+   to check what the actual content of the index is. It can also apply fuzziness on the term. Usual better alternative
+   is `MatchQuery`.
+ - **Prefix Query:** The prefix query finds documents containing terms that start with the provided prefix. Usual better
+   alternative is `MatchQuery`.
+ - **PhraseQuery:** A query that looks for **exact** match of several terms (in the exact order) in the index. Usual
+   better alternative is `MatchPhraseQuery`.
+ - **MatchAllQuery:** A query that matches all indexed documents.
+ - **MatchNoneQuery:** A query that matches nothing.
+
+## 2. High Level API Overview
+This section describes how the overall API looks like.
+
+The search service is an HTTP endpoint that accepts `POST` requests. The url of the endpoint determine the FTS index to
+be queried, while the body of the request contains a `JSON` representation of the FTS query to perform:
+
+> **POST** /api/index/`{indexName}`/query
+
+For both bucket and cluster level, the approach is the same. Right now only Bucket level is defined in this RFC.
+
+A FTS query, at the top level, is composed of an `index name`, a `query` and optional `search parameters` (that apply to
+the search as a whole). Since other querying APIs at the `Bucket` level all take a single object as input (`ViewQuery`,
+`N1qlQuery`...), the FTS API should do the same in a `SearchQuery` "wrapper" class. Query-level optional parameters
+should be held by the `SearchQuery` itself, in which case it would offer a fluent API to easily set each parameter. The
+Bucket API thus only takes a `SearchQuery`:
+
+```java
+public SearchQuery(String indexName, AbstractFtsQuery queryPart);
+
+SearchQuery q = new SearchQuery("index", queryPart)
+    .limit(5); //top level parameter
+
+bucket.query(q);
+```
+
+All query types described below must implement a common marker interface or base class in the (including compound
+queries since they can be nested too). For example, the base class could be named `AbstractFtsQuery `. It only serves as
+a mean to restrict what goes into the "query" part of a request and should not be instantiated by the user.
+
+`AbstractFtsQuery` are composites (you can nest queries inside some specific query types), and the search parameters
+(like limit, explain) are only expected at top level of the payload, hence the separation of `AbstractFtsQuery ` and
+optional parameters inside the `SearchQuery`.
+
+Here is an example of a String query with some search params, on index `beer-index`:
+
+```java
+SearchQuery sq = new SearchQuery("beer-index",
+    new StringQuery("description:awesome").boost(2) //boost only applies to the stringQuery
+)
+.limit(5); //top level parameter
+
+bucket.query(sq);
+```
+
+If idiomatic to the language, it makes sense to provide static factory methods (or similar helpers) to guide the user in
+the right direction since there are many different query options available. These should be exposed on the bucket-level
+wrapper class. So for example the `SearchQuery` can contain factory methods in a form like this:
+
+```java
+bucket.query(new SearchQuery("beer-index", SearchQuery.string("+water +abv:>10")).limit(5));
+```
+
+This removes cognitive load, since the user only needs to remember "SearchQuery" and will have all supported query
+methods available immediately.
+
+`AbstractFtsQuery` will be represented as a JSON Object under the `query` top-level attribute, while each other
+individual tuning of the `SearchQuery` will have its own top-level attribute in the JSON payload:
+
+```json
+{
+    "query": { "represented by": "AbstractFtsQuery" },
+    "limit": "this is a value from the SearchQuery parameters",
+    "explain": "this is another value from the SearchQuery parameters"
+}
+```
+
+In order to generate the JSON payload above, an `export()` method can be added to the `SearchQuery ` interface. It
+should generate the whole JSON payload, including parameters.
+
+**IMPORTANT:** The `indexName` part of the request is not part of the payload but rather determines which HTTP endpoint to hit.
+
+## 3. Request Query Options
+
+### 3.1. Search Request Params
+All options described in this section are not bound to a specific search option, but rather treated as a separate param
+set as an optional argument. They affect the query as a whole, independent of the actual search method (including
+compound queries) used.
+
+They are part of the `SearchQuery` object and can be used optionally by the user, by chaining their corresponding
+setters in a fluent manner. The setters all return the `SearchQuery` instance, for chaining.
+
+**Except for the `server side timeout`**, all other parameters can be omitted in the request payload if the user hasn't
+modified them, as they'll take a default value on the server side when not explicitly set.
+
+`someSearchQuery.limit(1).skip(5).explain()`
+
+#### Limit
+The `limit` option limits the number of matches returned from the complete result set. The actual HTTP query field is
+called `size`, but to match it with N1QL and Views it makes sense to name it similarly.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `limit(int limit)` | `size` | JSON Number | - | >  0 |
+
+**Examples:** `.limit(10)`
+
+#### Skip
+The `skip` option indicates how many matches are skipped on the result set before starting to return the matches. The
+actual HTTP query field is called `from`, but to match it with N1QL and Views it makes sense to name it similarly.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `skip(int skip)` | `from` | JSON Number | - | >  0 |
+
+**Examples:** `.skip(5)`
+
+#### Explain
+The boolean `explain` field triggers inclusion of additional search result score explanations.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `explain()` | `explain` | JSON Boolean | false | -|
+
+
+#### Highlighting
+This option allows the user to specify optional highlighting of the result set. It allows to both set the `style` and
+the `fields` to highlight. Highlighting is disabled by default. In the response, highlights are represented in the
+"`fragments`" section of each hit.
+
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `highlight(HighlightStyle style, [String... fields])` | `highlight` | JSON Object `{"style": "foo", "fields": ["fa", "fb"]}` | deactivated | -|
+
+The `HighlightStyle` is an enumeration (or similar with a fixed set of possible values) which describes the highlighters
+the Server supports. The following options are available:
+
+```java
+enum HighlightStyle {
+  HTML, // maps to "html" on the wire
+  ANSI  // maps to "ansi" on the wire
+}
+```
+
+Both `style` and `field` are optional. If no `field` is provided FTS will just highlight all fields where there is a
+match. Some languages might need to support a `null` style for the combination where no style is requested, but specific
+fields are.
+
+**Examples:**
+```java
+.highlight(HighlightStyle.HTML)
+.highlight(HighlightStyle.HTML, "description", "name")
+.highlight()
+.highlight(null, "description", "name")
+```
+
+#### Fields
+This option describes a list of field values which should be retrieved for result documents, provided they
+were stored while indexing.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `fields(String... fields)` | `fields` | JSON Array (of strings) `...,"fields": ["a", "b"],...` | no fields | -|
+
+**Examples:** `.fields("description", "name")`
+
+
+#### Facets
+Facets allow to aggregate information collected on a particular result set.
+
+The `size`/`limit` parameter drives how many categories are returned (only the top n categories are returned, by number
+of matching documents, even if the facet definition sets up more than n categories).
+
+Currently there are three different types of facets supported:
+
+ - Term Facet: A term facet categorizes the matching documents into categories given by the values in a particular
+   field.
+ - Numeric Range Facet: A numeric range facet works by the user defining their own numeric categories, or buckets. The
+   facet then counts how many of the matching documents fall into a particular range for the faceted field.
+ - Date Range Facet: same as numeric, but on dates instead of numbers.
+
+Note that lower boundaries are inclusive, while upper boundaries are exclusive. Ranges can also overlap (so a document
+can fall eg. in two overlapping date ranges). The application should expect that some documents are counted into
+multiple facet buckets in this case, so the sum of facet counts wouldn't match the total number of hits for instance.
+
+A facet is added to the `SearchQuery` by providing a name for it and a `SearchFacet` value.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `addFacet(String name, SearchFacet facet)`    | `facets`     | JSON Object of Objects `{name: {facet}, name: {facet}...}` | no facets | For a single facet, either `numeric_ranges` or `date_ranges` is allowed. If omitted it is a term facet. |
+
+Calling `addFacet` several times in a row is additive: new facets are added to an underlying collection of facets. If a
+facet is added with the same name as an existing one, it overwrites it (so the recommended backing collection for facets
+would be a `Map` or other similar structure). For languages that support providing multiple name-facet pairs, it can be
+offered to add several facets with a single method call.
+
+The 3 types of facets have corresponding implementations. If it makes sense in the language of the SDK, it can be
+substituted with a static factory method, eg. in the `SearchFacet` class.
+
+| Facet Type | Factory Method | Range Wire Format |
+| ---------- | -------------- | ----------------- |
+| term       | `SearchFacet.term(field, size)` | - |
+| numeric    | `SearchFacet.numeric(field, size)` | `[ { "name": name of range (string), "min": inclusive lower bound (float), "max": exclusive upper bound (float) } ]` |
+| date       | `SearchFacet.date(field, size)` | `[ { "name": name of range (string), "start": "2011-08-30T13:22:53.108Z", "end": "... quoted string rfc 3339" } ]`  |
+
+At a minimum, each `{facet}` has a `field`. The size drives the number of facets/categories returned. Numeric facets
+also have an array `numeric_ranges` of **at least one** `{numericRange}` objects.  Date faces instead have an array
+`date_ranges` of **at least one** `{dateRange}` objects. See following wire examples for term, numeric and date:
+
+```json
+"facets": {
+    "myTermFacet": {
+        "field": "fieldName",
+        "size": 3
+    }
+}
+```
+
+`min` and `max` are optional, but at least one of the two should be provided. `name` is technically optional but having
+several ranges without a name can confuse things, so it is recommended to make it mandatory in the API:
+
+```json
+"facets": {
+    "myNumericFacet": {
+        "field": "fieldName",
+        "size": 2,
+        "numeric_ranges": [
+            { "name":"range1", "min": 0.1, "max": 3.0 },
+            { "name":"range2", "min": 3.1 }
+        ]
+    }
+}
+```
+
+`start` and `end` are optional, but at least one of the two should be provided. `name` is technically optional in the
+request but it is recommended to make it mandatory in the API:
+
+```json
+"facets": {
+    "myDateFacet": {
+        "field": "fieldName",
+        "size": 2,
+        "date_ranges": [
+            { "name":"old", "end": "2016-01-01T00:00:00"},
+            { "name":"thisYear", "start": "2016-01-01T00:00:01"},
+            { "name":"theYear2011", "start": "2011-01-01T00:00:00", "end": "2011-12-31T23:59:59"}
+        ]
+    }
+}
+```
+
+However, to facilitate dynamic creation of facets, the addition of the first and subsequent ranges should be offered
+through a `addRange` method, in a fluent manner: the `addRange` would return the facet instance, allowing method
+chaining.
+
+**Examples:**
+
+```java
+.addFacet("type", SearchFacet.term("category", 5))
+
+.addFacet("strength", SearchFacet.numeric("abv", 3)
+    .addRange("strong", 5, null)
+    .addRange("middle", 3.1, 4.99)
+    .addRange("light", 0, 3.0));
+
+.addFacet("age", SearchFacet.date("updated", 2)
+    .addRange("old", null, "2016-01-01T00:00:00")
+    .addRange("thisYear", "2016-01-01T00:00:01")
+	.addRange("theYear2011", "2011-01-01T00:00:00", "2011-12-31T23:59:59"));
+```
+
+Note that if the ranges are constructed without a name, or without providing at least one bound, a
+`NullPointerException` or equivalent should be raised at construction of the range object.
+
+Similarly, if no range is provided for a date or numeric facet, an exception should be raised at execution time, before
+the request is sent over the wire.
+
+#### Server Side Timeout
+The server side timeout allows to specify an upper boundary of request execution so that it potentially doesn't run
+infinitely.
+
+The timeout is expressed as a `long`, a number of `milliseconds` on the wire. SDKs where this is  relevant can
+substitute this with a more idiomatic / rich representation of duration (eg. in .NET a `TimeSpan` instance, in Java a
+pair of `long` and `TimeUnit`, as long as the representation can be converted to an amount of milliseconds.
+
+Note that like N1QL, if the user hasn't set a custom timeout, the SDK **must pass the client side timeout** down
+automatically, since there is no point in running the request if no one is listening anymore.
+
+The timeout is set inside a sub-object of the search parameters, the control object "`ctl`" (which also bears the query
+consistency control parameter, see next section).
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `.serverSideTimeout(long timeout)` | `ctl.timeout` | JSON Number (positive and > 0) in milliseconds | client side timeout (75 seconds) | must be greater than 0 |
+
+**Examples:** `.serverSideTimeout(long timeout)` // or equivalent timeout abstraction whatever is used in the SDK
+
+#### Query Consistency
+A FTS request can be tuned in terms of consistency, just has views can be tuned through the "stale" parameter and N1QL
+through "searchConsistency" and "consistentWith".
+
+This is represented on the wire by the `consistency.level` parameter in the `ctl` object. FTS recognizes two levels:
+
+ - `""` (the empty string): stale data is ok
+ - `"at_plus"`: consistency at least at or beyond the consistency vector but not before (see below).
+
+Note that `REQUEST_PLUS` is slated for spock ([MB-18428]( https://issues.couchbase.com/browse/MB-18428)).
+
+For `at_plus`, a second parameter named "`consistency.vectors`" contains the consistency vector for each index (a JSON
+object keyed by FTS index name). A single vector is also a JSON object. The keys are in the `"vbucketId/vbucketUUID"`
+format (can be built from a `MutationToken`) and the values are `long` seqno sequence numbers:
+
+```json
+{
+    "ctl": {
+        "consistency": {
+            "level": "at_plus",
+            "vectors": {
+                "beer-index": {
+                    "59": 2,
+                    "50/51102891220927": 2
+                }
+            }
+        }
+    }
+}
+```
+
+FTS also accepts keys in a `"vbucketId"` only format, but the id+UUID format above is prefered in the SDK
+implementation.
+
+In code, this should look like what we already have in N1QL for `AT_PLUS`:
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `.searchConsistency(SearchConsistency enum)` | `ctl.consistency.level` | string | `""` | restricted to consistency that don't have a parameter, for now only `NOT_BOUNDED` (in the future `REQUEST_PLUS` as well) |
+| `.consistentWith(JsonDocument... docs)` | `ctl.consistency.level` <p>`ctl.consistency.vectors` | "at_plus" and JSON Object | - | forces level `"at_plus"` and sets the vector from documents' mutation tokens |
+| `.consistentWith(DocumentFragment... frags)` | `ctl.consistency.level` <p> `ctl.consistency.vectors` | "at_plus" and JSON Object | - | forces level `"at_plus"` and sets the vector from document fragments' mutation tokens |
+
+The consistency enum should be dedicated to FTS with single value `NOT_BOUNDED` for now. If should be named
+`SearchConsistency` to better distinguish it from the one for N1QL (note that the two enums may converge in the future).
+
+When using the builder, the last consistency-related method used "wins". For example using `consistentWith(...)`
+followed by `searchConsistency(NOT_BOUNDED)` will result in empty `level` and no `vectors`. However, using the
+`consistentWith` method with a document/fragment that *doesn't have a `MutationToken`* is an immediate runtime error.
+
+When building the `vectors` object, if there are tokens that map to an existing vbucketId/UUID key, the largest seqno
+must be kept.
+
+If the `MutationState` aggregator from the [**`AT_PLUS RFC`**]() is implemented, it should be accepted as a third
+possible input for `consistentWith()` and used internally. An `exportForFts()` method will be added to the class that
+marshals the `MutationState` to the FTS format described here.
+
+**Examples:**
+
+```java
+.searchConsistency(SearchConsistency.NOT_BOUNDED) // level = "", no vectors
+.consistentWith(doc1, doc2, doc3) // level = "at_plus", vectors constructed from mutation tokens
+```
+
+#### Sort
+Sorting allows the user to specify a custom sort order on the hits. Note that this has been added in **Couchbase Server
+4.6.0** and is not available before that on the server.
+
+As initially described [here](http://developer.couchbase.com/documentation/server/4.6/fts/fts-enhancements.html) the
+user provides an array of strings which denote the fields that are used in the given order for priority.
+
+While not impacting the API the `_score` and `_id` field are special since they allow to either sort on the document
+score or on the document ID. Also, if a field is prefixed with "-" the sorting order is desc.
+
+If no sort object is provided the default is sorting on the score in descending order. (so, equal to
+`.sort(["-_score"])`).
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `.sort(String... fields)` | `sort` | JSON Array of Strings | - | non-empty strings in array, at least one |
+
+**Examples:** `.sort(["field1", "field2", "-_score"])` // sort first on field1 asc, then on field2 asc, then on score
+desc.
+
+##### Advanced sorting
+In addition to the simple string sort outlined above, an advanced sorting mechanism should be supported which allows the
+user to provide more detailed requirements on sorting that can't be expressed in a simple string.
+
+Depending on the language semantics, advances sorting can either be an overload over the simple one or separate method.
+Important here that sorting simple and advanced should be as similar as possible. If available in the target language,
+mix and matching should also be possible (see examples.)
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `.sort(String|SearchSort|JsonObject... input)` | `sort` | JSON Array of Strings or Objects | - | non-empty strings or JSON objects in array, at least one |
+
+The possible types are explained as follows:
+
+ - `String`: equivalent to the simple sorting mechanism
+ - `SearchSort`: a marker interface/parent class for different sort mechanisms, see below
+ - `JsonObject`: passing a plain JSON object as an array element should be supported so the SDK is
+   forward compatible if the server adds new sorting capabilities which are not covered yet.
+
+The following possibilities for a `SearchSort` are:
+
+###### SearchSortScore
+Sorts by hit score.
+
+**Fields:**
+ - `by`: string (required): always `score`.
+ - `desc`: boolean (optional): If descending order should be applied, defaults to `false`.
+
+###### SearchSortId
+Sorts by the document ID.
+
+**Fields:**
+ - `by`: string (required): always `id`.
+ - `desc` boolean (optional): If descending order should be applied, defaults to `false`.
+
+###### SearchSortField
+Sorts by a field in the hits.
+
+**Fields:**
+ - `by` string (required): always `field`.
+ - `field` string (required): the name of the field to sort on.
+ - `type` string (optional): possible values are "auto", "string", "number", "date", default if unspecified is "auto".
+ - `mode` string (optional): possible values are "default", "min", "max" default if unspecified is "default"
+ - `missing` string (optional): possible values are "first", "last", default if unspecified is "last"
+ - `desc` boolean (optional): If descending order should be applied, defaults to `false`.
+
+If the language has sum types it might make sense to expose `type`, `mode` and `missing` as such, since it is always
+possible for future compatibility to use the "raw JSON" input if a variant in the future is not supported.
+
+###### SearchSortGeoDistance
+Sorts by geo location distance in the hits.
+
+**Fields:**
+ - `by` string (required): always `geo_distance`.
+ - `location` JSON Array of f32 tuple (required): similar to geo querying: `[location_lon, location_lat]`
+ - `field` string (required): the name of the field to sort on.
+ - `unit` string (optional): the unit which should be used for sorting.
+ - `desc` boolean (optional): If descending order should be applied, defaults to `false`.
+
+### 3.2. Common Query Options
+The following list of options are available for every type of query below (including compound queries).
+
+#### Boosting
+The boost parameter is used to increase the relative weight of a clause (with a boost greater than 1) or decrease the
+relative weight (with a boost between 0 and 1).
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `boost(double boost)` | `query.boost` | JSON Number | - | `>= 0` |
+
+**Examples:** `.boost(1.5)`, `.boost(0.3)`
+
+### 3.3. Match Query Options
+A match query is like a term query, but the input text is analyzed first. An attempt is made to use the same analyzer
+that was used when the field was indexed.
+
+```java
+new MatchQuery("salty beers").analyzer("custom_analyzer").boost(1.0).fuzziness(2)
+```
+
+#### Match
+The input string to be matched against. The match string is required.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `new MatchQuery(String match)` | `query.match` | JSON String | - | must not be empty |
+
+**Examples:** `new MatchQuery("salty beers")`
+
+#### Field
+If a field is specified, only terms in that field will be matched. This can also affect the used analyzer if one isn't
+specified explicitly.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+#### Analyzer
+
+Analyzers are used to transform input text into a stream of tokens for indexing. The Server comes with built-in
+analyzers and the users can create their own. The string here is the name of the analyzer used.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `analyzer(String analyzer)` | `query.analyzer` | JSON String | - | - |
+
+**Examples:** `.analyzer("my_cool_analyzer")`
+
+#### Prefix Length
+This parameter can be used to require that the term also have the same prefix of the specified length.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `prefixLength(int length)` | `query.prefix_length` | JSON Number | - | if 0 not used, must never be negative. |
+
+**Examples:** `.prefixLength(5)`
+
+#### Fuzziness
+The match query can optionally perform fuzzy matching. If the fuzziness parameter is set to a non-zero integer the
+analyzed text will be matched with the specified level of fuzziness.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `fuzziness(int fuzziness)` | `query.fuzziness` | JSON Number | - | - |
+
+**Examples:** `.fuzziness(1)`
+
+### 3.4. Match Phrase Query Options
+The input text is analyzed and a phrase query is built with the terms resulting from the analysis. This type of query
+searches for terms occurring in the specified positions and offsets. This depends on term vectors, which are consulted
+to determine phrase distance.
+
+```java
+new MatchPhraseQuery("salty beers").analyzer("custom_analyzer").boost(1.0)
+```
+
+#### Match Phrase
+The input phrase to be matched against. The match phrase string is required.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `new MatchPhraseQuery(String matchPhrase)` | `query.match_phrase` | JSON String | - | - |
+
+**Examples:** `new MatchPhraseQuery("salty beers")`
+
+#### Field
+If a field is specified, only terms in that field will be matched. This can also affect the used analyzer if one isn't
+specified explicitly.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+#### Analyzer
+
+Analyzers are used to transform input text into a stream of tokens for indexing. The Server comes with built-in
+analyzers and the users can create their own. The string here is the name of the analyzer used.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `analyzer(String analyzer)` | `query.analyzer` | JSON String | - | - |
+
+**Examples:** `.analyzer("my_cool_analyzer")`
+
+
+### 3.5. Regexp Query Options
+Regexp query finds documents containing terms that match the specified regular expression.
+
+Here is an example of a `regexp` query:
+
+```java
+new RegexpQuery("[A-Za-z0-9]")
+```
+
+#### Regexp
+The regexp to be analyzed and used against. The regexp string is required.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) String regexp` | `query.regexp` | JSON String | - | - |
+
+**Examples:** `new RegexpQuery("[A-Za-z0-9]")`
+
+#### Field
+If a field is specified, only terms in that field will be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+### 3.6. Query String Query Options
+The query string query allows humans to describe complex queries using a simple syntax.
+
+```java
+new QueryStringQuery("description:water and some other stuff").boost(1)
+```
+
+#### Match
+The query string to be analyzed and used against. The query string is required.
+
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) String query` | `query.query` | JSON String | - | - |
+
+**Examples:** `new QueryStringQuery("description:water and some other stuff")`
+
+### 3.7. Numeric Range Query Options
+The numeric range query finds documents containing a numeric value in the specified field within the specified range.
+Either min or max can be omitted, but not both.
+
+#### Min
+The lower end of the range, inclusive by default.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `min(float min[, boolean inclusive])` | `query.min` & `query.inclusive_min` | JSON Number & JSON Boolean | min omitted, inclusive = true | - |
+
+**Examples:** `.min(10, false)`
+
+#### Max
+The higher end of the range, exclusive by default.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `max(float max[, boolean inclusive])` | `query.max` & `query.inclusive_max` | JSON Number & JSON Boolean | min omitted, inclusive = false | - |
+
+**Examples:** `.max(500, true)`
+
+#### Field
+If a field is specified, only terms in that field will be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+### 3.8. Date Range Query Options
+The date range query finds documents containing a date value in the specified field within the specified range. Either
+start or end can be omitted, but not both.
+
+#### Start
+The start date of the range, (inclusive by default).
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `start(String start[, boolean inclusive])` | `query.start` & `query.inclusive_start` | JSON String & JSON Boolean | start omitted, inclusive = true | - |
+
+**Examples:** `.start("date format supported", false)`
+
+#### End
+The end date of the range, (exclusive by default).
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `end(String end[, boolean inclusive])` | `query.end` & `query.inclusive_end` | JSON String & JSON Boolean | end omitted, inclusive = false | - |
+
+**Examples:** `.end("date format supported", true)`
+
+#### DateTime Parser
+This field enables one to specify a custom date time parser.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `dateTimeParser(String name)` | `query.datetime_parser` | JSON String | - | - |
+
+**Examples:** `.dateTimeParser("customParser")`
+
+#### Field
+If a field is specified, only terms in that field will be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+### 3.9. Compound Queries - Conjunction Query
+The conjunction query is a compound query. The result documents must satisfy all of the child queries. It is possible to
+recursively nest compound queries.
+
+At execution, a conjunction query that has no child queries should fail fast (eg. throw an exception before a request is
+sent to the server).
+
+When idiomatic to the language, variable-length argument or lists of queries can also be accepted for each method
+(allowing to add several queries to the "AND" in one go).
+
+```java
+new ConjunctionQuery(AbstractFtsQuery queries....).and(AbstractFtsQuery... someMoreQueries)
+```
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) AbstractFtsQuery... queries` | `query.conjuncts` | JSON Array | - | - |
+| `and(AbstractFtsQuery... moreQueries)` | `query.conjuncts` | JSON Array | - | - |
+
+**Examples:** `new ConjunctionQuery(new StringQuery(...), new MatchQuery(...)).and(new TermQuery(...))`
+
+
+### 3.10. Compound Queries - Disjunction Query
+The disjunction query is a compound query. The result documents must satisfy a configurable min number of child queries.
+By default this min is set to 1.
+
+At execution, a disjunction query that has fewer child queries than the configured minimum should fail fast (eg. throw
+an exception before a request is sent to the server). Similarly, a disjunction query without child queries should also
+fail fast.
+
+When idiomatic to the language, variable-length argument or lists of queries can also be accepted for each method
+(allowing to add several queries to the "OR" in one go).
+
+```java
+new DisjunctionQuery(AbstractFtsQuery queries....).or(AbstractFtsQuery... moreQueries)
+```
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) AbstractFtsQuery... queries` | `query.disjuncts` | JSON Array | - | - |
+| `or(AbstractFtsQuery... moreQueries` | `query.disjuncts` | JSON Array | - | - |
+
+**Examples:** `new DisjunctionQuery(new StringQuery(...), new MatchQuery(...)).or(new TermQuery(...))`
+
+**Example payload:** `{"query":{"disjuncts":[{"prefix":"someterm","boost":2.0}],"min":1, "boost": 3}}`
+
+#### Min
+The minimum number of child queries that must be satisfied for the disjunction query.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `min(int min)` | `query.min` | JSON Number | 1 | - |
+
+**Examples:** `.min(2)`
+
+
+### 3.11. Compound Queries - Boolean Query
+The boolean query is a useful combination of conjunction and disjunction queries. A boolean query takes three lists of
+queries:
+
+ - must - result documents must satisfy all of these queries.
+ - should - result documents should satisfy these queries.
+ - must not - result documents must not satisfy any of these queries.
+
+At execution, a boolean query that has no child queries in any 3 categories should fail fast (eg. throw an exception
+before a request is sent to the server).
+
+The inner representation of child queries in the `must/must_not/should` sections are respectively a `ConjunctionQuery`
+and two `DisjunctionQuery`.
+
+```java
+new BooleanQuery().must(AbstractFtsQuery).should(AbstractFtsQuery).mustNot(AbstractFtsQuery)
+```
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `must(AbstractFtsQuery... query)` | `query.must` | a `ConjunctionQuery` object of the must queries | - | - |
+| `should(AbstractFtsQuery... query)` | `query.should` | a `DisjunctionQuery` object of the should queries | - | - |
+| `mustNot(AbstractFtsQuery... query)` | `query.must_not` | a `DisjunctionQuery` object of the must_not queries | - | - |
+
+When idiomatic to the language, variable-length argument or lists of queries can also be accepted for each method
+(allowing to add several queries to the categories in one go).
+
+#### ShouldMin
+If a hit satisfies at least `min` queries in the `should` section, its score will be boosted. By default, this is set to 1.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `shouldMin(int min)` | `query.should.min` | JSON Number in the disjunction query object | 1 | - |
+
+**Examples:** `.shouldMin(2)`
+
+> This can be omitted if the underlying `DisjunctionQuery` is directly exposed and editable, or if a direct mean of
+> setting the payload `should.min` is available (for instance in a language like Python).
+
+### 3.12. Wildcard Query Options
+A wildcard query is a query in which term the character `*` will match 0..n occurrences of any characters and `?` will
+match 1 occurrence of any character.
+
+Here is an example of a `wildcard` query:
+
+```java
+new WildcardQuery("some*ter?")
+```
+
+#### Wildcard
+The wildcard-containing term to be analyzed and searched. The wildcard string is required.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) String wildcard` | `query.wildcard` | JSON String | - | - |
+
+**Examples:** `new WildcardQuery("some*ter?")`
+
+#### Field
+If a field is specified, only terms in that field will be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+### 3.13. DocId Query Options
+A docId query is a query that directly matches the documents whose ID have been provided. It can be combined within a
+ConjunctionQuery to restrict matches on the set of documents.
+
+Here is an example of a `docId` query:
+
+```java
+new DocIdQuery("id1", "id2")
+```
+
+When idiomatic to the language, variable-length argument or lists of queries can also be accepted for each method
+(allowing to add several IDs to considered list in one go). Progressive programmatic building of the list of IDs should
+be available, however.
+
+#### DocIds constructor parameter
+The list of document IDs to be restricted against. At least one ID is required at execution time, but a `DocIdQuery`
+should be constructible without one to allow progressive programmatic population of the ID list.
+
+This builder method allows to **add** to the existing list of document IDs to be restricted against.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `docIds(String... docIds)` | `query.ids` | JSON Array of strings | - | - |
+
+**Examples:** `new DocIdQuery("id1").addDocIds("id2", "id3")`
+
+### 3.14. Boolean Field Query Options
+A boolean field query matches documents which have a boolean field which corresponds to the requested boolean value.
+
+Here is an example of a `boolean field` query:
+
+```java
+new BooleanFieldQuery(true)
+```
+
+#### Boolean value
+The boolean value to be looked for, required.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) boolean value` | `query.bool` | JSON boolean | - | - |
+
+**Examples:** `new BooleanFieldQuery(true)`
+
+#### Field
+If a field is specified, only terms in that field will be matched. It should generally be encouraged to use the field,
+which must be a boolean field.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+### 3.15. Term Query Options
+The term query allows to directly query what is stored in the index, without applying any analyzer to the term. It is
+generally more useful in debugging scenarios, and the `Match Query` should usually be preferred for real-world use
+cases.
+
+The term query can additionally perform "fuzzy querying" on the term by specifying a `fuzziness` factor (and optional
+`prefix_length`).
+
+Here is an example of a `term` query:
+
+```java
+new TermQuery("someterm").field("fieldname").fuzziness(2).prefixLength(4)
+```
+
+#### Term
+The mandatory term is the exact string that will be searched into the index. Note that the index can (and usually will)
+contain terms that are derived from the text in documents, as analyzers can apply process like stemming. For example,
+indexing "programming" could store "program" in the index. As a term query doesn't apply the analyzers, one would need
+to look for "program" to have a match on that index entry.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) String term` | `query.term` | JSON String | - | must not be empty |
+
+**Examples:** `new TermQuery("program")`
+
+#### Field
+If a field is specified, only terms in that field will be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+#### Fuzziness
+If a fuzziness is specified, variations of the term can be searched. Additionally, if fuzziness is enabled then the
+`prefix_length` parameter is also taken into account (see below).
+
+For now the server interprets the fuzziness factor as a "Levenshtein edit distance" to apply on the term.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `fuzziness(int factor)` | `query.fuzziness` | JSON Number | - | int, omitted in payload if 0 / not set |
+
+#### Prefix Length
+The prefix length only makes sense when fuzziness is enabled (see above). It allows to apply the `fuzziness` only on the
+part of the `term` that is after the `prefix_length` character mark.
+
+For example, with the term "something" and a prefix length of 4, only the "thing" part of the term will be
+fuzzy-searched, and hits **must** start with "some".
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `prefixLength(int length)` | `query.prefix_length` | JSON Number | 0 | in, must be present if and only if fuzziness is present |
+
+### 3.16. Phrase Query Options
+The phrase query allows to query for exact term phrases in the index. The provided terms must exist in the correct
+order, at the correct index offsets, in the specified field (as no analyzer are applied to the terms). Queried field
+must have been indexed with inncludeTermVectors set to true. It is generally more useful in debugging scenarios, and the
+`Match Phrase Query` should usually be preferred for real-world use cases.
+
+Here is an example of a `phrase` query:
+
+```java
+new PhraseQuery("some", "term").field("fieldname")
+```
+
+#### Terms
+The mandatory list of terms that must exactly match in the index. Note that the index can (and usually will) contain
+terms that are derived from the text in documents, as analyzers can apply process like stemming. For example, indexing
+"programming books" could store "program" and "book" in the index. As a phrase query doesn't apply the analyzers, one
+would need to look for "program book" to have a match on that indexed document.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) String... terms` | `query.terms` | JSON Array of Strings | - | array size > 1, entries must not be empty|
+
+**Examples:** `new PhraseQuery("program", "book")`
+
+#### Field
+If a field is specified, only terms in that field will be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+### 3.17. Prefix Query Options
+The prefix query finds documents containing terms that start with the provided prefix.
+```java
+new PrefixQuery("foo")
+```
+
+#### Prefix
+The prefix to be analyzed and used against. The prefix string is required.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) String prefix` | `query.prefix` | JSON String | - | - |
+
+**Examples:** `new PrefixQuery("foo")`
+
+#### Field
+If a field is specified, only terms in that field will be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+### 3.19. MatchAll Query Options
+A match all query matches all documents in the index. It can take search parameters as other queries, so this can be
+restricted (eg. with `limit`).
+
+Here is an example of a `matchAll` query:
+
+```java
+new MatchAllQuery()
+```
+
+The JSON representation of a `MatchAllQuery` is simply a `"match_all": null` entry in the query JSON Object.
+
+### 3.20. MatchNone Query Options
+A match none query doesn't match any document in the index. Here is an example:
+
+```java
+new MatchNoneQuery()
+```
+
+The JSON representation of a `MatchNoneQuery` is simply a `"match_none": null` entry in the query JSON Object.
+
+
+### 3.21. Term Range Query Options
+The term range query finds documents containing a string value in the specified field within the specified range. Either
+min or max can be omitted, but not both: `new TermRangeQuery().min("foo").max("bar");`.
+
+#### Min
+The lower end of the range, inclusive by default.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `min(String min[, boolean inclusive])` | `query.min` & `query.inclusive_min` | JSON String & JSON Boolean | min omitted, inclusive = true | - |
+
+**Examples:** `.min("lower", false)`
+
+#### Max
+The higher end of the range, exclusive by default.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `max(String max[, boolean inclusive])` | `query.max` & `query.inclusive_max` | JSON String & JSON Boolean | min omitted, inclusive = false | - |
+
+**Examples:** `.max("upper", true)`
+
+#### Field
+If a field is specified, only terms in that field will be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+### 3.22. Geo Distance Query Options
+This query finds all matches from a given location (point) within the given distance. Both the point and the distance
+are required.
+
+**Examples:**
+ - Find all matches in a 10 mile radius from point lon 1.0 lat 3.0: `new GeoDistanceQuery(1.0, 3.0, "10mi")`
+
+#### Location
+The location represents a point from which the distance is measured.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) f32 locationLon` | `query.location[0]` | JSON Number | - | - |
+| `(constructor argument) f32 locationLat` | `query.location[1]` | JSON Number | - | - |
+
+The server accepts many formats for geo points, but the most terse one that should be used is as a JSON array where the
+first element is the longitude and the second element the latitude both encoded as JSON numbers:
+
+`{"location": [lon, lat]}`
+
+#### Distance
+The distance describes how far from the location the radios should be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) String distance` | `query.distance` | JSON String | - | - |
+
+#### Field
+If a field is specified, only terms in that field will be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+### 3.23. Geo Bounding Box Query Options
+This query finds all matches within a given box (identified by the upper left and lower right corner coordinates). Both
+coordinate points are required so the server can identify the right bounding box.
+
+**Examples:**
+ - Find all matches in the given box: `new GeoBoundingBoxQuery(-78.0, 39.5, -76, 38.5)`
+
+#### Box Coordinates
+The top left and bottom right coordinates signify the bounding box area and are required.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `(constructor argument) f32 topLeftLon` | `query.top_left[0]` | JSON Number | - | - |
+| `(constructor argument) f32 topLeftLat` | `query.top_left[1]` | JSON Number | - | - |
+| `(constructor argument) f32 bottomRightLon` | `query.bottom_right[0]` | JSON Number | - | - |
+| `(constructor argument) f32 bottomRightLat` | `query.bottom_right[1]` | JSON Number | - | - |
+
+Both coordinates are represent as an array passed in with the appropriate keys:
+
+`{"top_left": [lon, lat], "bottom_right": [lon, lat]}`
+
+#### Field
+If a field is specified, only terms in that field will be matched.
+
+| Builder Name | Request Path | Wire Type | Default | Constraints |
+| ------------ | ------------ | --------- | ------- | ----------- |
+| `field(String field)` | `query.field` | JSON String | - | - |
+
+**Examples:** `.field("fieldname")`
+
+## 4. Search Response
+
+As of Watson GA, three response cases can occur:
+
+ 1. **the request is well-formed**: a `HTTP 200` is returned. The `Content-Type` of the response is `application/json`
+    (note the actual header will also contain the API version, eg. `application/json;version=1.0.0`). This response can
+    be returned either when all was successful or when some errors happened **during execution** (see section 4.1).
+ 2. **the request is malformed**: a `HTTP 400` error is returned. The `Content-Type` is `text/plain; charset=utf-8` and
+    the body of the response contains a dump of the incriminating query, the Go stacktrace of the error and ends in an
+    error message. It **should** be possible to extract a top level error message by extracting the string after the
+    last occurrence of "`, err:`" (last line in body).
+ 3. **the request consistency could not be satisfied in time**: a `HTTP 412` error is returned if the consistency could
+    not be satisfied within the given timeout. The `Content-Type` is `text/plain; charset=utf-8` and the body of the
+    response contains a form of trace. It appears difficult to extract a meaningful message from this body at the time
+    of Watson GA, so it is recommended the SDKs come up with a standard error message instead.
+
+The following description of the response format focuses on case 1 above. Like with N1Ql and Views the search response
+can be separated into the actual returned rows and associated metadata.
+
+```
+SearchQueryResult {
+  "status": {
+    "total": long
+    "failed": long
+    "successful": long
+    "errors": [ string, ... ] //optional
+  },
+  "request": {JSON object}
+  "hits": [ {SearchQueryRow}, ... ]
+  "total_hits": long
+  "max_score": double
+  "took": long
+  "facets": {Facets}
+}
+```
+
+This can be represented by a `SearchQueryResult` interface with at least the following methods:
+
+| Method           | Response Path    | JSON Type         | Example   | SDK Type |
+| ---------------- | ---------------- | ----------------- | --------- | -------- |
+| `status()`        | subset of `status`   | Object            | -         | `SearchStatus` |
+| `errors()`       | `status.errors`  | Object with string values  | -         | dynamic object with 1 error string per erroring pindex (key being the pindex name) |
+| `hits()`         | `hits`           | Array of Objects  | -         | sequence of `SearchQueryRow` |
+| `metrics()`      | aggregation of `took`, `total_hits` and `max_score` | - | - | `SearchMetrics` |
+| `facets()`       | `facets`         | Object of Objects | -         | `Map` or `Facets` |
+
+The `status` section is represented by both an `errors()` method and a `SearchStatus` class accessible through
+`status()` method.
+
+The `took`, `total_hits` and `max_score` values are aggregated under a single `metrics()` method that returns a
+`SearchMetrics` object.
+
+> If this is not considered idiomatic in the SDK language, or should the SDK representation more closely match the JSON
+> structure, the `SearchMetrics` class can be omitted in favor of top-level accessors for each individual metric.
+
+### 4.1. Status and Errors
+FTS status and error is represented as a `status` JSON object with a well defined structure. Three `long` fields are
+always present:
+
+ 1. `total` is the total number of FTS `pindex` queried, `total = failed + success`.
+ 2. `failed` is the number of `pindex` that returned an execution error, >= 0.
+ 3. `success` is the number of successfully responding `pindex`.
+
+Additionally, if `failed > 0`, an `errors` **object** is also part of the `status`. It has as many entries as _failed_,
+each key being a pindex name and the value a string representation of the index error.
+
+Note that when all pindexes return errors, the `hits` section of the response can have a `null` value.
+
+The `pindex`-related information can be seen as secondary, and abstracted away in a `SearchStatus` class that will also
+have a `boolean isSuccess()` method to easily check for success:
+
+ - `totalCount()`: a `long`, number of pindexes, `totalCount = errorCount + successCount`.
+ - `successCount()`: a `long`, number of pindexes that answered something.
+ - `errorCount()`: a `long`, number of pindexes that failed.
+ - `isSuccess()`: a `boolean`, true if the search only returned successful hits (no error) or false.
+
+The `errors` part of other queries usually being represented directly in the Response object in the SDKs,
+`status.errors` will be represented as a `List<String> errors()` method in `SearchQueryResult`:
+
+ - `errors()`: a sequence of `String`, of size `errorCount()` (so empty if no errors occurred).
+
+#### The HTTP 400 case
+For now when the query is malformed a different response format is used. The API should provide a facade over that and
+**still return a `SearchQueryResult`**. It will have the following default values:
+
+| Method           | Value in case of `HTTP 400` |
+| ---------------- | --------------------------- |
+| `status().totalCount()`       | 1 |
+| `status().successCount()`     | 0 |
+| `status().errorCount()`       | 1 |
+| `status().isSuccess()`        | false |
+| `errors()`       | a single `string` containing the HTTP 400 body |
+| `hits()`         | an empty sequence |
+| `metrics().took()`            | 0 |
+| `metrics().totalHits()`       | 0 |
+| `metrics().maxScore()`        | 0.0 |
+| `facets()`       | an empty map or equivalent "null object" `Facets` |
+
+The `Exception` representation of this case (see "Execution Error Handling" below) could be a dedicated one, suggested
+name would then be `FtsMalformedRequestException`.
+
+#### The HTTP 412 case
+This is to be treated the same as a 400 error (see above), with the exception of the `errors()` message being
+standardized:
+
+    "The requested consistency level could not be satisfied before the timeout was reached"
+
+The `Exception` representation of this case (see "Execution Error Handling" below) could be a dedicated one, suggested
+name would then be `FtsConsistencyTimeoutException`.
+
+#### The HTTP 429 case
+Since Couchbase Server Alice (6.0), the FTS service is rejecting requests when the configured memory quota is reached.
+In this case it will reply with a HTTP 429 status code.
+
+The SDK must retry the request in this case - but with a (configurable) retry delay since all the nodes in the
+background are performing scatter-gather operations (so all nodes will be reasonably busy at this stage). How exactly
+the retry delay is configured is not part of this RFC but should rather follow conventions in the SDK.
+
+#### Execution Error Handling
+The SDK other querying APIs have usually only exposed the errors as a separate collection of items to retrieve and
+iterate through. This is fine for SDKs that can return multiple errors, or don't have the concept of an `Exception`.
+
+This also work for other SDKs in which the "single `Exception` thrown in case of error" is idiomatic (eg. Java), but it
+is a little bit counterintuitive.
+
+The `errors()` method should always be provided in the synchronous API. Additionally, a SDK may expose a `hitsOrFail()`
+method that will combine `hits()` and `errors()`. Such a method would either return the `hits` or throw an exception
+**as soon as there is 1 or more `errors`**.
+
+Since multiple exceptions are usually not possible, a custom `SearchQueryExecution` exception will need to be created in
+order to accumulate several error messages. If an idiomatic composite exception exists in the standard library /
+dependencies of the SDK, it may be used instead (or extended).
+
+Finally, if the SDK has an **asynchronous API**, the asynchronous processing of `hits()` should be made possible without
+the need to asynchronously check and combine on the status of the response. To that end, errors would be notified in the
+same asynchronous avenue than the `hits()`. This can apply to a form of callback, promise or a ReactiveExtension-like
+observable sequence. Eg in Java this would be the latter, `Observable<SearchQueryRow> hits()`:
+
+```java
+Observable<SearchQueryRow> rows = asyncResult.hits(); // <1>
+
+rows.subscribe(
+    row -> System.out.println("match in " + row.id()), // <2>
+    error -> System.err.println("error during execution: " + error) // <3>
+);
+```
+
+Assuming an asynchronous version of the result's hits **(1)**, it would be possible in one operation (subscription) to
+directly process incoming hits **(2)** or get notified of all errors (in a single notification) **(3)**. The composite
+exception mentioned earlier would apply in this later case.
+
+### 4.2. Hits
+Hits are the proper results of the search. They are represented in the JSON response as an array of objects, which we'll
+call `SearchQueryRow` (to maintain the theme of the "row" found in both view and N1QL queries):
+
+```
+SearchQueryRow {
+  "index": string
+  "id": string
+  "score": double
+  "explanation": {JSON object}*
+  "locations": {JSON object}*
+  "fragments": {JSON object}*
+  "fields": {JSON object}*
+}
+```
+Each hit is relative to a document and report its `id` and the `index` that was used. A `score` for the hit conveys the
+relevance of the hit (things like distance from the original term when fuzziness is set can impact the score for
+example).
+
+Then each hit can have 4 sub-object (`*` indicate they can be omitted in the response):
+
+ - `explanation`: gives detailed explanations on the hit
+ - `locations` indicate where the search terms matched inside the document (in terms of offsets)
+ - `fragments` are related to highlighting (giving an excerpt of the document where the matching terms are highlighted)
+ - `fields` give the complete value of the included fields where matches occurred (if these fields are stored in the index).
+
+Note that the response's `hits` entry can have a `null` value if all pindexes gave an error.
+
+The SDK representation of hits is a `SearchQueryRow` class (or equivalent structure):
+
+```java
+class SearchQueryRow() {
+  String index();
+  String id();
+  double score();
+  //see below for details
+  JsonObject explanation();
+  HitLocations locations();
+  Map<String, String[]> fragments();
+  Map<String, String> fields();
+}
+```
+
+#### Explanations
+> **WARNING** This section is only included if the `"explain": true` parameter was used at query time.
+
+This is a large and deeply nested JSON object that should be represented in a generic fashion, idiomatic to the
+language. For example, if the language includes a generic representation of JSON as a `JsonObject`, then this class
+should be used.
+
+#### Locations
+> **WARNING**: This section is only included if fields are hit for which term vectors are included in the index mapping.
+
+An example of the `locations` *JSON object* is:
+
+```json
+"locations": {
+        "description": {
+          "beer": [
+            {
+              "pos": 3,
+              "start": 11,
+              "end": 15,
+              "array_positions": null
+            },
+            {
+              "pos": 59,
+              "start": 325,
+              "end": 329,
+              "array_positions": null
+            }
+          ]
+        },
+        "name": {
+          "beer": [
+            {
+              "pos": 3,
+              "start": 11,
+              "end": 15,
+              "array_positions": null
+            }
+          ]
+        }
+      }
+```
+
+As we can see, this is a nested structure:
+
+ 1. At top level, JSON objects. The attribute name of each object is the name of the `field` it relates to.
+ 2. In this JSON object we'll have arrays of hit locations. Each array's attribute name is the term it relates to, as
+    found inside that particular field's index. This is the indexed `term` (as opposed to both the query term and the
+    actual occurrence, called a *token*).
+ 3. The array of hit locations can contain multiple locations. Each is a JSON object with the following structure:
+
+```
+HitLocation {
+    "pos": int
+    "start": int
+    "end": int
+    "array_positions": array of long | null
+}
+```
+
+> **To clarify on `array_positions`:**
+> this element is `null` when the field isn't a path that contains arrays.
+> On the other end, sometimes the term is found nested inside an array. Note that FTS will flatten such structures, so
+> for example if the term is found in an array "`hobbies`" of an array of "`friends`", the field reported would be
+> `friends.hobbies`.
+>
+> That alone wouldn't help in locating the term in the document, as it can have multiple friends each with multiple
+> hobbies.
+>
+> In that case, the `array_positions` would contain two values: one that gives the entry to look for in the first array
+> in the path, `friends`, and one that gives the entry to look for in that friend's `hobbies`. Then pos/start/end all
+> relate to that particular entry, where the term is located. For example: `"array_positions": [ 0, 3 ]` for the first
+> friend's fourth hobby.
+
+The proposed pseudocode counterpart for the whole `locations` section is a `HitLocations` class storing `HitLocation`
+elements. It would make sense to back it with nested `Map` (or equivalent in the target language, eg. hash, associative
+array...):
+
+```java
+class HitLocation {
+    @NotNull String field;
+    @NotNull String term;
+	@NotNull long pos;
+	@NotNull long start;
+	@NotNull long end;
+	@Nullable long[] arrayPositions;
+}
+
+interface HitLocations {
+	//add a location and allow method chaining
+	HitLocations add(HitLocation l);
+
+	//list all locations for a given field (any term)
+	List<HitLocation> get(String field);
+
+	//list all locations for a given field and term
+	List<HitLocation> get(String field, String term);
+
+	//list all locations (any field, any term)
+	List<HitLocation> getAll();
+
+	//size of all()
+	long count();
+
+	//list the fields in this location
+	List<String> fields();
+
+	//list the terms for a given field
+	List<String> termsFor(String field);
+
+	//list all terms in this locations, considering all fields (so a set)
+	Set<String> terms();
+}
+
+HitLocations locs = new HitLocations();
+
+locs.add(new HitLocation("description", "beer", 3, 11, 15))
+	.add(new HitLocation("description", "beer", 59, 325, 329))
+	.add(new HitLocation("name", "beer", 3, 11, 15));
+```
+
+> An idiomatic structure can be substituted to the `HitLocations` and `HitLocation` classes, as long as the following
+> operations are possible:
+>
+>  - easy adding of hit location representation in way it can be grown while parsing the chunks of the response
+>  - getting all locations (`getAll()`)
+>  - getting locations by field and locations by field+term (`get(field[, term])`)
+>  - listing fields (`fields()`)
+>  - listing terms for a given field (`termsFor(field)`)
+>  - listing all terms (`terms()`)
+
+The use of a class would allow for an empty `HitLocations` to be present when the JSON response doesn't contain this
+section.
+
+#### Fragments
+> **WARNING**: This section is only included if fields are hit that are **stored** in the index, **including term
+> vectors**.
+
+An example of the `fragments` *JSON object* is:
+
+```json
+"fragments": {
+        "description": [
+          "...rsey <mark>Beer</mark> Co. is dedicated to crafting quality <mark>beer</mark> for all; from the occasional <mark>beer</mark> drinker to the <mark>beer</mark> aficionado. We believe that good products come from good people, and strive to do our very bes..."
+        ],
+        "name": [
+          "New Jersey <mark>Beer</mark> Company"
+        ]
+      }
+```
+
+It is made of a single JSON object in which each attribute is a field's name (into which some terms matched). The value
+of each attribute is an array of excerpts from the document, into which hits are highlighted by being put between
+`<mark>` tags.
+
+As of now, the FTS service only sends a single entry. Note that the underlying Go engine, `Bleve`, has the capacity to
+return multiple entries so that may happen in the future for FTS as well...
+
+The proposed pseudocode counterpart for the whole `fragments` section is a multi-value `Map` (or equivalent in the
+target language, eg. hash, associative array...), each entry containing a `sequence` of `strings` (eg. list, array...):
+
+```java
+Map<String, String[]> fragments() { }
+
+String[] field1 = new String[] { "...rsey <mark>Beer</mark> Co" };
+String[] field2 = new String[] { "New Jersey <mark>Beer</mark> Company" };
+
+Map fragments = new Map();
+fragments.put("description", field1);
+fragments.put("name", field2);
+```
+
+> An adhoc class or structure can be substituted to this simple representation as long as the following operations are
+> possible:
+>
+>  - iterate over fields
+>  - get all fragments for a given field
+
+#### Fields
+> **WARNING**: This section is only included if at least one requested `fields` has term vectors included in its index
+> mapping.
+
+An example of the `fields` *JSON object* is:
+
+```json
+"fields": {
+        "description": "New Jersey Beer Co. is dedicated to crafting quality beer for all; from the occasional beer drinker to the beer aficionado.",
+        "name": "New Jersey Beer Company"
+      }
+```
+
+The fields section outputs complete values from the fields that were requested at query time. It contains one attribute
+per requested field, mapping to the string of the complete field's content.
+
+> **NOTE**: For the section to appear, some fields must have been requested in the top level `fields` section of the
+> query and the corresponding fields must be **stored** in the index.
+
+The proposed pseudocode counterpart for the whole `fields` section is a `Map` (or equivalent in the target language, eg.
+hash, associative array...), each entry being the `field -> string value` association:
+
+```java
+Map<String, String> fields() { }
+
+Map fields = new Map();
+fields.put("description", "New Jersey Beer Co is dedicated to crafting...");
+fields.put("name", "New Jersey Beer Company");
+```
+> An adhoc class or struct shouldn't be needed for this direct `field -> value` association as most languages will have
+> an equivalent. If that was not the case however, the adhoc class/structure would need to allow the retrieval of a
+> value, given a field's name.
+
+### 4.3. Metrics
+The `SearchMetrics` aggregates several top-level fields of the JSON response that can be viewed as metrics. This is
+similar to the way `N1QL` metrics are handled.
+
+> If this is not considered idiomatic in the SDK language, or should the SDK representation more closely match the JSON
+> structure, the `SearchMetrics` class can be omitted in favor of top-level accessors for each individual metric.
+
+| Method | JSON path in response | Json Type | Example | SDK Type |
+| ------ | --------------------- | --------- | ------- | -------- |
+| `took()`         | `took`           | Number (nanoseconds) | 984127591 | long |
+| `totalHits()`    | `total_hits`     | Number               | 6039      | long |
+| `maxScore()`     | `max_score`      | Number               | 0.3530367 | double |
+
+
+### 4.4. Facet Results
+The `facets` part of the result, a sibling to `hits`, contains information relative to the facets the user asked for. If
+no `facets` section was provided in the query, this section is omitted.
+
+Note that the whole `facets` section **is a single JSON object**. The `name` of each facet, which is defined at query
+time by the user, is represented in the attribute names.
+
+An individual facet result has both metadata and details, as each facet can define ranges into which results are
+categorized. The JSON representation of a single facet's results looks like this:
+
+```
+FacetResult {
+    "field": string
+    "total": long
+    "missing": long
+    "other": long
+    "terms": [ {TermRange}, ... ] <1>
+    "numeric_ranges": [ {NumericRange}, ...] <1>
+    "date_ranges": [ {DateRange}, ... ] <1>
+}
+```
+(1) all mutually exclusive (`terms`, `numeric_ranges` and `date_ranges` cannot be combined).
+
+See the following JSON example:
+
+```
+"facets": {
+    "category": { <1>
+      "field": "style",
+          ...
+      "terms": [ ... ]
+    },
+    "strength": { <2>
+      "field": "abv",
+          ...
+      "numeric_ranges": [ ... ]
+    },
+    "updateRange": { <3>
+      "field": "updated",
+          ...
+      "date_ranges": [ ... ]
+    }
+  }
+```
+We omitted part of the section, but this shows that we have 3 facets: a _term_ facet **(1)** named "category", a
+_numeric_ facet **(2)** named "strength" and a _date_ facet **(3)** named "updateRange".
+
+The section could be represented by a `Map` (or equivalent, eg. associative array).
+
+```java
+Map<String, FacetResult> facets();
+```
+
+It could also be represented by any other adequate `Facets` class or structure, as long as the following operations are
+possible:
+
+ - iteration of all the facets
+ - retrieval of a facet by name
+
+In code, individual facet results could be represented by an interface and three concrete implementations, one for each
+facet type:
+
+```java
+interface FacetResult {
+    String name();
+    String field();
+    long total();
+    long missing();
+    long other();
+}
+```
+
+Note the `name` is made part of the `FacetResult`, so that it can be used in isolation.
+
+#### Term Facet Results
+```java
+class TermFacetResult implements FacetResult {
+	//... all from FacetResult, plus:
+	List<TermRange> terms();
+}
+```
+
+The JSON structure of each **term range** is:
+
+```
+TermRange {
+	"term": string //the "category" or term
+	"count": long //how many times this term was seen
+}
+```
+This can be directly mapped to a `TermRange` class or the appropriate structure in the target language.
+
+When requesting a term facet, the user provides a `size` and a `field`. Each term in this field will be considered as a
+unique range (a "bucket"), and the `TermFacetResult` will contain the first _size_ terms, ordered by occurrence count.
+So in a `TermRange`, the `term` is the "category" or term and the `count` is the number of times this term was seen.
+
+#### Numeric Range Facet Results
+```java
+class NumericFacetResult implements FacetResult {
+	//... all from FacetResult, plus:
+	List<NumericRange> numericRanges();
+}
+```
+
+The JSON structure of each **numeric range** is:
+
+```
+NumericRange {
+    "name": string //the name given to the range in facet query
+    "min": double //the minimum value considered in the range (inclusive)
+    "max": double //the maximum value considered in the range (exclusive)
+    "count": long //how many terms were included in this range?
+}
+```
+This can be directly mapped to a `NumericRange` class or the appropriate structure in the target language.
+
+When requesting a numeric facet, the user defines ranges (also called buckets) and gives them names. Note that lower
+bound is inclusive and upper bound is exclusive, but ranges can overlap so a document can be categorized into several
+buckets.
+
+#### Date Range Facet Results
+```java
+class DateFacetResult implements FacetResult {
+	//... all from FacetResult, plus:
+	List<DateRange> dateRanges();
+}
+```
+
+The JSON structure of each **date range** is:
+
+```
+DateRange {
+    "name": string //the name given to the range in facet query
+    "start": string //the minimum date ("YYYY-MM-DD HH:MM:SS") in range (inclusive)
+    "end": string //the maximum date in range (exclusive)
+    "count": long //how many terms were included in this range?
+}
+```
+This can be directly mapped to a `DateRange` class or the appropriate structure in the target language.
+
+When requesting a date facet, the user defines ranges (also called buckets) and gives them names. Note that lower bound
+is inclusive and upper bound is exclusive, but ranges can overlap so a document can be categorized into several buckets.
+
+
+# Language Specifics
+Each language to provide a representative example of what the API is expected to look like (or does look like if an
+experimental version is available), as well as any specificities of the implementation in the corresponding SDK.
+
+### Set-Up for Examples
+The FTS index "`travel-search`" on the `travel-sample` bucket is necessary for the below examples to work, with a specific index mapping for the `landmark` type:
+
+| Field      | Type | Analyzer | Stored? | Included in `_all` field? | Includes term vectors? |
+| ---------- | ---- | -------- | ------- | ------------------------- | ---------------------- |
+| `name`     | text | default  | yes     | yes                       | yes |
+| `content`  | text | default  | yes     | yes                       | yes |
+| `activity` | text | keyword  | yes     | yes                       | yes |
+| `country`  | text | keyword  | yes     | yes                       | yes |
+
+### Java
+```java
+//use the travel sample bucket
+Bucket bucket = cluster.openBucket("travel-sample");
+
+//prepare a compound query
+AbstractFtsQuery cq =
+        SearchQuery.disjuncts(
+                //either something like "schnitzle" in the content (boosts the score)
+                SearchQuery.match("schnitzle").field("content").fuzziness(2).boost(4),
+                //OR some form of "fast food"
+                SearchQuery.matchPhrase("fast food").field("content")
+        );
+
+//prepare the search on "travel-search" index and set parameters for the whole request
+SearchQuery query = new SearchQuery("travel-search", cq)
+    //will show value for activity and country fields
+    .fields("activity", "country")
+    //will include name & content fragments
+    .highlight(HighlightStyle.HTML, "name", "content")
+    //will have max 3 hits
+    .limit(3)
+    //will have a "countries" facet on the top 5 countries having landmarks
+    .addFacet("countries", SearchFacet.term("country", 5));
+
+//execute the FTS search
+SearchQueryResult result = bucket.query(query);
+
+//prints the hits
+for (SearchQueryRow hit : result.hitsOrFail()) {
+    System.out.println("\nHIT ON " + hit.id() + ", score = " + hit.score());
+    System.out.println(hit.fields());
+    System.out.println(hit.fragments());
+}
+
+//prints the facet
+TermFacetResult facet = (TermFacetResult) result.facets().get("countries");
+System.out.println("\nCOUNTRY DISTRIBUTION (total " + result.metrics().totalHits() + "):");
+for (TermRange range : facet.terms()) {
+    System.out.println(range.name() + " (" + range.count() + ")");
+}
+```
+The output of this query is below. Notice the fuzziness allows to find "schnitzel" and the match phrase matches both "fast food" and "fast-food":
+
+```
+HIT ON landmark_21741, score = 1.7008879805568502
+{activity=eat, country=France}
+{name=[Exki], content=[High quality <mark>fast</mark> <mark>food</mark> with an emphasis on freshness and a slight bent for the exotic.]}
+
+HIT ON landmark_40709, score = 1.4730121298166985
+{activity=eat, country=United States}
+{name=[Gourmet Taco Shop], content=[Tasty and cheap Mexican <mark>fast</mark> <mark>food</mark>. Indoor and outdoor tables, friendly service, and a salsa bar.]}
+
+HIT ON landmark_37879, score = 1.3304809678430451
+{activity=eat, country=United States}
+{name=[Chateau Edelweiss], content=[Family-owned Swiss restaurant famous for authentic fondue, raclette, and <mark>schnitzel</mark>, with excellent beer on tap.]}
+
+COUNTRY DISTRIBUTION (total 14):
+United States (9)
+France (3)
+United Kingdom (2)
+```
+
+### .NET
+
+### NodeJS
+
+### Go
+
+### C
+
+### PHP
+
+### Python
+
+# Signoff
+If signed off, each representative agrees both the API and the behavior will be implemented as specified.
+
+| Language | Representative | Date       |
+| -------- | -------------- | ---------- |
+| Java     |                |            |
+| Scala    |                |            |
+| .NET     |                |            |
+| Node     |                |            |
+| PHP      |                |            |
+| Python   |                |            |
+| Go       |                |            |
+| C        |                |            |
