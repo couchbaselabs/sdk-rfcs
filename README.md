@@ -82,6 +82,7 @@ RFC #  | Description | Owner | Status
 57 | SDK3 Analytics API [\[draft\]](https://docs.google.com/document/d/1mpDBR3_-jmMRelWkNUlGazgVWPhF_15vhP5m5mB3wo4/edit) | Michael | REVIEW
 58 | SDK3 Error Handling [\[draft\]](https://docs.google.com/document/d/1oWyuPIxmErNh9BerU3UYqpFQPnmg9Yl8h7oNJzCVVYM/edit) | Jeff | DRAFT
 59 | SDK3 Foundation [\[draft\]](https://docs.google.com/document/d/1pt8wrSu7xvaqjG5vxcQSZN1epw6oP4MyTcZZMvSYwQo/edit) | Brett | DRAFT
+60 | SDK3 Response Time Observability [\[draft\]](https://docs.google.com/document/d/11s2QCIBB-koFUm0ZzWI6aBy27hdRoDc0cRHsWvDT-xI/edit) | Mike G | DRAFT
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
