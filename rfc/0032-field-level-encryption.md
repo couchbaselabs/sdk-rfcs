@@ -283,10 +283,11 @@ Where:
 | ------------- |:-------------:|
 |PREFIX | Prefix for temporary field that holds content of encrypted field. This should be configurable so that naming conflicts can be easily resolved at the application level. The default is “crypt”.|
 |FIELDNAME |The original name of the field that contained the data to be encrypted |
+|BASE64() | Standard Base64 encoding. The results MUST include padding if applicable. Padding is required because the encoded results are included in signature calculation, which must be consistent across implementations.|
 |“kid”| The “key-identifier” for resolving the key used to decrypt/encrypt from the KeyStore. See section on Key Management above.|
 |“alg” |The algorithm used to encrypt/decrypt. |
 |“ciphertext” | A Base64 encoded string that is the value from the field that has been encrypted.|
-|“sig”|Optional, required for AES. The HMAC signature of the following fields concatenating and then base64 encoding them: “alg”, “iv”, and “ciphertext”. Order is important and must be respected across all implementations |
+|“sig”|Optional, required for AES. The HMAC signature, calculated as described above. |
 |“iv”|Optional, required by AES. The Base64 encoded initialization vector used for the cipher-text. |
 
 The purpose for the temporary field for storing the encrypted data is so that we store the encrypted data as a string; if we chose to store in the original field, there may be a type-mismatch if the field type was say a integer. For strongly typed languages this may cause an exception or error when deserializing and the string value is assigned to its original property.
@@ -728,16 +729,24 @@ There are a few items out of scope at this time for v1.0, however they very much
   * Algorithm upgrading - for example going from AES-256 to AES-512
   * Support for KMIP based key stores
 
+
+## Changelog
+
+YYYY-MM-DD Initial draft publication
+
+2019-10-31
+* Specified that the Base64 encoder must emit padding if applicable.
+* Removed conflicting/incorrect specification for signature calculation.
+
+
 ## Sign Off
 
 |Language |Representative |Date |
-|:--- |:--- |:--- |--- |
+|--- |--- |--- |
 |C|Sergey Avseyev|2018-06-25|
 |Go|Brett Lawson|2018-06-25|
 |Java|Subhashni Balakrishnan| - |
 |.NET|Jeff Morris|2018-06-22|
 |NodeJS|Brett Lawson|2018-06-25|
 |PHP|Sergey Avseyev|2018-06-25|
-|Python|Ellis Breen|22/6/2018|
-
-
+|Python|Ellis Breen|2018-06-22|
