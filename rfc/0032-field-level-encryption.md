@@ -23,7 +23,7 @@ Customers needing to support [FIPS-140-2](https://en.wikipedia.org/wiki/FIPS_140
 *  Documents with encrypted fields must be discoverable for auditing purposes. The simplest example of auditing is using a N1QL query to select documents with encryption.
 *  K/V only is in-scope for field encryption in this iteration.
 *  The KeyStore must be abstract and pluggable; Java should support the Java Key Store and .NET should support the Windows Certificate Store at a minimum. Future implementations should include Vault and perhaps KMIP.
-* Top-level fields and objects can only be encrypted; nested fields and objects are not supported.
+*  Only top-level fields and objects can be encrypted; nested fields and objects are not supported.
 
 ### What are some approaches to Field Encryption?
 
@@ -728,16 +728,20 @@ There are a few items out of scope at this time for v1.0, however they very much
   * Algorithm upgrading - for example going from AES-256 to AES-512
   * Support for KMIP based key stores
 
+## Changelog
+
+ - 2018-07-12: Initial draft publication
+
+ - 2018-10-04: Only top-level fields and objects can be encrypted; nested fields and objects are not supported.
+
 ## Sign Off
 
 |Language |Representative |Date |
-|:--- |:--- |:--- |--- |
+|:--- |:--- |:--- |
 |C|Sergey Avseyev|2018-06-25|
 |Go|Brett Lawson|2018-06-25|
 |Java|Subhashni Balakrishnan| - |
 |.NET|Jeff Morris|2018-06-22|
 |NodeJS|Brett Lawson|2018-06-25|
 |PHP|Sergey Avseyev|2018-06-25|
-|Python|Ellis Breen|22/6/2018|
-
-
+|Python|Ellis Breen|2018-06-22|
