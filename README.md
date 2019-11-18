@@ -75,7 +75,7 @@ RFC #  | Description | Owner | Status
 50 | SDK3 Datastructures [\[draft\]](https://docs.google.com/document/d/1mKk20ScVE8ssF2DvqZTe9xIUvOUanJ7LOARFiCJPkQ0/edit) | Brett | DRAFT
 51 | SDK3 Views [\[draft\]](https://docs.google.com/document/d/10urBYts5kHH7TGnIowoyISYdDie70ARpxbnajfY43C8/edit) | Sergey | REVIEW
 52 | SDK3 Full Text Search [\[draft\]](https://docs.google.com/document/d/1El3Kll05woPLxH39YyFUg7lRwfaaini-QS78CpstTLY/edit)  | Sergey | REVIEW
-53 | SDK3 CRUD API [\[draft\]](https://docs.google.com/document/d/1_fPJn9trqG6e7iTpzqwCnurvxmBlguFVjh00F2Co7Y8/edit) | Jeff | DRAFT
+53 | SDK3 CRUD API [\[draft\]](https://docs.google.com/document/d/1_fPJn9trqG6e7iTpzqwCnurvxmBlguFVjh00F2Co7Y8/edit) | Jeff | REVIEW
 54 | SDK3 Management APIs [\[draft\]](https://docs.google.com/document/d/1p6AUV_YKJBqaybt_JFmDTYjjIZ3t4Lp2uqJSFY0VtjY/edit#) | Charles | REVIEW
 55 | SDK3 Transcoders & Serializers[\[draft\]](https://docs.google.com/document/d/1Fm7LSly5eKGpi-tVwlLGpe-ii1AT0p39ICqXysOJq8E) | Jeff | REVIEW
 56 | SDK3 Query API [\[draft\]](https://docs.google.com/document/d/1MigpPIoEc-srXRJb7bUel3qTlGPvI-be-hT0jkGNNAY/edit) | Michael | REVIEW
