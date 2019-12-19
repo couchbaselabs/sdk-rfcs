@@ -70,7 +70,7 @@ RFC #  | Description | Owner | Status
 45 | Advanced Analytics Querying [\[draft\]](https://docs.google.com/document/d/1SRYPk4ATM2PVc2Yi3WP-Ol9_qvFue9IG2uhd0UUq9GY) | Michael | DRAFT
 46 | Synchronous Replication [\[draft\]](https://docs.google.com/document/d/1_Bn_cKLxvqFBNVcPaPnoXMpt3JEbf_6MDvMHpJDtO_s/edit) | Sergey | DRAFT
 47 | Unified User Agent [\[draft\]](https://docs.google.com/document/d/1B4QM9UO6kz2yjLrBqLjSgArUeM1DvzKnakC_e8KfrmY/edit?usp=sharing) | Michael | DRAFT
-48 | SDK3 Bootstrapping [\[draft\]](https://docs.google.com/document/d/1SUSBM9XoTnpaeew0bq4ABmgISc76fjzrY2vapZ10XD4/edit#) | Brett | DRAFT
+48 | SDK3 Bootstrapping [\[draft\]](https://docs.google.com/document/d/1SUSBM9XoTnpaeew0bq4ABmgISc76fjzrY2vapZ10XD4/edit#) | Brett | REVIEW
 49 | SDK3 Retry Handling [\[draft\]](https://docs.google.com/document/d/1h9YL2k8uzNPnxN_XanagEc2d8qRVu6sVDiKaqASqjS4/edit#heading=h.95ju11kiipzo) | Michael | REVIEW
 50 | SDK3 Datastructures [\[draft\]](https://docs.google.com/document/d/1mKk20ScVE8ssF2DvqZTe9xIUvOUanJ7LOARFiCJPkQ0/edit) | Brett | REVIEW
 51 | SDK3 Views [\[draft\]](https://docs.google.com/document/d/10urBYts5kHH7TGnIowoyISYdDie70ARpxbnajfY43C8/edit) | Sergey | REVIEW
