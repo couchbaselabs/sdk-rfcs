@@ -85,7 +85,7 @@ RFC #  | Description | Owner | Status
 60 | SDK3 Response Time Observability [\[draft\]](https://docs.google.com/document/d/11s2QCIBB-koFUm0ZzWI6aBy27hdRoDc0cRHsWvDT-xI/edit) | Mike G | DRAFT
 61 | SDK3 Diagnostics [\[draft\]](https://docs.google.com/document/d/1Lw3nuYVtRbXYIujeCxakcyYQWFs2OAj4Borb75eNe5Y/edit?usp=sharing) | Michael N. | REVIEW
 62 | Eventing Management APIs [\[draft\]](https://docs.google.com/document/d/1VSqyRjFHJvlr9kYlwzeUpSDC8QkeflTm1epH7UzL0yw) | Michael N. | DRAFT
-63 | User Impersonation | Brett L. | IDENTIFIED
+63 | User Impersonation [\[draft\]](https://docs.google.com/document/d/18FTOTIHktHjrntMT2A4qApZco7i5FZwlTEqUcyaquqo/edit#) | Brett L. | DRAFT
 
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
 [comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
