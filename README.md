@@ -15,57 +15,28 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 
 ## SDK RFC Index
 
-### Accepted & Superseded RFCs
+### Active RFCs
 
 RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
 1  | [The RFC Process](rfc/0001-rfc-process.md) | Matt | ACCEPTED
-2  | [SubDocument API](rfc/0002-subdocapi.md) | Mark | ACCEPTED
-3  | [Index Management](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0003-indexmanagement.md) | Simon | ACCEPTED
-4 | [RYW Consistent Queries – at_plus](rfc/0004-at_plus.md) | Michael | ACCEPTED
 5 | [VBucket Retry Logic](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0005-vbucket-retries.md) | Brett | ACCEPTED
-7 | [Cluster Level Authentication](rfc/0007-cluster_level_auth.md) | Brett | ACCEPTED
-8 | [Datastructures](rfc/0008-datastructures.md) | Mark | ACCEPTED
-10 | [Full Text Search (FTS) API](rfc/0010-cbft.md) | Michael | ACCEPTED
 11 | [Connection String](rfc/0011-connection-string.md) | SDK | ACCEPTED
-12 | ~~Adapt memcached error code handling for future proofing~~ (see RFC 13) | SDK | SUPERSEDED
 13 | [KV Error Map](rfc/0013-kv-error-map.md) | Brett (Mark) | ACCEPTED
-14 | ~~LWW Wins XDCR Support~~ (see RFC 17) | SDK | SUPERSEDED
-16 | [RBAC](rfc/0016-rbac.md) | Mike G | ACCEPTED
-19 | [SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A) | Brett | ACCEPTED
 20 | [Common Flags](rfc/0020-common-flags.md) | Brett | ACCEPTED
-22 | [User Management API](rfc/0022-usermgmt.md) | Subhashni | ACCEPTED
-23 | ~~Subdoc `GET_COUNT` and `MKDOC`~~ (see RFC 25) | Mark | SUPERSEDED
 24 | [Fast failover configuration and behavior](rfc/0024-fast-failover.md) | Jeff | ACCEPTED
-25 | [Spock additions for Subdoc (including XATTRs)](rfc/0025-subdoc-xattr.md) | Brett (Mark) | ACCEPTED
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
-27 | [Analytics Querying](rfc/0027-analytics.md) | Michael (Brett) | ACCEPTED
-28 | [Enhanced Error Messages](rfc/0028-enhanced_error_messages.md) | Brett L | ACCEPTED
 30 | [Client-Side Compression](rfc/0030-compression.md) | Sergey | ACCEPTED
 32 | [Field-Level Encryption](rfc/0032-field-level-encryption.md) | Jeff | ACCEPTED
-34 | [Health Check](rfc/0034-health-check.md) | Sergey | ACCEPTED
-35 | [Response Time Observability](rfc/0035-rto.md) | Mike G | ACCEPTED
-36 | [Client Certificate Authentication](rfc/0036-client-cert-auth.md) | Michael | ACCEPTED
-43 | ~~Enhanced Durability Requirements~~ (see RFC 46)| Michael | SUPERSEDED
+
 
 ### Draft, Review & Identified RFCs
 
 RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
-9 | 2i Query Support | SDK | IDENTIFIED
-15 | Collection Support | Brett | IDENTIFIED
-17 | Cross-Cluster Failover | Michael | IDENTIFIED
-18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
-21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
-31 | Custom Transcoders [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit) | Mike G | DRAFT
-33 | Circuit Breakers [\[draft\]](https://docs.google.com/document/d/1QVXMN2u9RUuOAEPbeRvEA8h6drDJKR9Jy1C1Op17q3U/edit#) | Michael N | DRAFT
-37 | FTS Index Management [\[draft\]](https://docs.google.com/document/d/1C4yfTj5u6ahRgk3ZIL_AkwPMeu9-hHY_lZcsDNeIP74/edit?usp=sharing) | Subhashni | DRAFT
 38 | Enhanced Prepared Statements [\[draft\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
 39 | Multi Network Configurations [\[draft\]](https://docs.google.com/document/d/1706x2zMsYoBXQ-8H0cpW0KDYpeBy_FZ9dt1--NnQIzk) | Brett | DRAFT
-40 | Feeds | Brett | IDENTIFIED
-41 | Multi-Document Atomicity [\[draft\]](https://docs.google.com/document/d/1lRC-0VEk4jTPJbY9tN_jHTiqzCbj7Qpt4JdYufwEMwU/edit) | Graham | IDENTIFIED
-42 | Config Publish Interleave | Charlie | IDENTIFIED
 44 | XDCR Durability | SDK | IDENTIFIED
 45 | Advanced Analytics Querying [\[draft\]](https://docs.google.com/document/d/1SRYPk4ATM2PVc2Yi3WP-Ol9_qvFue9IG2uhd0UUq9GY) | Michael | DRAFT
 46 | Synchronous Replication [\[draft\]](https://docs.google.com/document/d/1_Bn_cKLxvqFBNVcPaPnoXMpt3JEbf_6MDvMHpJDtO_s/edit) | Sergey | DRAFT
@@ -87,8 +58,51 @@ RFC #  | Description | Owner | Status
 62 | Eventing Management APIs [\[draft\]](https://docs.google.com/document/d/1VSqyRjFHJvlr9kYlwzeUpSDC8QkeflTm1epH7UzL0yw) | Michael N. | DRAFT
 63 | User Impersonation [\[draft\]](https://docs.google.com/document/d/18FTOTIHktHjrntMT2A4qApZco7i5FZwlTEqUcyaquqo/edit#) | Brett L. | DRAFT
 
+
+### Identified and Pending RFCs
+
+RFC #  | Description | Owner | Status
+------------- | ------------- | --------- | ---------
+9 | 2i Query Support | SDK | IDENTIFIED
+15 | Collection Support | Brett | IDENTIFIED
+17 | Cross-Cluster Failover | Michael | IDENTIFIED
+18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
+21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
+40 | Feeds | Brett | IDENTIFIED
+41 | Multi-Document Atomicity [\[draft\]](https://docs.google.com/document/d/1lRC-0VEk4jTPJbY9tN_jHTiqzCbj7Qpt4JdYufwEMwU/edit) | Graham | IDENTIFIED
+42 | Config Publish Interleave | Charlie | IDENTIFIED
+
+[comment]: # Next RFC ID 64
+
+### Superseded and Deprecated RFCs
+
+RFC #  | Description | Owner | Status
+------------- | ------------- | --------- | ---------
+2  | ~~[SubDocument API](rfc/0002-subdocapi.md)~~ | Mark | SUPERSEDED
+3  | ~~[Index Management](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0003-indexmanagement.md)~~ | Simon | SUPERSEDED
+4 | ~~[RYW Consistent Queries – at_plus](rfc/0004-at_plus.md)~~ | Michael | SUPERSEDED
+7 | ~~[Cluster Level Authentication](rfc/0007-cluster_level_auth.md)~~ | Brett | SUPERSEDED
+8 | ~~[Datastructures](rfc/0008-datastructures.md)~~ | Mark | SUPERSEDED
+10 | ~~[Full Text Search (FTS) API](rfc/0010-cbft.md)~~ | Michael | SUPERSEDED
+12 | ~~Adapt memcached error code handling for future proofing~~ (see RFC 13) | SDK | SUPERSEDED
+14 | ~~LWW Wins XDCR Support~~ (see RFC 17) | SDK | SUPERSEDED
+16 | ~~[RBAC](rfc/0016-rbac.md)~~ | Mike G | SUPERSEDED
+19 | ~~[SDK 2.0 APIs](https://docs.google.com/document/d/1HgVEJetcIfeIqviKC9zdlv_7IEkWpstatzxeydkLF3A)~~ | Brett | SUPERSEDED
+22 | ~~[User Management API](rfc/0022-usermgmt.md)~~ | Subhashni | SUPERSEDED
+23 | ~~Subdoc `GET_COUNT` and `MKDOC`~~ (see RFC 25) | Mark | SUPERSEDED
+25 | ~~[Spock additions for Subdoc (including XATTRs)](rfc/0025-subdoc-xattr.md)~~ | Brett (Mark) | SUPERSEDED
+27 | ~~[Analytics Querying](rfc/0027-analytics.md)~~ | Michael (Brett) | SUPERSEDED
+28 | ~~[Enhanced Error Messages](rfc/0028-enhanced_error_messages.md)~~ | Brett L | SUPERSEDED
+31 | ~~Custom Transcoders [\[draft\]](https://docs.google.com/a/couchbase.com/document/d/1p3VzB41Tv-q0-j_HsqJAUrijAJEB9rGJ92Qgf36JdXc/edit)~~ | Mike G | SUPERSEDED
+33 | ~~Circuit Breakers [\[draft\]](https://docs.google.com/document/d/1QVXMN2u9RUuOAEPbeRvEA8h6drDJKR9Jy1C1Op17q3U/edit#)~~ | Michael N | SUPERSEDED
+34 | ~~[Health Check](rfc/0034-health-check.md)~~ | Sergey | SUPERSEDED
+35 | ~~[Response Time Observability](rfc/0035-rto.md)~~ | Mike G | SUPERSEDED
+36 | ~~[Client Certificate Authentication](rfc/0036-client-cert-auth.md)~~ | Michael | SUPERSEDED
+37 | ~~FTS Index Management [\[draft\]](https://docs.google.com/document/d/1C4yfTj5u6ahRgk3ZIL_AkwPMeu9-hHY_lZcsDNeIP74/edit?usp=sharing)~~ | Subhashni | SUPERSEDED
+43 | ~~Enhanced Durability Requirements~~ (see RFC 46)| Michael | SUPERSEDED
+
+
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
-[comment]: # (Description above must link to either the merged draft, the issue or the pull request when in any state otehr )
 
 
 ## Background
