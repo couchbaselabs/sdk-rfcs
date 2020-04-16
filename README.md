@@ -56,6 +56,7 @@ RFC #  | Description | Owner | Status
 61 | SDK3 Diagnostics [\[draft\]](https://docs.google.com/document/d/1Lw3nuYVtRbXYIujeCxakcyYQWFs2OAj4Borb75eNe5Y/edit?usp=sharing) | Michael N. | REVIEW
 62 | Eventing Management APIs [\[draft\]](https://docs.google.com/document/d/1VSqyRjFHJvlr9kYlwzeUpSDC8QkeflTm1epH7UzL0yw) | Michael N. | DRAFT
 63 | User Impersonation [\[draft\]](https://docs.google.com/document/d/18FTOTIHktHjrntMT2A4qApZco7i5FZwlTEqUcyaquqo/edit#) | Brett L. | DRAFT
+64 | SDK3 Field-Level Encryption [\[draft\]](https://docs.google.com/document/d/1JNp6a0_xdYu2kuV2wIb8mlfD885l0G939CP-r6qBQhw/edit#) | David N. | DRAFT
 
 
 ### Identified RFCs
@@ -72,7 +73,7 @@ RFC #  | Description | Owner | Status
 42 | Config Publish Interleave | Charlie | IDENTIFIED
 44 | XDCR Durability | SDK | IDENTIFIED
 
-[comment]: # Next RFC ID 64
+[comment]: # Next RFC ID 65
 
 ### Superseded and Deprecated RFCs
 
