@@ -15,7 +15,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 
 ## SDK RFC Index
 
-### Active RFCs
+### Accepted RFCs
 
 RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
@@ -30,14 +30,13 @@ RFC #  | Description | Owner | Status
 32 | [Field-Level Encryption](rfc/0032-field-level-encryption.md) | Jeff | ACCEPTED
 
 
-### Draft, Review & Identified RFCs
+### Draft & Review RFCs
 
 RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
 29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
 38 | Enhanced Prepared Statements [\[draft\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
 39 | Multi Network Configurations [\[draft\]](https://docs.google.com/document/d/1706x2zMsYoBXQ-8H0cpW0KDYpeBy_FZ9dt1--NnQIzk) | Brett | DRAFT
-44 | XDCR Durability | SDK | IDENTIFIED
 45 | Advanced Analytics Querying [\[draft\]](https://docs.google.com/document/d/1SRYPk4ATM2PVc2Yi3WP-Ol9_qvFue9IG2uhd0UUq9GY) | Michael | DRAFT
 46 | Synchronous Replication [\[draft\]](https://docs.google.com/document/d/1_Bn_cKLxvqFBNVcPaPnoXMpt3JEbf_6MDvMHpJDtO_s/edit) | Sergey | DRAFT
 47 | Unified User Agent [\[draft\]](https://docs.google.com/document/d/1B4QM9UO6kz2yjLrBqLjSgArUeM1DvzKnakC_e8KfrmY/edit?usp=sharing) | Michael | DRAFT
@@ -59,7 +58,7 @@ RFC #  | Description | Owner | Status
 63 | User Impersonation [\[draft\]](https://docs.google.com/document/d/18FTOTIHktHjrntMT2A4qApZco7i5FZwlTEqUcyaquqo/edit#) | Brett L. | DRAFT
 
 
-### Identified and Pending RFCs
+### Identified RFCs
 
 RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
@@ -71,6 +70,7 @@ RFC #  | Description | Owner | Status
 40 | Feeds | Brett | IDENTIFIED
 41 | Multi-Document Atomicity [\[draft\]](https://docs.google.com/document/d/1lRC-0VEk4jTPJbY9tN_jHTiqzCbj7Qpt4JdYufwEMwU/edit) | Graham | IDENTIFIED
 42 | Config Publish Interleave | Charlie | IDENTIFIED
+44 | XDCR Durability | SDK | IDENTIFIED
 
 [comment]: # Next RFC ID 64
 
