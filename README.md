@@ -28,34 +28,34 @@ RFC #  | Description | Owner | Status
 26 | [Ketama Hashing](rfc/0026-ketama-hashing.md) | Mike G | ACCEPTED
 30 | [Client-Side Compression](rfc/0030-compression.md) | Sergey | ACCEPTED
 32 | [Field-Level Encryption](rfc/0032-field-level-encryption.md) | Jeff | ACCEPTED
-48 | SDK3 Bootstrapping [\[gdocs\]](https://docs.google.com/document/d/1SUSBM9XoTnpaeew0bq4ABmgISc76fjzrY2vapZ10XD4/edit#) | Brett | ACCEPTED
-49 | SDK3 Retry Handling [\[draft\]](https://docs.google.com/document/d/1h9YL2k8uzNPnxN_XanagEc2d8qRVu6sVDiKaqASqjS4/edit#heading=h.95ju11kiipzo) | Michael | ACCEPTED
-50 | SDK3 Datastructures [\[draft\]](https://docs.google.com/document/d/1mKk20ScVE8ssF2DvqZTe9xIUvOUanJ7LOARFiCJPkQ0/edit) | Brett | ACCEPTED
-51 | SDK3 Views [\[draft\]](https://docs.google.com/document/d/10urBYts5kHH7TGnIowoyISYdDie70ARpxbnajfY43C8/edit) | Sergey | ACCEPTED
-52 | SDK3 Full Text Search [\[draft\]](https://docs.google.com/document/d/1El3Kll05woPLxH39YyFUg7lRwfaaini-QS78CpstTLY/edit)  | Sergey | ACCEPTED
-53 | SDK3 CRUD API [\[draft\]](https://docs.google.com/document/d/1_fPJn9trqG6e7iTpzqwCnurvxmBlguFVjh00F2Co7Y8/edit) | Jeff | ACCEPTED
-54 | SDK3 Management APIs [\[draft\]](https://docs.google.com/document/d/1p6AUV_YKJBqaybt_JFmDTYjjIZ3t4Lp2uqJSFY0VtjY/edit#) | Charles | ACCEPTED
-55 | SDK3 Transcoders & Serializers[\[draft\]](https://docs.google.com/document/d/1Fm7LSly5eKGpi-tVwlLGpe-ii1AT0p39ICqXysOJq8E) | Jeff | ACCEPTED
-56 | SDK3 Query API [\[draft\]](https://docs.google.com/document/d/1MigpPIoEc-srXRJb7bUel3qTlGPvI-be-hT0jkGNNAY/edit) | Michael | ACCEPTED
-57 | SDK3 Analytics API [\[draft\]](https://docs.google.com/document/d/1mpDBR3_-jmMRelWkNUlGazgVWPhF_15vhP5m5mB3wo4/edit) | Michael | ACCEPTED
-58 | SDK3 Error Handling [\[draft\]](https://docs.google.com/document/d/1oWyuPIxmErNh9BerU3UYqpFQPnmg9Yl8h7oNJzCVVYM/edit) | Jeff | ACCEPTED
-59 | SDK3 Foundation [\[draft\]](https://docs.google.com/document/d/1pt8wrSu7xvaqjG5vxcQSZN1epw6oP4MyTcZZMvSYwQo/edit) | Brett | ACCEPTED
-61 | SDK3 Diagnostics [\[draft\]](https://docs.google.com/document/d/1Lw3nuYVtRbXYIujeCxakcyYQWFs2OAj4Borb75eNe5Y/edit?usp=sharing) | Michael N. | ACCEPTED
+48 | SDK3 Bootstrapping [\[gdoc\]](https://docs.google.com/document/d/1SUSBM9XoTnpaeew0bq4ABmgISc76fjzrY2vapZ10XD4/edit#) | Brett | ACCEPTED
+49 | SDK3 Retry Handling [\[gdoc\]](https://docs.google.com/document/d/1h9YL2k8uzNPnxN_XanagEc2d8qRVu6sVDiKaqASqjS4/edit#heading=h.95ju11kiipzo) | Michael | ACCEPTED
+50 | SDK3 Datastructures [\[gdoc\]](https://docs.google.com/document/d/1mKk20ScVE8ssF2DvqZTe9xIUvOUanJ7LOARFiCJPkQ0/edit) | Brett | ACCEPTED
+51 | SDK3 Views [\[gdoc\]](https://docs.google.com/document/d/10urBYts5kHH7TGnIowoyISYdDie70ARpxbnajfY43C8/edit) | Sergey | ACCEPTED
+52 | SDK3 Full Text Search [\[gdoc\]](https://docs.google.com/document/d/1El3Kll05woPLxH39YyFUg7lRwfaaini-QS78CpstTLY/edit)  | Sergey | ACCEPTED
+53 | SDK3 CRUD API [\[gdoc\]](https://docs.google.com/document/d/1_fPJn9trqG6e7iTpzqwCnurvxmBlguFVjh00F2Co7Y8/edit) | Jeff | ACCEPTED
+54 | SDK3 Management APIs [\[gdoc\]](https://docs.google.com/document/d/1p6AUV_YKJBqaybt_JFmDTYjjIZ3t4Lp2uqJSFY0VtjY/edit#) | Charles | ACCEPTED
+55 | SDK3 Transcoders & Serializers[\[gdoc\]](https://docs.google.com/document/d/1Fm7LSly5eKGpi-tVwlLGpe-ii1AT0p39ICqXysOJq8E) | Jeff | ACCEPTED
+56 | SDK3 Query API [\[gdoc\]](https://docs.google.com/document/d/1MigpPIoEc-srXRJb7bUel3qTlGPvI-be-hT0jkGNNAY/edit) | Michael | ACCEPTED
+57 | SDK3 Analytics API [\[gdoc\]](https://docs.google.com/document/d/1mpDBR3_-jmMRelWkNUlGazgVWPhF_15vhP5m5mB3wo4/edit) | Michael | ACCEPTED
+58 | SDK3 Error Handling [\[gdoc\]](https://docs.google.com/document/d/1oWyuPIxmErNh9BerU3UYqpFQPnmg9Yl8h7oNJzCVVYM/edit) | Jeff | ACCEPTED
+59 | SDK3 Foundation [\[gdoc\]](https://docs.google.com/document/d/1pt8wrSu7xvaqjG5vxcQSZN1epw6oP4MyTcZZMvSYwQo/edit) | Brett | ACCEPTED
+61 | SDK3 Diagnostics [\[gdoc\]](https://docs.google.com/document/d/1Lw3nuYVtRbXYIujeCxakcyYQWFs2OAj4Borb75eNe5Y/edit?usp=sharing) | Michael N. | ACCEPTED
 
 ### Draft & Review RFCs
 
 RFC #  | Description | Owner | Status
 ------------- | ------------- | --------- | ---------
-29 | Server Version Identification [\[draft\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
-38 | Enhanced Prepared Statements [\[draft\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
-39 | Multi Network Configurations [\[draft\]](https://docs.google.com/document/d/1706x2zMsYoBXQ-8H0cpW0KDYpeBy_FZ9dt1--NnQIzk) | Brett | DRAFT
-45 | Advanced Analytics Querying [\[draft\]](https://docs.google.com/document/d/1SRYPk4ATM2PVc2Yi3WP-Ol9_qvFue9IG2uhd0UUq9GY) | Michael | DRAFT
-46 | Synchronous Replication [\[draft\]](https://docs.google.com/document/d/1_Bn_cKLxvqFBNVcPaPnoXMpt3JEbf_6MDvMHpJDtO_s/edit) | Sergey | DRAFT
-47 | Unified User Agent [\[draft\]](https://docs.google.com/document/d/1B4QM9UO6kz2yjLrBqLjSgArUeM1DvzKnakC_e8KfrmY/edit?usp=sharing) | Michael | DRAFT
-60 | SDK3 Response Time Observability [\[draft\]](https://docs.google.com/document/d/11s2QCIBB-koFUm0ZzWI6aBy27hdRoDc0cRHsWvDT-xI/edit) | Mike G | DRAFT
-62 | Eventing Management APIs [\[draft\]](https://docs.google.com/document/d/1VSqyRjFHJvlr9kYlwzeUpSDC8QkeflTm1epH7UzL0yw) | Michael N. | DRAFT
-63 | User Impersonation [\[draft\]](https://docs.google.com/document/d/18FTOTIHktHjrntMT2A4qApZco7i5FZwlTEqUcyaquqo/edit#) | Brett L. | DRAFT
-64 | SDK3 Field-Level Encryption [\[draft\]](https://docs.google.com/document/d/1JNp6a0_xdYu2kuV2wIb8mlfD885l0G939CP-r6qBQhw/edit#) | David N. | DRAFT
+29 | Server Version Identification [\[gdoc\]](https://docs.google.com/document/d/1d6j0R0BFloQgoQ981PjAzv2AWfAIRPlkBLvlCMG7ipY/edit?usp=sharing) | Mike G | DRAFT
+38 | Enhanced Prepared Statements [\[gdoc\]](https://docs.google.com/document/d/1JhprmvL2HwHzkg7GxouGJc67eAvKFJekgyOG23T8mVU/edit)| Michael | DRAFT
+39 | Multi Network Configurations [\[gdoc\]](https://docs.google.com/document/d/1706x2zMsYoBXQ-8H0cpW0KDYpeBy_FZ9dt1--NnQIzk) | Brett | DRAFT
+45 | Advanced Analytics Querying [\[gdoc\]](https://docs.google.com/document/d/1SRYPk4ATM2PVc2Yi3WP-Ol9_qvFue9IG2uhd0UUq9GY) | Michael | DRAFT
+46 | Synchronous Replication [\[gdoc\]](https://docs.google.com/document/d/1_Bn_cKLxvqFBNVcPaPnoXMpt3JEbf_6MDvMHpJDtO_s/edit) | Sergey | DRAFT
+47 | Unified User Agent [\[gdoc\]](https://docs.google.com/document/d/1B4QM9UO6kz2yjLrBqLjSgArUeM1DvzKnakC_e8KfrmY/edit?usp=sharing) | Michael | DRAFT
+60 | SDK3 Response Time Observability [\[gdoc\]](https://docs.google.com/document/d/11s2QCIBB-koFUm0ZzWI6aBy27hdRoDc0cRHsWvDT-xI/edit) | Mike G | DRAFT
+62 | Eventing Management APIs [\[gdoc\]](https://docs.google.com/document/d/1VSqyRjFHJvlr9kYlwzeUpSDC8QkeflTm1epH7UzL0yw) | Michael N. | DRAFT
+63 | User Impersonation [\[gdoc\]](https://docs.google.com/document/d/18FTOTIHktHjrntMT2A4qApZco7i5FZwlTEqUcyaquqo/edit#) | Brett L. | DRAFT
+64 | SDK3 Field-Level Encryption [\[gdoc\]](https://docs.google.com/document/d/1JNp6a0_xdYu2kuV2wIb8mlfD885l0G939CP-r6qBQhw/edit#) | David N. | DRAFT
 
 
 ### Identified RFCs
@@ -68,7 +68,7 @@ RFC #  | Description | Owner | Status
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
 40 | Feeds | Brett | IDENTIFIED
-41 | Multi-Document Atomicity [\[draft\]](https://docs.google.com/document/d/1lRC-0VEk4jTPJbY9tN_jHTiqzCbj7Qpt4JdYufwEMwU/edit) | Graham | IDENTIFIED
+41 | Multi-Document Atomicity [\[gdoc\]](https://docs.google.com/document/d/1lRC-0VEk4jTPJbY9tN_jHTiqzCbj7Qpt4JdYufwEMwU/edit) | Graham | IDENTIFIED
 42 | Config Publish Interleave | Charlie | IDENTIFIED
 44 | XDCR Durability | SDK | IDENTIFIED
 
