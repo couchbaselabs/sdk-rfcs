@@ -68,7 +68,7 @@ RFC #  | Description | Owner | Status
 18 | Timeouts for Configuration and Operations | Michael | IDENTIFIED
 21 | Generic find Queries [\[issue\]](https://github.com/couchbaselabs/sdk-rfcs/pull/54) | Brett | IDENTIFIED
 40 | Feeds | Brett | IDENTIFIED
-41 | Multi-Document Atomicity [\[gdoc\]](https://docs.google.com/document/d/1lRC-0VEk4jTPJbY9tN_jHTiqzCbj7Qpt4JdYufwEMwU/edit) | Graham | IDENTIFIED
+41 | Multi-Document Atomicity | Graham | IDENTIFIED
 42 | Config Publish Interleave | Charlie | IDENTIFIED
 44 | XDCR Durability | SDK | IDENTIFIED
 
