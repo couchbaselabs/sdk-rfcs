@@ -56,7 +56,7 @@ RFC #  | Description | Owner | Status
 62 | Eventing Management APIs [\[gdoc\]](https://docs.google.com/document/d/1VSqyRjFHJvlr9kYlwzeUpSDC8QkeflTm1epH7UzL0yw) | Michael N. | DRAFT
 63 | User Impersonation [\[gdoc\]](https://docs.google.com/document/d/18FTOTIHktHjrntMT2A4qApZco7i5FZwlTEqUcyaquqo/edit#) | Brett L. | DRAFT
 64 | SDK3 Field-Level Encryption [\[gdoc\]](https://docs.google.com/document/d/1JNp6a0_xdYu2kuV2wIb8mlfD885l0G939CP-r6qBQhw/edit#) | David N. | DRAFT
-
+65 | CreateAsDeleted Support [\[doc\]](https://docs.google.com/document/d/1QccFEvHWEL2-ldS_aTfjphYJGB4YVmMKrMB-UyL2KFI/edit?usp=sharing) | Graham P. | DRAFT
 
 ### Identified RFCs
 
