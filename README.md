@@ -32,7 +32,7 @@ RFC #  | Description | Owner | Status
 49 | SDK3 Retry Handling [\[gdoc\]](https://docs.google.com/document/d/1h9YL2k8uzNPnxN_XanagEc2d8qRVu6sVDiKaqASqjS4/edit#heading=h.95ju11kiipzo) | Michael | ACCEPTED
 50 | SDK3 Datastructures [\[gdoc\]](https://docs.google.com/document/d/1mKk20ScVE8ssF2DvqZTe9xIUvOUanJ7LOARFiCJPkQ0/edit) | Brett | ACCEPTED
 51 | [SDK3 Views](rfc/0051-sdk3-views.md) | Sergey | ACCEPTED
-52 | SDK3 Full Text Search [\[gdoc\]](https://docs.google.com/document/d/1El3Kll05woPLxH39YyFUg7lRwfaaini-QS78CpstTLY/edit)  | Sergey | ACCEPTED
+52 | [SDK3 Full Text Search](rfc/0052-sdk3-full-text-search.md) | Sergey | ACCEPTED
 53 | SDK3 CRUD API [\[gdoc\]](https://docs.google.com/document/d/1_fPJn9trqG6e7iTpzqwCnurvxmBlguFVjh00F2Co7Y8/edit) | Jeff | ACCEPTED
 54 | SDK3 Management APIs [\[gdoc\]](https://docs.google.com/document/d/1p6AUV_YKJBqaybt_JFmDTYjjIZ3t4Lp2uqJSFY0VtjY/edit#) | Charles | ACCEPTED
 55 | SDK3 Transcoders & Serializers[\[gdoc\]](https://docs.google.com/document/d/1Fm7LSly5eKGpi-tVwlLGpe-ii1AT0p39ICqXysOJq8E) | Jeff | ACCEPTED
