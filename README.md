@@ -36,7 +36,7 @@ RFC #  | Description | Owner | Status
 53 | SDK3 CRUD API [\[gdoc\]](https://docs.google.com/document/d/1_fPJn9trqG6e7iTpzqwCnurvxmBlguFVjh00F2Co7Y8/edit) | Jeff | ACCEPTED
 54 | SDK3 Management APIs [\[gdoc\]](https://docs.google.com/document/d/1p6AUV_YKJBqaybt_JFmDTYjjIZ3t4Lp2uqJSFY0VtjY/edit#) | Charles | ACCEPTED
 55 | SDK3 Transcoders & Serializers[\[gdoc\]](https://docs.google.com/document/d/1Fm7LSly5eKGpi-tVwlLGpe-ii1AT0p39ICqXysOJq8E) | Jeff | ACCEPTED
-56 | SDK3 Query API [\[gdoc\]](https://docs.google.com/document/d/1MigpPIoEc-srXRJb7bUel3qTlGPvI-be-hT0jkGNNAY/edit) | Michael | ACCEPTED
+56 | [SDK3 Query API](rfc/0056-sdk3-query.md) | Michael | ACCEPTED
 57 | SDK3 Analytics API [\[gdoc\]](https://docs.google.com/document/d/1mpDBR3_-jmMRelWkNUlGazgVWPhF_15vhP5m5mB3wo4/edit) | Michael | ACCEPTED
 58 | SDK3 Error Handling [\[gdoc\]](https://docs.google.com/document/d/1oWyuPIxmErNh9BerU3UYqpFQPnmg9Yl8h7oNJzCVVYM/edit) | Jeff | ACCEPTED
 59 | SDK3 Foundation [\[gdoc\]](https://docs.google.com/document/d/1pt8wrSu7xvaqjG5vxcQSZN1epw6oP4MyTcZZMvSYwQo/edit) | Brett | ACCEPTED
