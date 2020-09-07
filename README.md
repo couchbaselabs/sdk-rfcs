@@ -58,7 +58,7 @@ RFC #  | Description | Owner | Status
 64 | SDK3 Field-Level Encryption [\[gdoc\]](https://docs.google.com/document/d/1JNp6a0_xdYu2kuV2wIb8mlfD885l0G939CP-r6qBQhw/edit#) | David N. | DRAFT
 65 | CreateAsDeleted Support [\[doc\]](https://docs.google.com/document/d/1QccFEvHWEL2-ldS_aTfjphYJGB4YVmMKrMB-UyL2KFI/edit?usp=sharing) | Graham P. | DRAFT
 66 | Collection-Aware Query Support [\[doc\]](https://docs.google.com/document/d/1U1f7OMNua90NPx2S2-NK9LQYxsq2P0riR8lqNGFwKiA/edit#)| Michael R. | DRAFT
-67 | Extended SDK Observaability [\[doc\]](https://docs.google.com/document/d/1BAPS8bPMv8-4FPIdysgpxEsKrUgd595EAGOU-_nXHRY/edit?usp=sharing)| Michael N. | DRAFT
+67 | Extended SDK Observability [\[doc\]](https://docs.google.com/document/d/1BAPS8bPMv8-4FPIdysgpxEsKrUgd595EAGOU-_nXHRY/edit?usp=sharing)| Michael N. | DRAFT
 
 ### Identified RFCs
 
