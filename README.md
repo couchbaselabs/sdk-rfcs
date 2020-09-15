@@ -34,7 +34,7 @@ RFC #  | Description | Owner | Status
 51 | [SDK3 Views](rfc/0051-sdk3-views.md) | Sergey | ACCEPTED
 52 | [SDK3 Full Text Search](rfc/0052-sdk3-full-text-search.md) | Sergey | ACCEPTED
 53 | SDK3 CRUD API [\[gdoc\]](https://docs.google.com/document/d/1_fPJn9trqG6e7iTpzqwCnurvxmBlguFVjh00F2Co7Y8/edit) | Jeff | ACCEPTED
-54 | SDK3 Management APIs [\[gdoc\]](https://docs.google.com/document/d/1p6AUV_YKJBqaybt_JFmDTYjjIZ3t4Lp2uqJSFY0VtjY/edit#) | Charles | ACCEPTED
+54 | [SDK3 Management APIs](rfc/0054-sdk3-management-apis.md) | Charles | ACCEPTED
 55 | SDK3 Transcoders & Serializers[\[gdoc\]](https://docs.google.com/document/d/1Fm7LSly5eKGpi-tVwlLGpe-ii1AT0p39ICqXysOJq8E) | Jeff | ACCEPTED
 56 | [SDK3 Query API](rfc/0056-sdk3-query.md) | Michael | ACCEPTED
 57 | [SDK3 Analytics API](rfc/0057-sdk3-analytics.md) | Michael | ACCEPTED
