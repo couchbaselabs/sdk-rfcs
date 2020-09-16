@@ -1089,7 +1089,7 @@ public interface IAnalyticsIndexManager{
 
      void DisconnectLink(DisconnectLinkAnalyticsOptions options);
 
-     map[string]int GetPendingMutations(GetPendingMutationsAnalyticsOptions options);
+     map[string]map[string]int GetPendingMutations(GetPendingMutationsAnalyticsOptions options);
 }
 ```
 
@@ -1451,14 +1451,18 @@ Nothing
 
 ## GetPendingMutations
 
-Gets the pending mutations for all datasets. This is returned in the form of dataverse.dataset: mutations. E.g.:
+Gets the pending mutations for all datasets. This is returned from the server as an object e.g.:
 
 ```
 {
-    "Default.travel": 20688,
-    "Default.thing": 0,
-    "Default.default": 0,
-    "Notdefault.default": 0
+    "Default": {
+        "travel": 20688,
+        "thing": 0,
+        "default": 0
+    },
+    "Notdefault": {
+        "default": 0
+    }
 }
 ```
 
@@ -1467,7 +1471,7 @@ Note that if a link is disconnected then it will return no results. If all links
 ### Signature
 
 ```
-map[string]int GetPendingMutations( [options])
+map[string]map[string]int GetPendingMutations( [options])
 ```
 
 ### Parameters
@@ -1480,7 +1484,7 @@ map[string]int GetPendingMutations( [options])
 
 ### Returns
 
-Map where keys are datasets, and values are number of pending mutations.
+Map where top level keys are dataverse names, and values are a map of dataset names to number of pending mutations.
 
 ### Throws
 
@@ -2764,16 +2768,26 @@ interface ScopeSpec {
 
   * Moved RFC to ACCEPTED state.
 
+* July 16, 2020 - Revision #10 (by Charles Dixon)
+
+  * Deprecated `EjectionMethod` in favour of `EvictionPolicyType`.
+
+  * Added 2 new eviction policies: `NOT_RECENTLY_USED` and `NO_EVICTION` for use with ephemeral buckets.
+
 * August 28, 2020
 
   * Converted to markdown
+
+* September 16, 2020 - Revision #11 (by Charles Dixon)
+
+  * Changed the return value of Analytics `GetPendingMutations` from `map[string]int` to `map[string]map[string]int`.
 
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |
 |------------|---------------------|----------------|----------|
 | Node.js    | Brett Lawson        | April 16, 2020 | #9       |
-| Go         | Charles Dixon       | April 22, 2020 | #9       |
+| Go         | Charles Dixon       | September 16, 2020 | #11       |
 | Connectors | David Nault         | April 29, 2020 | #9       |
 | PHP        | Sergey Avseyev      | April 22, 2020 | #9       |
 | Python     | Ellis Breen         | April 29, 2020 | #9       |
@@ -2783,12 +2797,5 @@ interface ScopeSpec {
 | C          | Sergey Avseyev      | April 22, 2020 | #9       |
 | Ruby       | Sergey Avseyev      | April 22, 2020 | #9       |
 
-# Errata
 
-Changes made after ACCEPTED.
 
-* July 16, 2020
-
-  * Deprecated `EjectionMethod` in favour of `EvictionPolicyType`.
-
-  * Added 2 new eviction policies: `NOT_RECENTLY_USED` and `NO_EVICTION` for use with ephemeral buckets.
