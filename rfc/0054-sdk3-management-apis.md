@@ -2596,6 +2596,8 @@ enum BucketType {
 
 * `compressionMode` ([`CompressionMode`](#compressonmode)) - The compression mode to use.
 
+* `MinimumDurabilityLevel` (`DurabilityLevel`) - The minimum durability level to use for all KV operations.
+
 ## ConflictResolutionType
 
 ```
@@ -2793,12 +2795,16 @@ interface ScopeSpec {
 
   * Add `Collection` and `Scope` to `Role`.
 
+* November 25, 2020 - Revision #13 (by Charles Dixon)
+
+  * Added `MinimumDurabilityLevel` to `BucketSettings`.
+
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |
 |------------|---------------------|----------------|----------|
 | Node.js    | Brett Lawson        | April 16, 2020 | #9       |
-| Go         | Charles Dixon       | September 22, 2020 | #12       |
+| Go         | Charles Dixon       | September 22, 2020 | #13  |
 | Connectors | David Nault         | April 29, 2020 | #9       |
 | PHP        | Sergey Avseyev      | April 22, 2020 | #9       |
 | Python     | Ellis Breen         | April 29, 2020 | #9       |
