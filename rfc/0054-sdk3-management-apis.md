@@ -2589,6 +2589,8 @@ enum BucketType {
 
 * `compressionMode` ([`CompressionMode`](#compressonmode)) - The compression mode to use.
 
+* `MinimumDurabilityLevel` (`DurabilityLevel`) - The minimum durability level to use for all KV operations.
+
 ## ConflictResolutionType
 
 ```
@@ -2782,12 +2784,16 @@ interface ScopeSpec {
 
   * Changed the return value of Analytics `GetPendingMutations` from `map[string]int` to `map[string]map[string]int`.
 
+* November 25, 2020 - Revision #12 (by Charles Dixon)
+
+  * Added `MinimumDurabilityLevel` to `BucketSettings`.
+
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |
 |------------|---------------------|----------------|----------|
 | Node.js    | Brett Lawson        | April 16, 2020 | #9       |
-| Go         | Charles Dixon       | September 16, 2020 | #11       |
+| Go         | Charles Dixon       | September 16, 2020 | #12       |
 | Connectors | David Nault         | April 29, 2020 | #9       |
 | PHP        | Sergey Avseyev      | April 22, 2020 | #9       |
 | Python     | Ellis Breen         | April 29, 2020 | #9       |
