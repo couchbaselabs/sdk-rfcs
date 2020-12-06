@@ -824,15 +824,15 @@ interface SearchMetrics {
 
 # Signoff
 
-| Language   | Team Member         | Signoff Date   | Revision |
-|------------|---------------------|----------------|----------|
-| Node.js    | Brett Lawson        | April 16, 2020 | #7       |
-| Go         | Charles Dixon       | October 14, 2020 | #8       |
-| Connectors | David Nault         | April 29, 2020 | #7       |
-| PHP        | Sergey Avseyev      | April 22, 2020 | #7       |
-| Python     | Ellis Breen         | April 29, 2020 | #7       |
-| Scala      | Graham Pople        | April 30, 2020 | #7       |
-| .NET       | Jeffry Morris       | April 22, 2020 | #7       |
-| Java       | Michael Nitschinger | April 16, 2020 | #7       |
-| C          | Sergey Avseyev      | April 22, 2020 | #7       |
-| Ruby       | Sergey Avseyev      | April 22, 2020 | #7       |
+| Language   | Team Member         | Signoff Date      | Revision |
+|------------|---------------------|-------------------|----------|
+| Node.js    | Brett Lawson        | April 16, 2020    | #7       |
+| Go         | Charles Dixon       | October 14, 2020  | #8       |
+| Connectors | David Nault         | April 29, 2020    | #7       |
+| PHP        | Sergey Avseyev      | December 06, 2020 | #8       |
+| Python     | Ellis Breen         | April 29, 2020    | #7       |
+| Scala      | Graham Pople        | April 30, 2020    | #7       |
+| .NET       | Jeffry Morris       | April 22, 2020    | #7       |
+| Java       | Michael Nitschinger | April 16, 2020    | #7       |
+| C          | Sergey Avseyev      | December 06, 2020 | #8       |
+| Ruby       | Sergey Avseyev      | December 06, 2020 | #8       |
