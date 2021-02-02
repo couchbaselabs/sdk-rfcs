@@ -6,7 +6,7 @@
 * Owner(s): Brett Lawson, Jeffry Morris
 * Current Status: ACCEPTED
 
-# Motivation
+## Motivation
 
 The SDK team has provided a common system for converting SDK data-types to storable formats for Couchbase Server which is common across all SDKs and provides the ability for the customer to seamlessly transition their data between numerous languages.
 
@@ -19,7 +19,7 @@ etc...
 
 The first two cases are generally legacy/upgrade scenarios from customers or users who started with very old Couchbase servers before JSON was a storage type. The last is done to satisfy the needs of a customer or user for whatever reason does not want to use the default serializer (usually for performance reasons or because they wish to reuse the custom configuration which they’ve already implemented with an alternative JSON serialization library).
 
-# Summary
+## Summary
 
 Most SDKs use Transcoders and Serializers when reading or writing data to and from Couchbase using the various Services (Search, KV, Views, etc). 
 
@@ -27,7 +27,7 @@ Transcoders handle the encoding and decoding of the documents when stored and re
 
 Serializers are used by Transcoders to handle converting the actual JSON bytes to and from native language objects (native data structures that mirror the JSON documents elements). These native objects are frequently very specific to a platform. 
 
-# Technical Details
+## Technical Details
 
 The class diagram below shows the two major interfaces ITranscoder and IJsonSerializer. In addition to these interfaces, specific core libraries for converting to & from bytes and primitive types may be used within an implementation. 
 
@@ -38,19 +38,19 @@ The serializer is used by the various non-binary operations within Couchbase to 
 
 The transcoder types are used by various CRUD operations within Couchbase to perform transcoding of the raw bytes stored within Couchbase to and from the native types of the specific SDK language.  The transcoder is responsible for accepting a native type and generating the raw bytes for storage along with a set of flags used to specify the format of those bytes for other SDKs.  Note that transcoders which perform serialization/deserialization of JSON types should have a IJsonSerializer property used to configure the JSON serialization behaviour of that Transcoder.
 
-## Datatype Field Handling
+### Datatype Field Handling
 
 The SDK is responsible for parsing the flags returned by the transcoder and detecting the presence of the Common Flags JSON bit.  If this bit is set, the SDK should also specify the JSON bit within the datatype field sent to the server.  During the deserialization phase, the common flags are used exclusively, and the datatype flag is ignored.
 
-# Default JsonSerializer
+## Default JsonSerializer
 
 The default JsonSerializer implementation within the SDK should handle passing types of T, all numeric types and strings through the standard JSON library included with the SDK.  In the case of a byte array, the Serializer should instead pass the data through unchanged, enabling query service results to be fetched without performing serialization by passing a byte array as the output type T.
 
-# Default Transcoders
+## Default Transcoders
 
 The SDK must implement a number of specific implementations of the ITranscoder interface, along with a default implementation of the IJsonSerializer interface.  The JsonTranscoder implementation should be the default transcoder utilized by the SDK should no other option be specified by the user, the default serializer should take advantage of whatever JSON serialization already exists within the SDK.  The following is a list of specific transcoder implementations which MUST be implemented by the SDK, along with information about their specific behaviours.  Note that some knowledge of the specifics of SDK-RFC#20[Common Flags] is assumed in the explanation of the transcoders below. 
 
-## LegacyTranscoder
+### LegacyTranscoder
 
 The LegacyTranscoder is intended to be a backwards-compatibility transcoder.  This transcoder implements behaviour which matches the SDK 2.0 behaviours and allows customers migrating from these older SDKs who did not make use of strictly JSON data to correctly cooperate with the newer SDK.  Note that this transcoder should have a IJsonSerializer property used to customize the JSON serialization behaviour of the transcoder.
 
@@ -59,7 +59,7 @@ The LegacyTranscoder is intended to be a backwards-compatibility transcoder.  Th
 * Number -> JSON Number [Flags=JSON]
 * Buffer -> Binary Bytes [Flags=Binary]
 
-## JsonTranscoder (Default)
+### JsonTranscoder (Default)
 
 The JsonTranscoder is intended to be the new default for SDK 3.0, this transcoder implements JSON transcoding alone in order to guarantee compatibility with the services integrated in Couchbase Server.  In addition, the specifics of this implementation resolve a number of ambiguous scenarios with regards to handling pre-transcoded types, forcing the user to explicitly specify their meaning through (potentially) the selection of another transcoder type.  Note that this transcoder should have a IJsonSerializer property used to custom the JSON serialization behaviour of the transcoder.
 
@@ -68,7 +68,7 @@ The JsonTranscoder is intended to be the new default for SDK 3.0, this transcode
 * Number -> JSON Number [Flags=JSON]
 * Binary -> Error
 
-### RawJsonTranscoder
+#### RawJsonTranscoder
 
 The RawJsonTranscoder provides the ability for the user to explicitly specify that the data they are storing or retrieving is meant to be strictly JSON bytes.  This enables the user to retrieve data from Couchbase and forward it across the network without incurring unnecessary parsing costs along with enabling the user to take JSON data which was received across the network and insert it into Couchbase without incurring parsing costs.  Note that this transcoder does not accept an IJsonSerializer, and always performs straight pass through of the data to the server.
 
@@ -77,7 +77,7 @@ The RawJsonTranscoder provides the ability for the user to explicitly specify th
 * Number -> Error
 * Buffer -> JSON Bytes [Flags=JSON]
 
-### RawStringTranscoder
+#### RawStringTranscoder
 
 The RawStringTranscoder provides the ability for the user to explicitly store and retrieve raw string data to Couchbase.  This transcoder is responsible for ensuring that the data is encoded as UTF-8 and masking the appropriate string flag.
 
@@ -86,7 +86,7 @@ The RawStringTranscoder provides the ability for the user to explicitly store an
 * Number -> Error
 * Buffer -> Error
 
-### RawBinaryTranscoder
+#### RawBinaryTranscoder
 
 The RawBinaryTranscoder provides the ability for the user to explicitly store and retrieve raw byte data to Couchbase.  The transcoder does not perform any form of real transcoding, but rather passes the data through and assigns the appropriate binary flags.
 
@@ -95,11 +95,11 @@ The RawBinaryTranscoder provides the ability for the user to explicitly store an
 * Number -> Error
 * Buffer -> Binary Bytes [Flags=Binary]
 
-### SDK Specific Transcoder
+#### SDK Specific Transcoder
 
 A number of languages in the wild have custom serialization formats implicitly provided by the language.  For instance, in the case of Java there is Java Serialized Object Format, in the case of PHP there is the PHP Serialized Object Format.  In the case that a custom language specific serialization format exists for the implementing language, a custom transcoder which specifically acts against this format should be implemented.  The SDK MUST ensure that this custom format encodes the flags data according to the appropriate rules specified by SDK-RFC#20[Common Flags].
 
-## Language Specifics
+### Language Specifics
 In languages such as Go, where there is a common language-level method of specifying an array of bytes that is specifically of JSON type (in Go this is the json.RawMessage type), the SDK is responsible for extending the LegacyTranscoder, JsonTranscoder and RawJsonTranscoder to support these types implicitly.  Additionally, depending on the context of any SDK Specific Transcoder, these too should support these specialized types.
 
 ####  Languages With Type Trait Capabilities
@@ -130,13 +130,13 @@ coll.replace("id", """{"hello":"world"}""", transcoder = RawStringTranscoder())
 coll.replace("id", """{"hello":"world"}""")
 ```
 
-## Custom Transcoders and Serializers
+### Custom Transcoders and Serializers
 
 The SDKs MUST ensure that the ITranscoder and IJsonSerializer types are able to be implemented by the user outside the scope of the default transcoders which are provided by the SDK.
 
 Note that while utilizing a custom Transcoder may affect the ability for a customer to share data among various SDKs, a correctly implemented custom transcoder will still specify flags data conforming to SDK-RFC#20[Common Flags], and this case should be detectable by other SDKs to avoid attempting to parse potentially unparsable data and return an error instead.
 
-# Changelog
+## Changelog
 * June 13, 2019 - Revision #1 (by Jeffry Morris)
 * * Initial Draft
 * Sept 26, 2019 - Revision #2 (by Brett Lawson)
