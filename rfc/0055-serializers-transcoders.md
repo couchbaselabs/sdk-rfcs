@@ -32,7 +32,7 @@ Serializers are used by Transcoders to handle converting the actual JSON bytes t
 The class diagram below shows the two major interfaces ITranscoder and IJsonSerializer. In addition to these interfaces, specific core libraries for converting to & from bytes and primitive types may be used within an implementation. 
 
 
-![figure 1: general design](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/figures/rfc55-uml1.PNG)
+![figure 1: general design](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/figures/rfc55-uml1.png)
 
 The serializer is used by the various non-binary operations within Couchbase to perform parsing of JSON data.  This is used for example when parsing rows from N1QL, fields from Search or values from Views.
 
