@@ -38,7 +38,7 @@ RFC #  | Description | Owner | Status
 55 | [SDK3 Transcoders & Serializers](rfc/0055-serializers-transcoders.md) | Jeff | ACCEPTED
 56 | [SDK3 Query API](rfc/0056-sdk3-query.md) | Michael | ACCEPTED
 57 | [SDK3 Analytics API](rfc/0057-sdk3-analytics.md) | Michael | ACCEPTED
-58 | SDK3 Error Handling [\[gdoc\]](https://docs.google.com/document/d/1oWyuPIxmErNh9BerU3UYqpFQPnmg9Yl8h7oNJzCVVYM/edit) | Jeff | ACCEPTED
+58 | [SDK3 Error Handling](rfc/0058-error-handling.md) | Jeff | ACCEPTED
 59 | SDK3 Foundation [\[gdoc\]](https://docs.google.com/document/d/1pt8wrSu7xvaqjG5vxcQSZN1epw6oP4MyTcZZMvSYwQo/edit) | Brett | ACCEPTED
 61 | SDK3 Diagnostics [\[gdoc\]](https://docs.google.com/document/d/1Lw3nuYVtRbXYIujeCxakcyYQWFs2OAj4Borb75eNe5Y/edit?usp=sharing) | Michael N. | ACCEPTED
 
@@ -104,9 +104,7 @@ RFC #  | Description | Owner | Status
 37 | ~~FTS Index Management [\[draft\]](https://docs.google.com/document/d/1C4yfTj5u6ahRgk3ZIL_AkwPMeu9-hHY_lZcsDNeIP74/edit?usp=sharing)~~ | Subhashni | SUPERSEDED
 43 | ~~Enhanced Durability Requirements~~ (see RFC 46)| Michael | SUPERSEDED
 
-
 [comment]: # (RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED)
-
 
 ## Background
 
