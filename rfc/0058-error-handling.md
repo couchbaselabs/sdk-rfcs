@@ -28,7 +28,7 @@ All exceptions derive from a common base Couchbase exception. Furthermore, excep
 
 The following diagram is a conceptual diagram showing the relationships and hierarchy of the exception/error model within the Couchbase SDKs:  
 
-![figure 1: general design](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/figures/rfc58-general-design.png)
+![figure 1: general design](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/figures/0058-general-design.png)
 
 ### Base Exception
 
@@ -146,7 +146,7 @@ The purpose of these errors is to allow for fine-tuned handling of them by eithe
 
 In certain situations, like bootstrapping, where multiple exceptions might be thrown (one for each server in the bootstrap list until success is reached), an Aggregate Exception/Error may be returned/thrown.
 
-![figure 2: Aggregate Exception](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/figures/rfc58-aggregate-exception.png)
+![figure 2: Aggregate Exception](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/figures/0058-aggregate-exception.png)
 
 Above is an example of the structure that a model of an AggregateException/Error may take, however, please defer to platform idiomatic design decisions when implementating.
 
