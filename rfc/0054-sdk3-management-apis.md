@@ -2458,6 +2458,8 @@ interface QueryIndex {
     Iterable<String> IndexKey();
 
     Optional<String> Condition();
+    
+    Optional<String> Partition()
 }
 ```
 
@@ -2798,6 +2800,10 @@ interface ScopeSpec {
 * November 25, 2020 - Revision #13 (by Charles Dixon)
 
   * Added `MinimumDurabilityLevel` to `BucketSettings`.
+
+* March 3, 2021 - Revision #14 (by Charles Dixon)
+
+  * Added `Partition` to `QueryIndex`.
 
 # Signoff
 
