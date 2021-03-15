@@ -90,7 +90,7 @@ define different fields.
 {
   "alg": "AEAD_AES_256_CBC_HMAC_SHA512",
   "kid": "my-secret-key",
-  "ciphertext": "&lt;base64-encoded-ciphertext&gt;"
+  "ciphertext": "<base64-encoded-ciphertext>"
 }
 ```
 
@@ -122,7 +122,7 @@ mangled to indicate it holds an encrypted value:
   "encrypted$bar": {
     "alg": "AEAD_AES_256_CBC_HMAC_SHA512",
     "kid": "my-secret-key",
-    "ciphertext": "&lt;base64-encoded-ciphertext&gt;"
+    "ciphertext": "<base64-encoded-ciphertext>"
   }
 }
 ```
