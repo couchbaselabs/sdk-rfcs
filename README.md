@@ -41,6 +41,7 @@ RFC #  | Description | Owner | Status
 58 | [SDK3 Error Handling](rfc/0058-error-handling.md) | Jeff | ACCEPTED
 59 | SDK3 Foundation [\[gdoc\]](https://docs.google.com/document/d/1pt8wrSu7xvaqjG5vxcQSZN1epw6oP4MyTcZZMvSYwQo/edit) | Brett | ACCEPTED
 61 | SDK3 Diagnostics [\[gdoc\]](https://docs.google.com/document/d/1Lw3nuYVtRbXYIujeCxakcyYQWFs2OAj4Borb75eNe5Y/edit?usp=sharing) | Michael N. | ACCEPTED
+64 | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N. | ACCEPTED
 
 ### Draft & Review RFCs
 
@@ -55,7 +56,6 @@ RFC #  | Description | Owner | Status
 60 | SDK3 Response Time Observability [\[gdoc\]](https://docs.google.com/document/d/11s2QCIBB-koFUm0ZzWI6aBy27hdRoDc0cRHsWvDT-xI/edit) | Mike G | DRAFT
 62 | Eventing Management APIs [\[gdoc\]](https://docs.google.com/document/d/1VSqyRjFHJvlr9kYlwzeUpSDC8QkeflTm1epH7UzL0yw) | Michael N. | DRAFT
 63 | User Impersonation [\[gdoc\]](https://docs.google.com/document/d/18FTOTIHktHjrntMT2A4qApZco7i5FZwlTEqUcyaquqo/edit#) | Brett L. | DRAFT
-64 | SDK3 Field-Level Encryption [\[gdoc\]](https://docs.google.com/document/d/1JNp6a0_xdYu2kuV2wIb8mlfD885l0G939CP-r6qBQhw/edit#) | David N. | REVIEW
 65 | CreateAsDeleted Support [\[doc\]](https://docs.google.com/document/d/1QccFEvHWEL2-ldS_aTfjphYJGB4YVmMKrMB-UyL2KFI/edit?usp=sharing) | Graham P. | DRAFT
 66 | Collection-Aware Query Support [\[doc\]](https://docs.google.com/document/d/1U1f7OMNua90NPx2S2-NK9LQYxsq2P0riR8lqNGFwKiA/edit#)| Michael R. | DRAFT
 67 | Extended SDK Observability [\[doc\]](https://docs.google.com/document/d/1BAPS8bPMv8-4FPIdysgpxEsKrUgd595EAGOU-_nXHRY/edit?usp=sharing)| Michael N. | DRAFT
