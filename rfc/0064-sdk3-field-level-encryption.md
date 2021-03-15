@@ -7,7 +7,7 @@
 - Current Status: Accepted
 - Relates To:
     - [RFC 32 - Field Level Encryption (SDK 2)](0032-field-level-encryption.md)
-    - [RFC 58 - SDK 3: Error Handling](0058-sdk3-error-handling.md)
+    - [RFC 58 - SDK 3: Error Handling](0058-error-handling.md)
 
 # Summary
 
