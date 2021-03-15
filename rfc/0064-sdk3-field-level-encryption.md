@@ -290,7 +290,7 @@ Methods:
   keyring supports key rotation and the key ID does not include a
   version, returns the latest version of the key.
 
-SDKs should provide an Keyring implementation that gets keys from the
+SDKs should provide a Keyring implementation that gets keys from the
 platform’s native key store, if applicable. For example, the Java SDK
 has a KeyStoreKeyring that gets keys from a Java KeyStore supplied by
 the developer.
