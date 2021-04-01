@@ -251,7 +251,7 @@ A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST
 
 * Raised When
   * KV: ERR_EXISTS (0x02) when replace or remove with cas
-  * Query: code 12009
+  * Query: code 12009 AND message contains `CAS mismatch`
 
 ### 10 BucketNotFound
 
@@ -499,6 +499,11 @@ KV Code 0xc1
 * Query
   * Raised When codes 4040, 4050, 4060, 4070, 4080, 4090
 
+### 204 DmlFailure
+
+* Query
+  * Raised when code 12009 AND message does not contain `CAS mismatch`
+
 ## Analytics Error Definitions (ID Range 300 - 399)
 
 ## 301 CompilationFailure
@@ -696,6 +701,11 @@ KV Code 0xc1
   * Added Field-Level Encryption errors
 * August 10, 2020 - Revision #18 (by David Nault)
   * Added KV XattrNoAccess
+
+## Post-Accepted Changes
+
+* April 1, 2021 - Revision #19 (by Michael Nitschinger)
+  * Added the query DmlFailure and clarified the cas mismatch for query failures.
 
 ## Signoff
 
