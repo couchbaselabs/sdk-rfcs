@@ -1090,8 +1090,24 @@ public interface IAnalyticsIndexManager{
      void DisconnectLink(DisconnectLinkAnalyticsOptions options);
 
      map[string]map[string]int GetPendingMutations(GetPendingMutationsAnalyticsOptions options);
+     
+     void CreateLink(AnalyticsLink link, CreateLinkAnalyticsOptions options);
+     
+     void ReplaceLink(AnalyticsLink link, ReplaceLinkAnalyticsOptions options);
+     
+     void DropLinkFromScope(string linkName, string scopeName, DropLinkAnalyticsOptions options);
+     
+     void DropLinkFromDataverse(string linkName, string dataverseName, DropLinkAnalyticsOptions options);
+     
+     AnalyticsLink GetLinkFromScope(string linkName, string scopeName, GetLinkAnalyticsOptions options);
+     
+     AnalyticsLink GetLinkFromDataverse(string linkName, string dataverseName, GetLinkAnalyticsOptions options);
+     
+     List<AnalyticsLink> GetAllLinks(GetAllLinkAnalyticsOptions options);
 }
 ```
+
+NOTE: Languages which support constructs like `Either<>` can implement single functions for `DropLink` and `GetLink`, as is idiotmatic. 
 
 ## CreateDataverse
 
@@ -1493,6 +1509,323 @@ Map where top level keys are dataverse names, and values are a map of dataset na
 ### URI
 
     GET http://localhost:8095/analytics/node/agg/stats/remaining
+
+## CreateLink
+
+Creates a new link.
+
+### Signature
+
+```
+void CreateLink(AnalyticsLink link, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `link`: `AnalyticsLink` - the link to be created.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `LinkAlreadyExistsException`
+
+* `AnalyticsScopeNotFoundException`
+
+* `DataverseNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+
+  Data is sent as `"application/x-www-form-urlencoded"`
+  The URI is dependent on the link properties.
+  For links which support both `dataverse` and `scope` the following must be followed:
+
+  If `scope` is set:
+  
+  `scope` is url encoded to escape any `/` within the name and URI is:
+
+    POST http://localhost:8095/analytics/link/<scope>/<linkname>
+
+  Else:
+
+  `dataverse` and `name` are populated within the form data and URI is:
+
+    POST http://localhost:8095/analytics/link
+
+## ReplaceLink
+
+Replaces an existing link.
+
+### Signature
+
+```
+void ReplaceLink(AnalyticsLink link, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `link`: `AnalyticsLink` - the link to be replaced.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `AnalyticsScopeNotFoundException`
+
+* `DataverseNotFoundException`
+
+* `LinkNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+
+Data is sent as `"application/x-www-form-urlencoded"`
+The URI is dependent on the link properties.
+For links which support both `dataverse` and `scope` the following must be followed:
+
+If `scope` is set:
+
+`scope` is url encoded to escape any `/` within the name and URI is:
+
+    PUT http://localhost:8095/analytics/link/<scope>/<linkname>
+
+Else:
+
+`dataverse` and `name` are populated within the form data and URI is:
+
+    PUT http://localhost:8095/analytics/link
+
+## DropLinkFromScope
+
+Drops an existing link from a scope.
+
+### Signature
+
+```
+void DropLinkFromScope(string linkName, string scopeName [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `linkName`: `string` - the link to be removed.
+  * `scopeName`: `string` - the scope in which the link belongs, in the format `bucket/scope`.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `AnalyticsScopeNotFoundException`
+
+* `LinkNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+
+`scope` is url encoded to escape any `/` within the name and URI is:
+
+    DELETE http://localhost:8095/analytics/link/<scope>/<linkname>
+
+
+## DropLinkFromDataverse
+
+Drops an existing link from a dataverse.
+
+### Signature
+
+```
+void DropLinkFromDataverse(string linkName, string dataverseName [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `linkName`: `string` - the link to be removed.
+  * `dataverseName`: `string` - the dataverse in which the link belongs.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `DataverseNotFoundException`
+
+* `LinkNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+Data is sent as `"application/x-www-form-urlencoded"`
+
+A payload containing `dataverse` and `name` and URI is:
+
+    DELETE http://localhost:8095/analytics/link
+
+
+## GetLinkFromScope
+
+Gets an existing link from a scope.
+
+### Signature
+
+```
+AnalyticsLink GetLinkFromScope(string linkName, string scopeName [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `linkName`: `string` - the link to be removed.
+  * `scopeName`: `string` - the scope in which the link belongs, in the format `bucket/scope`.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+The JSON payload is returned from the server as an array containing one element which must be extracted.
+
+`AnalyticsLink` - the interface type which must be cast to the relevant underlying type.
+
+### Throws
+
+* `AnalyticsScopeNotFoundException`
+
+* `LinkNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+
+`scope` is url encoded to escape any `/` within the name and URI is:
+
+    GET http://localhost:8095/analytics/link/<scope>/<linkname>
+
+
+## GetLinkFromDataverse
+
+Gets an existing link from a dataverse.
+
+### Signature
+
+```
+AnalyticsLink GetLinkFromDataverse(string linkName, string dataverseName [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `linkName`: `string` - the link to be removed.
+  * `dataverseName`: `string` - the dataverse in which the link belongs.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+The JSON payload is returned from the server as an array containing one element which must be extracted.
+
+`AnalyticsLink` - the interface type which must be cast to the relevant underlying type.
+
+### Throws
+
+* `DataverseNotFoundException`
+
+* `LinkNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+
+    GET http://localhost:8095/analytics/link?dataverse=<dataverse>&name=<name>
+
+
+## GetAllLinks
+
+Gets all existing links.
+
+### Signature
+
+```
+List<AnalyticsLink> GetAllLinksFromDataverse([options])
+```
+
+### Parameters
+
+* Required:
+
+None
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+  * `Scope` (string) - the name of the scope to restrict links to.
+  * `Dataverse` (string) - the name of the dataverse to restrict links to.
+  * `LinkType` (AnalyticsLinkType) - the type of links to restrict returned links to.
+  
+Note: Only `Scope` OR `Dataverse` can be set, if both are set then an `InvalidArgumentsException` must be thrown.
+
+### Returns
+
+`List<AnalyticsLink>` - a list of the interface type which must be cast to the relevant underlying type.
+
+### Throws
+
+* `DataverseNotFoundException`
+
+* `ScopeNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+The URI is dependent on the options.
+
+If `scope` is set:
+
+`scope` is url encoded to escape any `/` within the name and URI is:
+
+    GET http://localhost:8095/analytics/link/<scope>?type=<linktype>
+
+Else:
+
+    GET http://localhost:8095/analytics/link?dataverse=<dataverse>&link=<linktype>
 
 # BucketManager
 
@@ -2532,6 +2865,142 @@ interface AnalyticsIndex{
 }
 ```
 
+## AnalyticsLinkInterface
+
+`AnalyticsLink` provides a means of mapping analytics link details into an object.
+The interface methods are primarily designed for creation and modification of links.
+
+```
+interface AnalyticsLink {
+  List<Byte> FormEncode();
+  
+  Validate();
+  
+  AnalyticsLinkType LinkType();
+}
+```
+
+### CouchbaseRemoteAnalyticsLink
+
+`CouchbaseRemoteAnalyticsLink` provides a means of mapping remote couchbase analytics link details into an object.
+The following fields are named according to how they are sent when form/json encoded.
+The object names should be implemented in a way idiomatic to the implementing language.
+
+* `dataverse` (string) - The dataverse that the link belongs to.
+* `scope` (string) - The scope that the link belongs to. Only available in server 7.0+. Form is `bucket/scope`.
+* `name` (string) - The name of the link.
+* `hostname` (string) - The hostname of the target couchbase cluster. This is `activeHostname` in the returned JSON payload for a get.
+* `encryption` (CouchbaseAnalyticsEncryptionSettings) - The encryption settings for the link. The contents of this field are flattened to the top level of the payload.
+* `username` (string) - The username to use for authentication.
+* `password` (string) - The password to use for authentication.
+
+A value for `type` of `couchbase` must be sent in the form payload, this is returned in the same manner in the JSON payload.
+This field is not exposed on the object and is either inferred from the object type or by calling `LinkType()`.
+
+The `Validate()` implementation must verify that:
+* One, and only one, of `dataverse` or `scope` is set.
+* `name` is set.
+* `hostname` is set.
+* When encryption level is set to "none" or "half":
+  * `username` is set.
+  * `password` is set.
+* When encryption level is set to "full":
+  * `certificate` is set.
+  * Either both `username` and `password` are set OR both `clientCertificate` and `clientKey` are set.
+
+The `LinkType()` implementation must return a value that corresponds to `"couchbase"`.
+
+### CouchbaseAnalyticsEncryptionSettings
+
+`CouchbaseAnalyticsEncryptionSettings` are the settings available for setting encryption level on an analytics link.
+
+* `encryption` (AnalyticsEncryptionLevel) - The encryption level to apply.
+* `certificate` (List<Byte>) - The certificate to use for the encryption when encryption level is set to "full".
+* `clientCertificate` (List<Byte>) - The client certificate to use for authenticating when encryption level is set to "full".
+* `clientKey` (List<Byte>) - The client key to use for authenticating when encryption level is set to "full".
+
+### S3ExternalAnalyticsLink
+
+`S3ExternalAnalyticsLink` provides a means of mapping external s3 analytics link details into an object.
+The following fields are named according to how they are sent when form/json encoded.
+The object names should be implemented in a way idiomatic to the implementing language.
+
+* `dataverse` (string) - The dataverse that the link belongs to.
+* `scope` (string) - The scope that the link belongs to. Only available in server 7.0+. Form is `bucket/scope`.
+* `name` (string) - The name of the link.
+* `accessKeyID` (string) - The AWS S3 access key.
+* `secretAccessKey` (string) - The AWS S3 secret key.
+* `sessionToken` (string) - The AWS S3 token if temporary credentials are provided. Only available in server 7.0+.
+* `region` (string) - The AWS S3 region.
+* `serviceEndpoint` (string) - The AWS S3 service endpoint.
+
+A value for `type` of `s3` must be sent in the form payload, this is returned in the same manner in the JSON payload.
+This field is not exposed on the object and is either inferred from the object type or by calling `LinkType()`.
+
+The `Validate()` implementation must verify that:
+* One, and only one, of `dataverse` or `scope` is set.
+* `name` is set.
+* `accessKeyID` is set.
+* `secretAccessKey` is set.
+* `region` is set.
+
+The `LinkType()` implementation must return a value that corresponds to `"s3"`.
+
+### AzureBlobExternalAnalyticsLink
+
+`AzureBlobExternalAnalyticsLink` provides a means of mapping external azure analytics link details into an object.
+The `AzureBlobExternalAnalyticsLink` is available in server 7.0 Developer Preview mode and must be marked as `volatile` API stability.
+The following fields are named according to how they are sent when form/json encoded.
+The object names should be implemented in a way idiomatic to the implementing language.
+
+* `scope` (string) - The scope that the link belongs to. Form is `bucket/scope`.
+* `name` (string) - The name of the link.
+* `connectionString` (string) - The connection string can be used as an authentication method, connectionString contains other authentication methods embedded inside the string. Only a single authentication method can be used. (e.g. “AccountName=myAccountName;AccountKey=myAccountKey”).
+* `accountName` (string) - The Azure blob storage account name.
+* `accountKey` (string) - The Azure blob storage account key.
+* `sharedAccessSignature` (string) - Token that can be used for authentication.
+* `blobEndpoint` (string) - The Azure blob storage endpoint.
+* `endpointSuffix` (string) - The Azure blob endpoint suffix.
+
+A value for `type` of `azureblob` must be sent in the form payload, this is returned in the same manner in the JSON payload.
+This field is not exposed on the object and is either inferred from the object type or by calling `LinkType()`.
+
+The `Validate()` implementation must verify that:
+* `scope` is set.
+* `name` is set.
+* Either `connectionString` is set or `accountName` and `accountKey` are both set.
+
+The `LinkType()` implementation must return a value that corresponds to `"azureblob"`.
+
+### AnalyticsLinkType
+
+`AnalyticsLinkType` describes the type of link that an object corresponds to.
+
+```
+enum AnalyticsLinkType {
+  S3External("s3")
+  
+  AzureBlobExternal("azureblob")
+  
+  CouchbaseRemote("couchbase")
+}
+```
+
+### AnalyticsEncryptionLevel
+
+`AnalyticsEncryptionLevel` describes the encryption level for a couchbase analytics link.
+
+```
+enum AnalyticsEncryptionLevel {
+  NONE("none")
+  
+  HALF("half")
+  
+  FULL("full")
+}
+  
+```
+
 ## CompressionMode
 
 ```
@@ -2688,6 +3157,8 @@ interface ScopeSpec {
 * Analytics management
 
   * https://docs.couchbase.com/server/current/analytics/5_ddl.html
+  * https://docs.google.com/document/d/1tpcHrcsTZj2bme8yqL5QEQeMMOG9LerOaDD3caXgJ3U
+  * https://docs-staging.couchbase.com/server/7.0/analytics/rest-links.html
 
 # Changes
 
@@ -2805,12 +3276,16 @@ interface ScopeSpec {
 
   * Added `Partition` to `QueryIndex`.
 
+* April 29, 2021 - Revision #15 (by Charles Dixon)
+
+  * Added Analytics Links management to `AnalyticsIndexManager`.
+
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |
 |------------|---------------------|----------------|----------|
 | Node.js    | Brett Lawson        | April 16, 2020 | #9       |
-| Go         | Charles Dixon       | September 22, 2020 | #13  |
+| Go         | Charles Dixon       | April 29, 2021 | #15      |
 | Connectors | David Nault         | April 29, 2020 | #9       |
 | PHP        | Sergey Avseyev      | April 22, 2020 | #9       |
 | Python     | Ellis Breen         | April 29, 2020 | #9       |
