@@ -1208,6 +1208,8 @@ void CreateDataset(string datasetName, string bucketName, [options])
     dataverseName.datasetName`. If not set then will be `CREATE DATASET datasetName`.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+  
+  * `LinkName` (`string`) - The name of the link to use, default to none. If set then is applied in the form of `CREATE DATASET datasetName AT linkName`.
 
 ### Returns
 
@@ -3279,6 +3281,7 @@ interface ScopeSpec {
 * April 29, 2021 - Revision #15 (by Charles Dixon)
 
   * Added Analytics Links management to `AnalyticsIndexManager`.
+  * Added LinkName to `AnalyticsIndexManager` `CreateDataset` options.
 
 # Signoff
 
