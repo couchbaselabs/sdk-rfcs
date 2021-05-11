@@ -1090,24 +1090,16 @@ public interface IAnalyticsIndexManager{
      void DisconnectLink(DisconnectLinkAnalyticsOptions options);
 
      map[string]map[string]int GetPendingMutations(GetPendingMutationsAnalyticsOptions options);
-     
+
      void CreateLink(AnalyticsLink link, CreateLinkAnalyticsOptions options);
-     
+
      void ReplaceLink(AnalyticsLink link, ReplaceLinkAnalyticsOptions options);
-     
-     void DropLinkFromScope(string linkName, string scopeName, DropLinkAnalyticsOptions options);
-     
-     void DropLinkFromDataverse(string linkName, string dataverseName, DropLinkAnalyticsOptions options);
-     
-     AnalyticsLink GetLinkFromScope(string linkName, string scopeName, GetLinkAnalyticsOptions options);
-     
-     AnalyticsLink GetLinkFromDataverse(string linkName, string dataverseName, GetLinkAnalyticsOptions options);
-     
+
+     void DropLink(string linkName, string dataverseName, DropLinkAnalyticsOptions options);
+
      List<AnalyticsLink> GetAllLinks(GetAllLinkAnalyticsOptions options);
 }
 ```
-
-NOTE: Languages which support constructs like `Either<>` can implement single functions for `DropLink` and `GetLink`, as is idiotmatic. 
 
 ## CreateDataverse
 
@@ -1124,6 +1116,9 @@ void CreateDataverse(string dataverseName, [options])
 * Required:
 
   * `dataverseName`: `string` - name of the dataverse.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
 * Optional:
 
@@ -1159,6 +1154,9 @@ void DropDataverse(string dataverseName,  [options])
 * Required:
 
   * `dataverseName`: `string` - name of the dataverse.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
 * Optional:
 
@@ -1206,6 +1204,9 @@ void CreateDataset(string datasetName, string bucketName, [options])
 
   * `DataverseName` (`string`) - The name of the dataverse to use, default to none. If set then will be used as `CREATE DATASET
     dataverseName.datasetName`. If not set then will be `CREATE DATASET datasetName`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
   
@@ -1246,6 +1247,9 @@ void DropDataset(string datasetName,  [options])
 
   * `DataverseName` (`string`) - The name of the dataverse to use, default to none. If set then will be used as `DROP DATASET
     dataverseName.datasetName`. If not set then will be `DROP DATASET datasetName`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
@@ -1317,6 +1321,9 @@ void CreateIndex(string indexName, string datasetName, map[string]string fields,
 
   * `DataverseName` (`string`) - The name of the dataverse to use, default to none. If set then will be used as `DROP INDEX
     dataverseName.datasetName.indexName`. If not set then will be `DROP INDEX datasetName.indexName`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the
     client.
@@ -1355,6 +1362,9 @@ void DropIndex(string indexName, string datasetName, [options])
 
   * `DataverseName` (`string`) - The name of the dataverse to use, default to none. If set then will be used as `DROP INDEX
     dataverseName.datasetName.indexName`. If not set then will be `DROP INDEX datasetName.indexName`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
@@ -1415,6 +1425,9 @@ void ConnectLink([options])
 * Optional:
 
   * `DataverseName` (`string`) - name of the dataverse to connect to. Default to `"Default"`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `LinkName` (`string`) - name of the link. Default to `"Local"`.
 
@@ -1450,6 +1463,11 @@ void DisconnectLink([options])
 * Required: None
 
 * Optional:
+
+  * `DataverseName` (`string`) - name of the dataverse to connect to. Default to `"Default"`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `linkName`: `string` - name of the link. Default to `"Local"`.
 
@@ -1542,27 +1560,20 @@ Nothing
 
 * `AnalyticsScopeNotFoundException`
 
-* `DataverseNotFoundException`
-
 * `InvalidArgumentsException`
 
 ### URI
 
-  Data is sent as `"application/x-www-form-urlencoded"`
-  The URI is dependent on the link properties.
-  For links which support both `dataverse` and `scope` the following must be followed:
+Data is sent as `"application/x-www-form-urlencoded"`.
 
-  If `scope` is set:
-  
-  `scope` is url encoded to escape any `/` within the name and URI is:
+* The link's `dataverse` can contain one or more `/`.
+* The path to use depends on the `dataverse`.
+* If `dataverse` contains a `/` then the name is url encoded to escape any `/` within the name and URI is:
+  * POST http://localhost:8095/analytics/link/<dataverse>/<linkname>
+* If `dataverse` does not contain a `/` then the `dataverse` and `name` are included within the payload of the request (as `dataverse` and `name`)
+  * The URI is:
+    * POST http://localhost:8095/analytics/link
 
-    POST http://localhost:8095/analytics/link/<scope>/<linkname>
-
-  Else:
-
-  `dataverse` and `name` are populated within the form data and URI is:
-
-    POST http://localhost:8095/analytics/link
 
 ## ReplaceLink
 
@@ -1592,38 +1603,30 @@ Nothing
 
 * `AnalyticsScopeNotFoundException`
 
-* `DataverseNotFoundException`
-
 * `LinkNotFoundException`
 
 * `InvalidArgumentsException`
 
 ### URI
 
-Data is sent as `"application/x-www-form-urlencoded"`
-The URI is dependent on the link properties.
-For links which support both `dataverse` and `scope` the following must be followed:
+Data is sent as `"application/x-www-form-urlencoded"`.
 
-If `scope` is set:
+* The link's `dataverse` can contain one or more `/`.
+* The path to use depends on the `dataverse`.
+* If `dataverse` contains a `/` then the name is url encoded to escape any `/` within the name and URI is:
+  * PUT http://localhost:8095/analytics/link/<dataverse>/<linkname>
+* If `dataverse` does not contain a `/` then the `dataverse` and `name` are included within the payload of the request (as `dataverse` and `name`)
+  * The URI is:
+    * POST http://localhost:8095/analytics/link
 
-`scope` is url encoded to escape any `/` within the name and URI is:
-
-    PUT http://localhost:8095/analytics/link/<scope>/<linkname>
-
-Else:
-
-`dataverse` and `name` are populated within the form data and URI is:
-
-    PUT http://localhost:8095/analytics/link
-
-## DropLinkFromScope
+## DropLink
 
 Drops an existing link from a scope.
 
 ### Signature
 
 ```
-void DropLinkFromScope(string linkName, string scopeName [options])
+void DropLink(string linkName, string scopeName, [options])
 ```
 
 ### Parameters
@@ -1651,133 +1654,13 @@ Nothing
 
 ### URI
 
-`scope` is url encoded to escape any `/` within the name and URI is:
-
-    DELETE http://localhost:8095/analytics/link/<scope>/<linkname>
-
-
-## DropLinkFromDataverse
-
-Drops an existing link from a dataverse.
-
-### Signature
-
-```
-void DropLinkFromDataverse(string linkName, string dataverseName [options])
-```
-
-### Parameters
-
-* Required:
-
-  * `linkName`: `string` - the link to be removed.
-  * `dataverseName`: `string` - the dataverse in which the link belongs.
-
-* Optional:
-
-  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
-
-### Returns
-
-Nothing
-
-### Throws
-
-* `DataverseNotFoundException`
-
-* `LinkNotFoundException`
-
-* `InvalidArgumentsException`
-
-### URI
-Data is sent as `"application/x-www-form-urlencoded"`
-
-A payload containing `dataverse` and `name` and URI is:
-
-    DELETE http://localhost:8095/analytics/link
-
-
-## GetLinkFromScope
-
-Gets an existing link from a scope.
-
-### Signature
-
-```
-AnalyticsLink GetLinkFromScope(string linkName, string scopeName [options])
-```
-
-### Parameters
-
-* Required:
-
-  * `linkName`: `string` - the link to be removed.
-  * `scopeName`: `string` - the scope in which the link belongs, in the format `bucket/scope`.
-
-* Optional:
-
-  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
-
-### Returns
-
-The JSON payload is returned from the server as an array containing one element which must be extracted.
-
-`AnalyticsLink` - the interface type which must be cast to the relevant underlying type.
-
-### Throws
-
-* `AnalyticsScopeNotFoundException`
-
-* `LinkNotFoundException`
-
-* `InvalidArgumentsException`
-
-### URI
-
-`scope` is url encoded to escape any `/` within the name and URI is:
-
-    GET http://localhost:8095/analytics/link/<scope>/<linkname>
-
-
-## GetLinkFromDataverse
-
-Gets an existing link from a dataverse.
-
-### Signature
-
-```
-AnalyticsLink GetLinkFromDataverse(string linkName, string dataverseName [options])
-```
-
-### Parameters
-
-* Required:
-
-  * `linkName`: `string` - the link to be removed.
-  * `dataverseName`: `string` - the dataverse in which the link belongs.
-
-* Optional:
-
-  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
-
-### Returns
-
-The JSON payload is returned from the server as an array containing one element which must be extracted.
-
-`AnalyticsLink` - the interface type which must be cast to the relevant underlying type.
-
-### Throws
-
-* `DataverseNotFoundException`
-
-* `LinkNotFoundException`
-
-* `InvalidArgumentsException`
-
-### URI
-
-    GET http://localhost:8095/analytics/link?dataverse=<dataverse>&name=<name>
-
+* The link's `dataverse` can contain one or more `/`.
+* The path to use depends on the `dataverse`.
+* If `dataverse` contains a `/` then the name is url encoded to escape any `/` within the name and URI is:
+  * DELETE http://localhost:8095/analytics/link/<dataverse>/<linkname>
+* If `dataverse` does not contain a `/` then the `dataverse` and `name` are included within the payload of the request (as `dataverse` and `name`)
+  * The URI is:
+    * POST http://localhost:8095/analytics/link
 
 ## GetAllLinks
 
@@ -1786,7 +1669,7 @@ Gets all existing links.
 ### Signature
 
 ```
-List<AnalyticsLink> GetAllLinksFromDataverse([options])
+List<AnalyticsLink> GetAllLinks([options])
 ```
 
 ### Parameters
@@ -1798,11 +1681,11 @@ None
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
-  * `Scope` (string) - the name of the scope to restrict links to.
   * `Dataverse` (string) - the name of the dataverse to restrict links to.
+  * `Name` (string) - the name of the link to fetch.
   * `LinkType` (AnalyticsLinkType) - the type of links to restrict returned links to.
   
-Note: Only `Scope` OR `Dataverse` can be set, if both are set then an `InvalidArgumentsException` must be thrown.
+Note: If `Name` is set then `Dataverse` must be set, otherwise an `InvalidArgumentsException` must be thrown.
 
 ### Returns
 
@@ -1818,16 +1701,20 @@ Note: Only `Scope` OR `Dataverse` can be set, if both are set then an `InvalidAr
 
 ### URI
 The URI is dependent on the options.
+If `dataverse` is not set then:
 
-If `scope` is set:
+    GET http://localhost:8095/analytics/link?type=<linktype>
 
-`scope` is url encoded to escape any `/` within the name and URI is:
-
-    GET http://localhost:8095/analytics/link/<scope>?type=<linktype>
-
-Else:
-
-    GET http://localhost:8095/analytics/link?dataverse=<dataverse>&link=<linktype>
+* If `dataverse` is set and contains a `/` then the name is url encoded to escape any `/` within the name and URI is:
+  *  If `dataverse` is set and `name` is not:
+    * `GET http://localhost:8095/analytics/link/<dataverse>?type=<linktype>`
+  *  If `dataverse` is and `name` are both set:
+    * `GET http://localhost:8095/analytics/link/<scope>/<linkname>?type=<linktype>`
+  
+* If `dataverse` does not contain a `/` then the `dataverse` and `name` are included within the querystring of the request (as `dataverse` and `name`)
+  *  Only include `name` if `name` is set.
+  * Uri is:
+    * `GET http://localhost:8095/analytics/link?dataverse=<dataverse>&name=<name>&type=<linktype>`
 
 # BucketManager
 
@@ -2871,6 +2758,7 @@ interface AnalyticsIndex{
 
 `AnalyticsLink` provides a means of mapping analytics link details into an object.
 The interface methods are primarily designed for creation and modification of links.
+Note: Analytics link management is only supported for server 7.0+.
 
 ```
 interface AnalyticsLink {
@@ -2888,8 +2776,7 @@ interface AnalyticsLink {
 The following fields are named according to how they are sent when form/json encoded.
 The object names should be implemented in a way idiomatic to the implementing language.
 
-* `dataverse` (string) - The dataverse that the link belongs to.
-* `scope` (string) - The scope that the link belongs to. Only available in server 7.0+. Form is `bucket/scope`.
+* `dataverse` (string) - The dataverse that the link belongs to. Form can be one part `dataversename` or two parts `bucket.name/scope.name`.
 * `name` (string) - The name of the link.
 * `hostname` (string) - The hostname of the target couchbase cluster. This is `activeHostname` in the returned JSON payload for a get.
 * `encryption` (CouchbaseAnalyticsEncryptionSettings) - The encryption settings for the link. The contents of this field are flattened to the top level of the payload.
@@ -2900,7 +2787,7 @@ A value for `type` of `couchbase` must be sent in the form payload, this is retu
 This field is not exposed on the object and is either inferred from the object type or by calling `LinkType()`.
 
 The `Validate()` implementation must verify that:
-* One, and only one, of `dataverse` or `scope` is set.
+* `dataverse` is set.
 * `name` is set.
 * `hostname` is set.
 * When encryption level is set to "none" or "half":
@@ -2911,6 +2798,12 @@ The `Validate()` implementation must verify that:
   * Either both `username` and `password` are set OR both `clientCertificate` and `clientKey` are set.
 
 The `LinkType()` implementation must return a value that corresponds to `"couchbase"`.
+
+On fetching a `CouchbaseRemoteAnalyticsLink`:
+  * The `hostname` property is present as `activeHostname`.
+  * The `password` property must be blanked out/left unset.
+  * The `clientKey` property must be blanked out/left unset.
+  * The `dataverse` property must be set by first checking the `dataverse` field in the response body and if empty falling back to the `scope` field.
 
 ### CouchbaseAnalyticsEncryptionSettings
 
@@ -2927,8 +2820,7 @@ The `LinkType()` implementation must return a value that corresponds to `"couchb
 The following fields are named according to how they are sent when form/json encoded.
 The object names should be implemented in a way idiomatic to the implementing language.
 
-* `dataverse` (string) - The dataverse that the link belongs to.
-* `scope` (string) - The scope that the link belongs to. Only available in server 7.0+. Form is `bucket/scope`.
+* `dataverse` (string) - The dataverse that the link belongs to. Form can be one part `dataversename` or two parts `bucket.name/scope.name`.
 * `name` (string) - The name of the link.
 * `accessKeyID` (string) - The AWS S3 access key.
 * `secretAccessKey` (string) - The AWS S3 secret key.
@@ -2940,13 +2832,18 @@ A value for `type` of `s3` must be sent in the form payload, this is returned in
 This field is not exposed on the object and is either inferred from the object type or by calling `LinkType()`.
 
 The `Validate()` implementation must verify that:
-* One, and only one, of `dataverse` or `scope` is set.
+* `dataverse` is set.
 * `name` is set.
 * `accessKeyID` is set.
 * `secretAccessKey` is set.
 * `region` is set.
 
 The `LinkType()` implementation must return a value that corresponds to `"s3"`.
+
+On fetching a `S3ExternalAnalyticsLink`:
+* The `secretAccessKey` property must be blanked out/left unset.
+* The `sessionToken` property must be blanked out/left unset.
+* The `dataverse` property must be set by first checking the `dataverse` field in the response body and if empty falling back to the `scope` field.
 
 ### AzureBlobExternalAnalyticsLink
 
@@ -2955,7 +2852,7 @@ The `AzureBlobExternalAnalyticsLink` is available in server 7.0 Developer Previe
 The following fields are named according to how they are sent when form/json encoded.
 The object names should be implemented in a way idiomatic to the implementing language.
 
-* `scope` (string) - The scope that the link belongs to. Form is `bucket/scope`.
+* `dataverse` (string) - The dataverse that the link belongs to. Form is `bucket.name/scope.name`.
 * `name` (string) - The name of the link.
 * `connectionString` (string) - The connection string can be used as an authentication method, connectionString contains other authentication methods embedded inside the string. Only a single authentication method can be used. (e.g. “AccountName=myAccountName;AccountKey=myAccountKey”).
 * `accountName` (string) - The Azure blob storage account name.
@@ -2968,11 +2865,17 @@ A value for `type` of `azureblob` must be sent in the form payload, this is retu
 This field is not exposed on the object and is either inferred from the object type or by calling `LinkType()`.
 
 The `Validate()` implementation must verify that:
-* `scope` is set.
+* `dataverse` is set.
 * `name` is set.
-* Either `connectionString` is set or `accountName` and `accountKey` are both set.
+* Either `connectionString` is set, or `accountName` and `accountKey` are both set, or `accountName` and `sharedAccessSignature` are both set.
 
 The `LinkType()` implementation must return a value that corresponds to `"azureblob"`.
+
+On fetching an `AzureBlobExternalAnalyticsLink`:
+* The `connectionString` property must be blanked out/left unset.
+* The `accountKey` property must be blanked out/left unset.
+* The `sharedAccessSignature` property must be blanked out/left unset.
+* The `dataverse` property must be set from the `scope` field in the response body.
 
 ### AnalyticsLinkType
 
@@ -3283,12 +3186,27 @@ interface ScopeSpec {
   * Added Analytics Links management to `AnalyticsIndexManager`.
   * Added LinkName to `AnalyticsIndexManager` `CreateDataset` options.
 
+* May 11, 2021 - Revision #16 (by Charles Dixon)
+
+  * Rework Analytics Links management to only support server 7.0+.
+    * Removed `Dataverse` links functions and from links objects.
+    * Removed `GetLink` functions all together.
+    * Added `name` to `GetAllLinksOptions`.
+  
+* May 17, 2021 - Revision #17 (by Charles Dixon)
+  
+  * Rework Analytics Link management to once again support server 6.6
+    * Updated all link and method parameters to refer to `dataverse` only.
+    * Clarified behaviour to follow on parsing link response bodies.
+    * Added detail on how to parse `dataverse` names and which URLs to use depending on the name.
+  * Update Analytics management API to include information on how to parse `dataverse` names containing `/`.
+
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |
 |------------|---------------------|----------------|----------|
 | Node.js    | Brett Lawson        | April 16, 2020 | #9       |
-| Go         | Charles Dixon       | April 29, 2021 | #15      |
+| Go         | Charles Dixon       | April 29, 2021 | #17      |
 | Connectors | David Nault         | April 29, 2020 | #9       |
 | PHP        | Sergey Avseyev      | April 22, 2020 | #9       |
 | Python     | Ellis Breen         | April 29, 2020 | #9       |
