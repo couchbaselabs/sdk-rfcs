@@ -1097,7 +1097,7 @@ public interface IAnalyticsIndexManager{
 
      void DropLink(string linkName, string dataverseName, DropLinkAnalyticsOptions options);
 
-     List<AnalyticsLink> GetAllLinks(GetAllLinkAnalyticsOptions options);
+     List<AnalyticsLink> GetLinks(GetLinksAnalyticsOptions options);
 }
 ```
 
@@ -1209,8 +1209,6 @@ void CreateDataset(string datasetName, string bucketName, [options])
     * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
-  
-  * `LinkName` (`string`) - The name of the link to use, default to none. If set then is applied in the form of `CREATE DATASET datasetName AT linkName`.
 
 ### Returns
 
@@ -1556,9 +1554,9 @@ Nothing
 
 ### Throws
 
-* `LinkAlreadyExistsException`
+* `AnalyticsLinkExistsException`
 
-* `AnalyticsScopeNotFoundException`
+* `DataverseNotFoundException`
 
 * `InvalidArgumentsException`
 
@@ -1601,9 +1599,9 @@ Nothing
 
 ### Throws
 
-* `AnalyticsScopeNotFoundException`
+* `DataverseNotFoundException`
 
-* `LinkNotFoundException`
+* `AnalyticsLinkNotFoundException`
 
 * `InvalidArgumentsException`
 
@@ -1646,9 +1644,9 @@ Nothing
 
 ### Throws
 
-* `AnalyticsScopeNotFoundException`
+* `DataverseNotFoundException`
 
-* `LinkNotFoundException`
+* `AnalyticsLinkNotFoundException`
 
 * `InvalidArgumentsException`
 
@@ -1662,14 +1660,14 @@ Nothing
   * The URI is:
     * POST http://localhost:8095/analytics/link
 
-## GetAllLinks
+## GetLinks
 
-Gets all existing links.
+Gets existing links.
 
 ### Signature
 
 ```
-List<AnalyticsLink> GetAllLinks([options])
+List<AnalyticsLink> GetLinks([options])
 ```
 
 ### Parameters
@@ -1690,12 +1688,10 @@ Note: If `Name` is set then `Dataverse` must be set, otherwise an `InvalidArgume
 ### Returns
 
 `List<AnalyticsLink>` - a list of the interface type which must be cast to the relevant underlying type.
-
+``
 ### Throws
 
 * `DataverseNotFoundException`
-
-* `ScopeNotFoundException`
 
 * `InvalidArgumentsException`
 
@@ -1709,7 +1705,7 @@ If `dataverse` is not set then:
   *  If `dataverse` is set and `name` is not:
     * `GET http://localhost:8095/analytics/link/<dataverse>?type=<linktype>`
   *  If `dataverse` is and `name` are both set:
-    * `GET http://localhost:8095/analytics/link/<scope>/<linkname>?type=<linktype>`
+    * `GET http://localhost:8095/analytics/link/<dataverse>/<linkname>?type=<linktype>`
   
 * If `dataverse` does not contain a `/` then the `dataverse` and `name` are included within the querystring of the request (as `dataverse` and `name`)
   *  Only include `name` if `name` is set.
@@ -2762,6 +2758,10 @@ Note: Analytics link management is only supported for server 7.0+.
 
 ```
 interface AnalyticsLink {
+  String Name();
+  
+  String DataverseName();
+
   List<Byte> FormEncode();
   
   Validate();
@@ -2808,8 +2808,11 @@ On fetching a `CouchbaseRemoteAnalyticsLink`:
 ### CouchbaseAnalyticsEncryptionSettings
 
 `CouchbaseAnalyticsEncryptionSettings` are the settings available for setting encryption level on an analytics link.
+When present these fields are encoded into the form data at the top level, alongside `hostname` etc...
+If any of these fields are not set then they should not be encoded into the payload, except `encryptionLevel` which can be sent as `none` when not set.
+See above validation section on when these fields must be set.
 
-* `encryption` (AnalyticsEncryptionLevel) - The encryption level to apply.
+* `encryptionLevel` (AnalyticsEncryptionLevel) - Encoded in the payload as `encryption`. The encryption level to apply.
 * `certificate` (List<Byte>) - The certificate to use for the encryption when encryption level is set to "full".
 * `clientCertificate` (List<Byte>) - The client certificate to use for authenticating when encryption level is set to "full".
 * `clientKey` (List<Byte>) - The client key to use for authenticating when encryption level is set to "full".
@@ -3201,12 +3204,24 @@ interface ScopeSpec {
     * Added detail on how to parse `dataverse` names and which URLs to use depending on the name.
   * Update Analytics management API to include information on how to parse `dataverse` names containing `/`.
 
+* June 1, 2021 - Revision #18 (by Charles Dixon)
+  * Remove `AnalyticsScopeNotFoundException` and replace references to it with `DataverseNotFoundException`.
+  * Rename `LinkAlreadyExistsException` to `AnalyticsLinkExistsException`.
+  * Renamed `CouchbaseAnalyticsEncryptionSettings` `encryption` field to `encryptionLevel`, note that this field is still sent in the payload as `encryption`.
+  * Added some extra detail on how to encode `CouchbaseAnalyticsEncryptionSettings`.
+
+* June 8, 2021 - Revision #19 (by Charles Dixon)
+  * Rename `GetAllLinks` to `GetLinks`.
+  * Rename `GetAllLinksOptions` to `GetLinksOptions`.
+  * Add `Name` and `DataverseName` to `AnalyticsLink` interface.
+  * Remove `linkName` option from `CreateDataset`.
+
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |
 |------------|---------------------|----------------|----------|
 | Node.js    | Brett Lawson        | April 16, 2020 | #9       |
-| Go         | Charles Dixon       | April 29, 2021 | #17      |
+| Go         | Charles Dixon       | April 29, 2021 | #19      |
 | Connectors | David Nault         | April 29, 2020 | #9       |
 | PHP        | Sergey Avseyev      | April 22, 2020 | #9       |
 | Python     | Ellis Breen         | April 29, 2020 | #9       |
