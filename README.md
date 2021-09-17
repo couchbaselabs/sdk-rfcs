@@ -42,6 +42,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 59    | [SDK3 Foundation](rfc/0059-sdk3-foundation.md)                         | Brett        | ACCEPTED |
 | 61    | [SDK3 Diagnostics](rfc/0061-sdk3-diagnostics.md)                       | Michael N.   | ACCEPTED |
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
+| 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
 
 ### Draft & Review RFCs
 
