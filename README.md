@@ -17,31 +17,31 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 
 ### Accepted RFCs
 
-| RFC # | Description                                                                                                      | Owner        | Status   |
-| ----- | ---------------------------------------------------------------------------------------------------------------- | ------------ | -------- |
-| 1     | [The RFC Process](rfc/0001-rfc-process.md)                                                                       | Matt         | ACCEPTED |
-| 5     | [VBucket Retry Logic](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0005-vbucket-retries.md)         | Brett        | ACCEPTED |
-| 11    | [Connection String](rfc/0011-connection-string.md)                                                               | SDK          | ACCEPTED |
-| 13    | [KV Error Map](rfc/0013-kv-error-map.md)                                                                         | Brett (Mark) | ACCEPTED |
-| 20    | [Common Flags](rfc/0020-common-flags.md)                                                                         | Brett        | ACCEPTED |
-| 24    | [Fast failover configuration and behavior](rfc/0024-fast-failover.md)                                            | Jeff         | ACCEPTED |
-| 26    | [Ketama Hashing](rfc/0026-ketama-hashing.md)                                                                     | Mike G       | ACCEPTED |
-| 30    | [Client-Side Compression](rfc/0030-compression.md)                                                               | Sergey       | ACCEPTED |
-| 32    | [Field-Level Encryption](rfc/0032-field-level-encryption.md)                                                     | Jeff         | ACCEPTED |
-| 48    | [SDK3 Bootstrapping](rfc/0048-sdk3-bootstrapping.md)                                                             | Brett        | ACCEPTED |
-| 49    | [SDK3 Retry Handling](rfc/0049-sdk3-retry-handling.md)                                                           | Michael      | ACCEPTED |
-| 50    | [SDK3 Datastructures](rfc/0050-sdk3-datastructures.md)                                                           | Brett        | ACCEPTED |
-| 51    | [SDK3 Views](rfc/0051-sdk3-views.md)                                                                             | Sergey       | ACCEPTED |
-| 52    | [SDK3 Full Text Search](rfc/0052-sdk3-full-text-search.md)                                                       | Sergey       | ACCEPTED |
-| 53    | SDK3 CRUD API [\[gdoc\]](https://docs.google.com/document/d/1_fPJn9trqG6e7iTpzqwCnurvxmBlguFVjh00F2Co7Y8/edit)   | Jeff         | ACCEPTED |
-| 54    | [SDK3 Management APIs](rfc/0054-sdk3-management-apis.md)                                                         | Charles      | ACCEPTED |
-| 55    | [SDK3 Transcoders & Serializers](rfc/0055-serializers-transcoders.md)                                            | Jeff         | ACCEPTED |
-| 56    | [SDK3 Query API](rfc/0056-sdk3-query.md)                                                                         | Michael      | ACCEPTED |
-| 57    | [SDK3 Analytics API](rfc/0057-sdk3-analytics.md)                                                                 | Michael      | ACCEPTED |
-| 58    | [SDK3 Error Handling](rfc/0058-error-handling.md)                                                                | Jeff         | ACCEPTED |
-| 59    | SDK3 Foundation [\[gdoc\]](https://docs.google.com/document/d/1pt8wrSu7xvaqjG5vxcQSZN1epw6oP4MyTcZZMvSYwQo/edit) | Brett        | ACCEPTED |
-| 61    | [SDK3 Diagnostics](rfc/0061-sdk3-diagnostics.md)                                                                 | Michael N.   | ACCEPTED |
-| 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md)                                           | David N.     | ACCEPTED |
+| RFC # | Description                                                            | Owner        | Status   |
+| ----- | ---------------------------------------------------------------------- | ------------ | -------- |
+| 1     | [The RFC Process](rfc/0001-rfc-process.md)                             | Matt         | ACCEPTED |
+| 5     | [VBucket Retry Logic](rfc/0005-vbucket-retries.md)                     | Brett        | ACCEPTED |
+| 11    | [Connection String](rfc/0011-connection-string.md)                     | SDK          | ACCEPTED |
+| 13    | [KV Error Map](rfc/0013-kv-error-map.md)                               | Brett (Mark) | ACCEPTED |
+| 20    | [Common Flags](rfc/0020-common-flags.md)                               | Brett        | ACCEPTED |
+| 24    | [Fast failover configuration and behavior](rfc/0024-fast-failover.md)  | Jeff         | ACCEPTED |
+| 26    | [Ketama Hashing](rfc/0026-ketama-hashing.md)                           | Mike G       | ACCEPTED |
+| 30    | [Client-Side Compression](rfc/0030-compression.md)                     | Sergey       | ACCEPTED |
+| 32    | [Field-Level Encryption](rfc/0032-field-level-encryption.md)           | Jeff         | ACCEPTED |
+| 48    | [SDK3 Bootstrapping](rfc/0048-sdk3-bootstrapping.md)                   | Brett        | ACCEPTED |
+| 49    | [SDK3 Retry Handling](rfc/0049-sdk3-retry-handling.md)                 | Michael      | ACCEPTED |
+| 50    | [SDK3 Datastructures](rfc/0050-sdk3-datastructures.md)                 | Brett        | ACCEPTED |
+| 51    | [SDK3 Views](rfc/0051-sdk3-views.md)                                   | Sergey       | ACCEPTED |
+| 52    | [SDK3 Full Text Search](rfc/0052-sdk3-full-text-search.md)             | Sergey       | ACCEPTED |
+| 53    | [SDK3 CRUD API](rfc/0053-sdk3-crud.md)                                 | Jeff         | ACCEPTED |
+| 54    | [SDK3 Management APIs](rfc/0054-sdk3-management-apis.md)               | Charles      | ACCEPTED |
+| 55    | [SDK3 Transcoders & Serializers](rfc/0055-serializers-transcoders.md)  | Jeff         | ACCEPTED |
+| 56    | [SDK3 Query API](rfc/0056-sdk3-query.md)                               | Michael      | ACCEPTED |
+| 57    | [SDK3 Analytics API](rfc/0057-sdk3-analytics.md)                       | Michael      | ACCEPTED |
+| 58    | [SDK3 Error Handling](rfc/0058-error-handling.md)                      | Jeff         | ACCEPTED |
+| 59    | [SDK3 Foundation](rfc/0059-sdk3-foundation.md)                         | Brett        | ACCEPTED |
+| 61    | [SDK3 Diagnostics](rfc/0061-sdk3-diagnostics.md)                       | Michael N.   | ACCEPTED |
+| 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
 
 ### Draft & Review RFCs
 
