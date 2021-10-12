@@ -60,6 +60,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 66    | Collection-Aware Query Support [\[doc\]](https://docs.google.com/document/d/1U1f7OMNua90NPx2S2-NK9LQYxsq2P0riR8lqNGFwKiA/edit#)                                            | Michael R. | DRAFT  |
 | 67    | Extended SDK Observability (also known as "Tracing & Metrics") [\[doc\]](https://docs.google.com/document/d/1BAPS8bPMv8-4FPIdysgpxEsKrUgd595EAGOU-_nXHRY/edit?usp=sharing) | Michael N. | DRAFT  |
 | 68    | Collection-Aware FTS Support [\[doc\]](https://docs.google.com/document/d/1mWD4Qa56iIE9nnwQT83GutU8BcLQ8RS7iW90qEfiElU)                                                    | Michael R. | DRAFT  |
+| 69    | ReplaceBodyWithXattr  Support [\[doc\]](https://docs.google.com/document/d/1pafGxfhhg4Nmw_huvjJoGuUBWA39kCCXpkMoIb1MtW0/edit?usp=sharing)                                                    | Graham P. | DRAFT  |
 
 ### Identified RFCs
 
