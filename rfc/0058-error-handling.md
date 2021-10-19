@@ -317,6 +317,37 @@ A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST
 
 * Raised when decoding of the data into the user object failed
 
+### 21 RateLimitingFailure
+
+* Raised when a service decides that the caller must be rate limited due to exceeding a threshold of some sort.
+* Note that since there are many different reasons why a request is rate limited, the error context MUST include the reason / specific type of rate limiting cause for debugging purposes.
+
+Maps to:
+
+* KeyValue
+  * 0x30 RateLimitedNetworkIngress: Rate limited because of network ingress
+  * 0x31 RateLimitedNetworkEgress: Rate limited because of network egress
+  * 0x32 RateLimitedMaxConnections: Exceeded the maximum allowed connections
+  * 0x33 RateLimitedMaxCommands: Exceeded the maximum number of commands / ops
+* Cluster Manager (body check tbd)
+  * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]": Rate limited due to number of concurrent requests
+  * HTTP 429, Body contains "Limit(s) exceeded [ingress]": Rate limited because of network ingress
+  * HTTP 429, Body contains "Limit(s) exceeded [egress]": Rate limited because of network egress
+  * HTTP 429, Body contains "Maximum number of collections has been reached for scope \"<scope_name>\"": Maximum number of collections hit
+* Query
+  * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED: User has more requests running than allowed
+  * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED: User has exceeded the request rate limit
+  * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED: User has exceeded input network traffic limit (ingress?)
+  * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED: User has exceeded results size limit
+* Search
+  * 400 (Bad request)	rest_create_index: error creating index: {indexName}, err: manager_api: CreateIndex, Prepare failed, err: num_fts_indexes (active + pending) >= limit	<-- index limit
+  * HTTP 429, Body contains "num_concurrent_requests, value >= limit": Rate limited due to number of concurrent requests
+  * HTTP 429, Body contains "num_queries_per_min, value >= limit": User has exceeded the request rate limit (queries per minute)
+  * HTTP 429, Body contains "ingress_mib_per_min >= limit": Rate limited because of network ingress 
+  * HTTP 429, Body contains "egress_mib_per_min >=": Rate limited because of network egress
+* Not applicable to Analytics at the moment
+* Not applicable to views
+
 ## KeyValue Error Definitions (ID Range 100 - 199)
 
 ### 101 DocumentNotFound
