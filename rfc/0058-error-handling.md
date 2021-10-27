@@ -322,29 +322,44 @@ A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST
 * Raised when a service decides that the caller must be rate limited due to exceeding a threshold of some sort.
 * Note that since there are many different reasons why a request is rate limited, the error context MUST include the reason / specific type of rate limiting cause for debugging purposes.
 
+Since the failure itself is a very generic error, an additional Set of `RateLimitingReason` should be part of the error that allows the user - if needed - to further inspect/narrow down the cause. Note that it is a set, since it could contain multiple reasons at the same time.
+
+```
+enum RateLimitingReason {
+  NetworkIngressLimitReached,
+  NetworkEgressLimitReached,
+  MaximumConnectionsReached,
+  MaximumRequestsReached,
+  MaximumRequestRateReached,
+  MaximumNumberOfCollectionsReached,
+  ResultSizeLimitReached,
+}
+```
+
 Maps to:
 
 * KeyValue
-  * 0x30 RateLimitedNetworkIngress: Rate limited because of network ingress
-  * 0x31 RateLimitedNetworkEgress: Rate limited because of network egress
-  * 0x32 RateLimitedMaxConnections: Exceeded the maximum allowed connections
-  * 0x33 RateLimitedMaxCommands: Exceeded the maximum number of commands / ops
+  * 0x30 RateLimitedNetworkIngress -> NetworkIngressExceeded
+  * 0x31 RateLimitedNetworkEgress -> NetworkEgressExceeded
+  * 0x32 RateLimitedMaxConnections -> MaximumConnectionsExceeded
+  * 0x33 RateLimitedMaxCommands -> MaximumRequestsReached
 * Cluster Manager (body check tbd)
-  * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]": Rate limited due to number of concurrent requests
-  * HTTP 429, Body contains "Limit(s) exceeded [ingress]": Rate limited because of network ingress
-  * HTTP 429, Body contains "Limit(s) exceeded [egress]": Rate limited because of network egress
-  * HTTP 429, Body contains "Maximum number of collections has been reached for scope \"<scope_name>\"": Maximum number of collections hit
+  * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]" -> MaximumOperationsExceeded
+  * HTTP 429, Body contains "Limit(s) exceeded [ingress]" -> NetworkIngressExceeded
+  * HTTP 429, Body contains "Limit(s) exceeded [egress]" -> NetworkEgressExceeded
+  * HTTP 429, Body contains "Maximum number of collections has been reached for scope \"<scope_name>\"" -> MaximumNumberOfCollectionsReached
+  * Note: when multiple user limits are exceeeded the array would contain all the limits exceeded, as "Limit(s) exceeded [num_concurrent_requests,egress]"
 * Query
-  * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED: User has more requests running than allowed
-  * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED: User has exceeded the request rate limit
-  * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED: User has exceeded input network traffic limit (ingress?)
-  * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED: User has exceeded results size limit
+  * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED -> MaximumRequestsReached
+  * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED -> MaximumRequestRateReached
+  * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED -> NetworkIngressLimitReached
+  * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED -> ResultSizeLimitReached
 * Search
-  * 400 (Bad request)	rest_create_index: error creating index: {indexName}, err: manager_api: CreateIndex, Prepare failed, err: num_fts_indexes (active + pending) >= limit	<-- index limit
-  * HTTP 429, Body contains "num_concurrent_requests, value >= limit": Rate limited due to number of concurrent requests
-  * HTTP 429, Body contains "num_queries_per_min, value >= limit": User has exceeded the request rate limit (queries per minute)
-  * HTTP 429, Body contains "ingress_mib_per_min >= limit": Rate limited because of network ingress 
-  * HTTP 429, Body contains "egress_mib_per_min >=": Rate limited because of network egress
+  * HTTP 400 (Bad request), `{"status": "fail", "error": "rest_create_index: error creating index: {indexName}, err: manager_api: CreateIndex, Prepare failed, err: num_fts_indexes (active + pending) >= limit"}`
+  * HTTP 429, `{"status": "fail", "error": "num_concurrent_requests, value >= limit"}` -> MaximumRequestRateReached
+  * HTTP 429, `{"status": "fail", "error": "num_queries_per_min, value >= limit"}`: -> MaximumRequestsReached
+  * HTTP 429, `{"status": "fail", "error": "ingress_mib_per_min >= limit"}` -> NetworkIngressExceeded
+  * HTTP 429, `{"status": "fail", "error": "egress_mib_per_min >= limit"}` -> NetworkEgressExceeded
 * Not applicable to Analytics at the moment
 * Not applicable to views
 
