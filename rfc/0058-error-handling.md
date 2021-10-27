@@ -331,8 +331,7 @@ enum RateLimitingReason {
   MaximumConnectionsReached,
   MaximumRequestsReached,
   MaximumRequestRateReached,
-  MaximumNumberOfCollectionsReached,
-  ResultSizeLimitReached,
+  MaximumNumberOfCollectionsReached
 }
 ```
 
@@ -353,7 +352,7 @@ Maps to:
   * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED -> MaximumRequestsReached
   * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED -> MaximumRequestRateReached
   * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED -> NetworkIngressLimitReached
-  * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED -> ResultSizeLimitReached
+  * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED -> NetworkEgressExceeded
 * Search
   * HTTP 400 (Bad request), `{"status": "fail", "error": "rest_create_index: error creating index: {indexName}, err: manager_api: CreateIndex, Prepare failed, err: num_fts_indexes (active + pending) >= limit"}`
   * HTTP 429, `{"status": "fail", "error": "num_concurrent_requests, value >= limit"}` -> MaximumRequestRateReached
