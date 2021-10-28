@@ -330,7 +330,7 @@ enum RateLimitingReason {
   NetworkEgressLimitReached,
   MaximumConnectionsReached,
   MaximumRequestsReached,
-  MaximumRequestRateReached,
+  MaximumConcurrentRequestsReached,
   MaximumNumberOfCollectionsReached,
   MaximumNumberOfIndexesReached
 }
@@ -344,19 +344,19 @@ Maps to:
   * 0x32 RateLimitedMaxConnections -> MaximumConnectionsExceeded
   * 0x33 RateLimitedMaxCommands -> MaximumRequestsReached
 * Cluster Manager (body check tbd)
-  * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]" -> MaximumRequestRateReached
+  * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]" -> MaximumConcurrentRequestsReached
   * HTTP 429, Body contains "Limit(s) exceeded [ingress]" -> NetworkIngressExceeded
   * HTTP 429, Body contains "Limit(s) exceeded [egress]" -> NetworkEgressExceeded
   * HTTP 429, Body contains "Maximum number of collections has been reached for scope \"<scope_name>\"" -> MaximumNumberOfCollectionsReached
   * Note: when multiple user limits are exceeeded the array would contain all the limits exceeded, as "Limit(s) exceeded [num_concurrent_requests,egress]"
 * Query
   * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED -> MaximumRequestsReached
-  * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED -> MaximumRequestRateReached
+  * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED -> MaximumConcurrentRequestsReached
   * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED -> NetworkIngressLimitReached
   * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED -> NetworkEgressExceeded
 * Search
   * HTTP 400 (Bad request), `{"status": "fail", "error": "rest_create_index: error creating index: {indexName}, err: manager_api: CreateIndex, Prepare failed, err: num_fts_indexes (active + pending) >= limit"}` -> MaximumNumberOfIndexesReached
-  * HTTP 429, `{"status": "fail", "error": "num_concurrent_requests, value >= limit"}` -> MaximumRequestRateReached
+  * HTTP 429, `{"status": "fail", "error": "num_concurrent_requests, value >= limit"}` -> MaximumConcurrentRequestsReached
   * HTTP 429, `{"status": "fail", "error": "num_queries_per_min, value >= limit"}`: -> MaximumRequestsReached
   * HTTP 429, `{"status": "fail", "error": "ingress_mib_per_min >= limit"}` -> NetworkIngressExceeded
   * HTTP 429, `{"status": "fail", "error": "egress_mib_per_min >= limit"}` -> NetworkEgressExceeded
