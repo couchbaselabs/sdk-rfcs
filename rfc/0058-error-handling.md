@@ -326,36 +326,36 @@ Since the failure itself is a very generic error, an additional Set of `RateLimi
 
 ```
 enum RateLimitingReason {
-  NetworkIngressLimitReached,
-  NetworkEgressLimitReached,
+  NetworkIngressRateLimitReached,
+  NetworkEgressRateLimitReached,
   MaximumConnectionsReached,
-  MaximumRequestsReached,
-  MaximumConcurrentRequestsReached
+  RequestRateLimitReached,
+  ConcurrentRequestLimitReached
 }
 ```
 
 Maps to:
 
 * KeyValue
-  * 0x30 RateLimitedNetworkIngress -> NetworkIngressExceeded
-  * 0x31 RateLimitedNetworkEgress -> NetworkEgressExceeded
-  * 0x32 RateLimitedMaxConnections -> MaximumConnectionsExceeded
-  * 0x33 RateLimitedMaxCommands -> MaximumRequestsReached
+  * 0x30 RateLimitedNetworkIngress -> NetworkIngressRateLimitReached
+  * 0x31 RateLimitedNetworkEgress -> NetworkEgressRateLimitReached
+  * 0x32 RateLimitedMaxConnections -> MaximumConnectionsReached
+  * 0x33 RateLimitedMaxCommands -> RequestRateLimitReached
 * Cluster Manager (body check tbd)
-  * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]" -> MaximumConcurrentRequestsReached
-  * HTTP 429, Body contains "Limit(s) exceeded [ingress]" -> NetworkIngressExceeded
-  * HTTP 429, Body contains "Limit(s) exceeded [egress]" -> NetworkEgressExceeded
+  * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]" -> ConcurrentRequestLimitReached
+  * HTTP 429, Body contains "Limit(s) exceeded [ingress]" -> NetworkIngressRateLimitReached
+  * HTTP 429, Body contains "Limit(s) exceeded [egress]" -> NetworkEgressRateLimitReached
   * Note: when multiple user limits are exceeeded the array would contain all the limits exceeded, as "Limit(s) exceeded [num_concurrent_requests,egress]"
 * Query
-  * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED -> MaximumRequestsReached
-  * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED -> MaximumConcurrentRequestsReached
-  * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED -> NetworkIngressLimitReached
-  * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED -> NetworkEgressExceeded
+  * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED -> RequestRateLimitReached
+  * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED -> ConcurrentRequestLimitReached
+  * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED -> NetworkIngressRateLimitReached
+  * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED -> NetworkEgressRateLimitReached
 * Search
-  * HTTP 429, `{"status": "fail", "error": "num_concurrent_requests, value >= limit"}` -> MaximumConcurrentRequestsReached
-  * HTTP 429, `{"status": "fail", "error": "num_queries_per_min, value >= limit"}`: -> MaximumRequestsReached
-  * HTTP 429, `{"status": "fail", "error": "ingress_mib_per_min >= limit"}` -> NetworkIngressExceeded
-  * HTTP 429, `{"status": "fail", "error": "egress_mib_per_min >= limit"}` -> NetworkEgressExceeded
+  * HTTP 429, `{"status": "fail", "error": "num_concurrent_requests, value >= limit"}` -> ConcurrentRequestLimitReached
+  * HTTP 429, `{"status": "fail", "error": "num_queries_per_min, value >= limit"}`: -> RequestRateLimitReached
+  * HTTP 429, `{"status": "fail", "error": "ingress_mib_per_min >= limit"}` -> NetworkIngressRateLimitReached
+  * HTTP 429, `{"status": "fail", "error": "egress_mib_per_min >= limit"}` -> NetworkEgressRateLimitReached
 * Not applicable to Analytics at the moment
 * Not applicable to views
 
@@ -365,7 +365,6 @@ Maps to:
 * Note that since there are many different reasons why a request is rate limited, the error context MUST include the reason / specific type of rate limiting cause for debugging purposes.
 
 Since the failure itself is a very generic error, an additional Set of `QuotaLimitingReason` should be part of the error that allows the user - if needed - to further inspect/narrow down the cause. Note that it is a set, since it could contain multiple reasons at the same time.
-
 
 ```
 enum QuotaLimitingReason {
