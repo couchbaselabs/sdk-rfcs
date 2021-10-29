@@ -319,7 +319,7 @@ A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST
 
 ### 21 RateLimitingFailure
 
-* Raised when a service decides that the caller must be rate limited due to exceeding a threshold of some sort.
+* Raised when a service decides that the caller must be rate limited due to exceeding a rate threshold of some sort.
 * Note that since there are many different reasons why a request is rate limited, the error context MUST include the reason / specific type of rate limiting cause for debugging purposes.
 
 Since the failure itself is a very generic error, an additional Set of `RateLimitingReason` should be part of the error that allows the user - if needed - to further inspect/narrow down the cause. Note that it is a set, since it could contain multiple reasons at the same time.
@@ -330,9 +330,7 @@ enum RateLimitingReason {
   NetworkEgressLimitReached,
   MaximumConnectionsReached,
   MaximumRequestsReached,
-  MaximumConcurrentRequestsReached,
-  MaximumNumberOfCollectionsReached,
-  MaximumNumberOfIndexesReached
+  MaximumConcurrentRequestsReached
 }
 ```
 
@@ -347,7 +345,6 @@ Maps to:
   * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]" -> MaximumConcurrentRequestsReached
   * HTTP 429, Body contains "Limit(s) exceeded [ingress]" -> NetworkIngressExceeded
   * HTTP 429, Body contains "Limit(s) exceeded [egress]" -> NetworkEgressExceeded
-  * HTTP 429, Body contains "Maximum number of collections has been reached for scope \"<scope_name>\"" -> MaximumNumberOfCollectionsReached
   * Note: when multiple user limits are exceeeded the array would contain all the limits exceeded, as "Limit(s) exceeded [num_concurrent_requests,egress]"
 * Query
   * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED -> MaximumRequestsReached
@@ -355,11 +352,36 @@ Maps to:
   * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED -> NetworkIngressLimitReached
   * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED -> NetworkEgressExceeded
 * Search
-  * HTTP 400 (Bad request), `{"status": "fail", "error": "rest_create_index: error creating index: {indexName}, err: manager_api: CreateIndex, Prepare failed, err: num_fts_indexes (active + pending) >= limit"}` -> MaximumNumberOfIndexesReached
   * HTTP 429, `{"status": "fail", "error": "num_concurrent_requests, value >= limit"}` -> MaximumConcurrentRequestsReached
   * HTTP 429, `{"status": "fail", "error": "num_queries_per_min, value >= limit"}`: -> MaximumRequestsReached
   * HTTP 429, `{"status": "fail", "error": "ingress_mib_per_min >= limit"}` -> NetworkIngressExceeded
   * HTTP 429, `{"status": "fail", "error": "egress_mib_per_min >= limit"}` -> NetworkEgressExceeded
+* Not applicable to Analytics at the moment
+* Not applicable to views
+
+### 21 QuotaLimitingFailure
+
+* Raised when a service decides that the caller must be limited due to exceeding a quota threshold of some sort.
+* Note that since there are many different reasons why a request is rate limited, the error context MUST include the reason / specific type of rate limiting cause for debugging purposes.
+
+Since the failure itself is a very generic error, an additional Set of `QuotaLimitingReason` should be part of the error that allows the user - if needed - to further inspect/narrow down the cause. Note that it is a set, since it could contain multiple reasons at the same time.
+
+
+```
+enum QuotaLimitingReason {
+  MaximumNumberOfCollectionsReached,
+  MaximumNumberOfIndexesReached
+}
+```
+
+Maps to:
+
+* Cluster Manager (body check tbd)
+  * HTTP 429, Body contains "Maximum number of collections has been reached for scope \"<scope_name>\"" -> MaximumNumberOfCollectionsReached
+* Query
+  * Code 5000, Body contains "Limit for number of indexes that can be created per scope has been reached. Limit : value" -> MaximumNumberOfIndexesReached
+* Search
+  * HTTP 400 (Bad request), `{"status": "fail", "error": "rest_create_index: error creating index: {indexName}, err: manager_api: CreateIndex, Prepare failed, err: num_fts_indexes (active + pending) >= limit"}` -> MaximumNumberOfIndexesReached
 * Not applicable to Analytics at the moment
 * Not applicable to views
 
