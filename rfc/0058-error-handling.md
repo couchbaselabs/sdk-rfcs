@@ -333,7 +333,7 @@ Maps to:
   * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]"
   * HTTP 429, Body contains "Limit(s) exceeded [ingress]" 
   * HTTP 429, Body contains "Limit(s) exceeded [egress]"
-  * Note: when multiple user limits are exceeeded the array would contain all the limits exceeded, as "Limit(s) exceeded [num_concurrent_requests,egress]"
+  * Note: when multiple user limits are exceeded the array would contain all the limits exceeded, as "Limit(s) exceeded [num_concurrent_requests,egress]"
 * Query
   * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED
   * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED
