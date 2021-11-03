@@ -322,65 +322,46 @@ A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST
 * Raised when a service decides that the caller must be rate limited due to exceeding a rate threshold of some sort.
 * Note that since there are many different reasons why a request is rate limited, the error context MUST include the reason / specific type of rate limiting cause for debugging purposes.
 
-Since the failure itself is a very generic error, an additional Set of `RateLimitingReason` should be part of the error that allows the user - if needed - to further inspect/narrow down the cause. Note that it is a set, since it could contain multiple reasons at the same time.
+Maps to:
 
-```
-enum RateLimitingReason {
-  NetworkIngressRateLimitReached,
-  NetworkEgressRateLimitReached,
-  MaximumConnectionsReached,
-  RequestRateLimitReached,
-  ConcurrentRequestLimitReached
-}
-```
+* KeyValue
+  * 0x30 RateLimitedNetworkIngress
+  * 0x31 RateLimitedNetworkEgress
+  * 0x32 RateLimitedMaxConnections
+  * 0x33 RateLimitedMaxCommands
+* Cluster Manager (body check tbd)
+  * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]"
+  * HTTP 429, Body contains "Limit(s) exceeded [ingress]" 
+  * HTTP 429, Body contains "Limit(s) exceeded [egress]"
+  * Note: when multiple user limits are exceeeded the array would contain all the limits exceeded, as "Limit(s) exceeded [num_concurrent_requests,egress]"
+* Query
+  * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED
+  * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED
+  * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED
+  * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED
+* Search
+  * HTTP 429, `{"status": "fail", "error": "num_concurrent_requests, value >= limit"}`
+  * HTTP 429, `{"status": "fail", "error": "num_queries_per_min, value >= limit"}`
+  * HTTP 429, `{"status": "fail", "error": "ingress_mib_per_min >= limit"}`
+  * HTTP 429, `{"status": "fail", "error": "egress_mib_per_min >= limit"}`
+* Not applicable to Analytics at the moment
+* Not applicable to views
+
+### 22 QuotaLimitingFailure
+
+* Raised when a service decides that the caller must be limited due to exceeding a quota threshold of some sort.
+* Note that since there are many different reasons why a request is quota limited, the error context MUST include the reason / specific type of quota limiting cause for debugging purposes.
 
 Maps to:
 
 * KeyValue
-  * 0x30 RateLimitedNetworkIngress -> NetworkIngressRateLimitReached
-  * 0x31 RateLimitedNetworkEgress -> NetworkEgressRateLimitReached
-  * 0x32 RateLimitedMaxConnections -> MaximumConnectionsReached
-  * 0x33 RateLimitedMaxCommands -> RequestRateLimitReached
+  * 0x34 ScopeSizeLimitExceeded 
 * Cluster Manager (body check tbd)
-  * HTTP 429, Body contains "Limit(s) exceeded [num_concurrent_requests]" -> ConcurrentRequestLimitReached
-  * HTTP 429, Body contains "Limit(s) exceeded [ingress]" -> NetworkIngressRateLimitReached
-  * HTTP 429, Body contains "Limit(s) exceeded [egress]" -> NetworkEgressRateLimitReached
-  * Note: when multiple user limits are exceeeded the array would contain all the limits exceeded, as "Limit(s) exceeded [num_concurrent_requests,egress]"
+  * HTTP 429, Body contains "Maximum number of collections has been reached for scope \"<scope_name>\""
 * Query
-  * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED -> RequestRateLimitReached
-  * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED -> ConcurrentRequestLimitReached
-  * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED -> NetworkIngressRateLimitReached
-  * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED -> NetworkEgressRateLimitReached
+  * Code 5000, Body contains "Limit for number of indexes that can be created per scope has been reached. Limit : value"
 * Search
-  * HTTP 429, `{"status": "fail", "error": "num_concurrent_requests, value >= limit"}` -> ConcurrentRequestLimitReached
-  * HTTP 429, `{"status": "fail", "error": "num_queries_per_min, value >= limit"}`: -> RequestRateLimitReached
-  * HTTP 429, `{"status": "fail", "error": "ingress_mib_per_min >= limit"}` -> NetworkIngressRateLimitReached
-  * HTTP 429, `{"status": "fail", "error": "egress_mib_per_min >= limit"}` -> NetworkEgressRateLimitReached
-* Not applicable to Analytics at the moment
-* Not applicable to views
-
-### 21 QuotaLimitingFailure
-
-* Raised when a service decides that the caller must be limited due to exceeding a quota threshold of some sort.
-* Note that since there are many different reasons why a request is rate limited, the error context MUST include the reason / specific type of rate limiting cause for debugging purposes.
-
-Since the failure itself is a very generic error, an additional Set of `QuotaLimitingReason` should be part of the error that allows the user - if needed - to further inspect/narrow down the cause. Note that it is a set, since it could contain multiple reasons at the same time.
-
-```
-enum QuotaLimitingReason {
-  MaximumNumberOfCollectionsReached,
-  MaximumNumberOfIndexesReached
-}
-```
-
-Maps to:
-
-* Cluster Manager (body check tbd)
-  * HTTP 429, Body contains "Maximum number of collections has been reached for scope \"<scope_name>\"" -> MaximumNumberOfCollectionsReached
-* Query
-  * Code 5000, Body contains "Limit for number of indexes that can be created per scope has been reached. Limit : value" -> MaximumNumberOfIndexesReached
-* Search
-  * HTTP 400 (Bad request), `{"status": "fail", "error": "rest_create_index: error creating index: {indexName}, err: manager_api: CreateIndex, Prepare failed, err: num_fts_indexes (active + pending) >= limit"}` -> MaximumNumberOfIndexesReached
+  * HTTP 400 (Bad request), `{"status": "fail", "error": "rest_create_index: error creating index: {indexName}, err: manager_api: CreateIndex, Prepare failed, err: num_fts_indexes (active + pending) >= limit"}`
 * Not applicable to Analytics at the moment
 * Not applicable to views
 
