@@ -317,7 +317,7 @@ A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST
 
 * Raised when decoding of the data into the user object failed
 
-### 21 RateLimitingFailure
+### 21 RateLimited
 
 * Raised when a service decides that the caller must be rate limited due to exceeding a rate threshold of some sort.
 * Note that since there are many different reasons why a request is rate limited, the error context MUST include the reason / specific type of rate limiting cause for debugging purposes.
@@ -347,7 +347,7 @@ Maps to:
 * Not applicable to Analytics at the moment
 * Not applicable to views
 
-### 22 QuotaLimitingFailure
+### 22 QuotaLimited
 
 * Raised when a service decides that the caller must be limited due to exceeding a quota threshold of some sort.
 * Note that since there are many different reasons why a request is quota limited, the error context MUST include the reason / specific type of quota limiting cause for debugging purposes.
