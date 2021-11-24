@@ -2947,6 +2947,16 @@ enum BucketType {
 }
 ```
 
+## StorageBackend
+
+```
+enum StorageBackend {
+    COUCHSTORE("couchstore"),
+
+    MAGMA("magma")
+}
+```
+
 ## BucketSettings
 
 `BucketSettings` provides a means of mapping bucket settings into an object.
@@ -2976,6 +2986,8 @@ enum BucketType {
 * `compressionMode` ([`CompressionMode`](#compressonmode)) - The compression mode to use.
 
 * `MinimumDurabilityLevel` (`DurabilityLevel`) - The minimum durability level to use for all KV operations.
+
+* `StorageBackend` ([`StorageBackend`](#storagebackend)) - The storage type to use (note: Magma is EE only).
 
 ## ConflictResolutionType
 
