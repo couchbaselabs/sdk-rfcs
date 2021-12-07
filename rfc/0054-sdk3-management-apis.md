@@ -2996,6 +2996,9 @@ enum ConflictResolutionType {
     TIMESTAMP("lww"),
 
     SEQUENCE_NUMBER("seqno")
+    
+    // CUSTOM is available in server 7.1 Developer Preview mode and must be marked as `volatile` API stability.
+    CUSTOM("custom")
 }
 ```
 
@@ -3227,6 +3230,9 @@ interface ScopeSpec {
   * Rename `GetAllLinksOptions` to `GetLinksOptions`.
   * Add `Name` and `DataverseName` to `AnalyticsLink` interface.
   * Remove `linkName` option from `CreateDataset`.
+
+* December 7, 2021 (by Charles Dixon)
+  * Add `CUSTOM` `ConflictResolutionType` at stability level volatile.
 
 # Signoff
 
