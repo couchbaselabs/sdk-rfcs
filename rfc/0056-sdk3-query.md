@@ -99,6 +99,10 @@ QueryResult Query(string statement, [QueryOptions options]);
     * Specifies how long to allow the operation to continue running before it is cancelled.
   * serializer(JsonSerializer) = $Cluster::Serializer
     * Specifies the serializer which should be used for deserialization of rows returned.
+  * preserveExpiry(boolean) = undefined(false)
+    * Specifies that the query engine should preserve expiration values set on any documents modified by this query.
+    * Sent within the JSON Payload as `preserve_expiry` as a JSON boolean
+    * Should be added at API stability level of uncommitted.
 
 
 **Returns:**
@@ -241,6 +245,8 @@ class QueryWarning {
   * QueryStatus enum values are converted from uppercase to camel case
 * April 30, 2020
   * Moved RFC to ACCEPTED state.
+* January 5, 2022
+  * Added preserveExpiry to QueryOptions.
 
 
 # Signoff
