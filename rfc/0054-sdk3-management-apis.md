@@ -332,7 +332,7 @@ The following methods must be implemented:
 
 ## GetAllIndexes
 
-Fetches all indexes from the server.
+Fetches all indexes from the server for the given bucket (and scope/collection if applicable).
 
 ### Signature
 
@@ -349,12 +349,29 @@ Iterable<QueryIndex> GetAllIndexes(string bucketName, [options])
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+  * `CollectionName` - the name of the collection to restrict indexes to.
+  * `ScopeName` - the name of the scope to restrict indexes to.
 
 ### N1QL
 
+No collections set:
 ```
 SELECT idx.* FROM system:indexes AS idx
 WHERE keyspace_id = "bucketName" AND `using`="gsi"
+ORDER BY is_primary DESC, name ASC
+```
+
+Collection and scope set:
+```
+SELECT idx.* FROM system:indexes AS idx
+WHERE keyspace_id = "collectionName" AND bucket_id= "bucketName" AND scope_id = "scopeName" AND `using`="gsi"
+ORDER BY is_primary DESC, name ASC
+```
+
+Scope only set:
+```
+SELECT idx.* FROM system:indexes AS idx
+WHERE bucket_id= "bucketName" AND scope_id = "scopeName" AND `using`="gsi"
 ORDER BY is_primary DESC, name ASC
 ```
 
@@ -370,7 +387,7 @@ An array of [`QueryIndex`](#queryindex).
 
 ## CreateIndex
 
-Creates a new index.
+Creates a new index on the given bucket (and scope/collection if applicable).
 [CREATE INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createindex.html)
 
 ### Signature
@@ -402,6 +419,22 @@ void CreateIndex(string bucketName, string indexName, []string fields,  [options
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
+  * `CollectionName` - the name of the collection to restrict indexes to.
+  * `ScopeName` - the name of the scope to restrict indexes to.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+
+### N1QL
+
+No collection set:
+```
+"CREATE INDEX `indexName` ON `bucketName`"
+```
+
+Collection set: 
+```
+"CREATE INDEX `indexName` ON `bucketName`.`scopeName`.`collectionName`"
+```
+
 ### Returns
 
 Nothing
@@ -416,7 +449,7 @@ Nothing
 
 ## CreatePrimaryIndex
 
-Creates a new primary index.
+Creates a new primary index for the given bucket (and scope/collection if applicable).
 [CREATE PRIMARY INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createprimaryindex.html)
 
 ### Signature
@@ -447,6 +480,22 @@ void CreatePrimaryIndex(string bucketName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
+  * `CollectionName` - the name of the collection to restrict indexes to.
+  * `ScopeName` - the name of the scope to restrict indexes to.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+    
+### N1QL
+
+No collection set:
+```
+"CREATE PRIMARY INDEX ON `bucketName`"
+```
+
+Collection set:
+```
+"CREATE PRIMARY INDEX ON `bucketName`.`scopeName`.`collectionName`"
+```
+
 ### Returns
 
 Nothing
@@ -461,7 +510,7 @@ Nothing
 
 ## DropIndex
 
-Drops an index.
+Drops an index for the given bucket (and scope/collection if applicable).
 [DROP INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/dropindex.html)
 
 ### Signature
@@ -484,6 +533,21 @@ void DropIndex(string bucketName, string indexName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
+  * `CollectionName` - the name of the collection to restrict indexes to.
+  * `ScopeName` - the name of the scope to restrict indexes to.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+
+### N1QL
+
+No collection set:
+```
+"DROP INDEX `bucketName`.`indexName`"
+```
+
+Collection set:
+```
+"DROP INDEX `indexName` ON  `bucketName`.`scopeName`.`collectionName`"
+```
 ### Returns
 
 Nothing
@@ -498,7 +562,7 @@ Nothing
 
 ## DropPrimaryIndex
 
-Drops a primary index.
+Drops a primary index for the given bucket (and scope/collection if applicable).
 [DROP PRIMARY INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/dropprimaryindex.html)
 
 ### Signature
@@ -521,6 +585,22 @@ void DropPrimaryIndex(string bucketName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
+  * `CollectionName` - the name of the collection to restrict indexes to.
+  * `ScopeName` - the name of the scope to restrict indexes to.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+
+### N1QL
+
+No collection set:
+```
+"DROP PRIMARY INDEX ON `bucketName`"
+```
+
+Collection set:
+```
+"DROP PRIMARY INDEX ON `bucketName`.`scopeName`.`collectionName`"
+```
+
 ### Returns
 
 Nothing
@@ -535,7 +615,7 @@ Nothing
 
 ## WatchIndexes
 
-Watch polls indexes until they are online.
+Watch polls indexes until they are online for the given bucket (and scope/collection if applicable).
 
 ### Signature
 
@@ -557,6 +637,10 @@ void WatchIndexes(string bucketName, []string indexNames, timeout duration, [opt
 
   * `WatchPrimary` (`bool`) - whether or not to watch the primary index.
 
+  * `CollectionName` - the name of the collection to restrict indexes to.
+  * `ScopeName` - the name of the scope to restrict indexes to.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+
 ### Returns
 
 Nothing
@@ -571,7 +655,7 @@ Nothing
 
 ## BuildDeferredIndexes
 
-Build Deferred builds all indexes which are currently in deferred state.
+Build Deferred builds all indexes which are currently in deferred state,  for the given bucket (and scope/collection if applicable).
 
 ### Signature
 
@@ -588,6 +672,29 @@ void BuildDeferredIndexes(string bucketName, [options])
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+  * `CollectionName` - the name of the collection to restrict indexes to.
+  * `ScopeName` - the name of the scope to restrict indexes to.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+
+### N1QL
+
+Performs a call to `GetAllIndexes` followed by:
+
+No collection set:
+```
+
+"BUILD INDEX ON `bucketName` (`index1`, `index2`)"
+```
+
+where `index1` and `index2` are the names of the indexes returned by `GetAllIndexes`
+
+Collection set:
+```
+"BUILD INDEX ON `bucketName`.`scopeName`.`collectionName` (`index1`, `index2`)"
+```
+
+where `index1` and `index2` are the names of the indexes returned by `GetAllIndexes`
 
 ### Returns
 
@@ -3004,8 +3111,29 @@ interface QueryIndex {
     Optional<String> Condition();
     
     Optional<String> Partition()
+    
+    String BucketName();
+    
+    Optional<String> ScopeName();
+    
+    Optional<String> CollectionName()
 }
 ```
+
+When collections are not in use:
+* `keyspace` will be set to the bucket name.
+
+When collections are in use:
+* `keyspace` will be set to the collection name.
+* `bucket_id` will contain the bucket name.
+* `scope_id` will contain the scope name.
+
+The following are primarily to help improve UX, especially in the case where the user was not using collections and now is:
+
+The `BucketName()` function should always return the name of the bucket, whether it was in the `keyspace` or `bucket_id` field.
+This means that sometimes `Keyspace()` and `BucketName()` will be the same value.
+
+The `CollectionName()` function should return the value from `keyspace` when collections are being used, i.e. `bucket_id` and `scope_id` are populated in the JSON payload.
 
 ## SearchIndex
 
@@ -3556,6 +3684,11 @@ interface ScopeSpec {
   * Rename `GetAllLinksOptions` to `GetLinksOptions`.
   * Add `Name` and `DataverseName` to `AnalyticsLink` interface.
   * Remove `linkName` option from `CreateDataset`.
+  
+* January 10, 2022 - Revision #20 (by Charles Dixon)
+  * Add support for collections to query index management.
+    * Add `CollectionName` and `ScopeName` to all query index management functions.
+    * Add `CollectionName` and `ScopeName` to `QueryIndex`
 
 * December 7, 2021 (by Charles Dixon)
   * Add `CUSTOM` `ConflictResolutionType` at stability level volatile.
