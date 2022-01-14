@@ -335,10 +335,11 @@ Maps to:
   * HTTP 429, Body contains "Limit(s) exceeded [egress]"
   * Note: when multiple user limits are exceeded the array would contain all the limits exceeded, as "Limit(s) exceeded [num_concurrent_requests,egress]"
 * Query
-  * Code 1191, Message E_SERVICE_USER_REQUEST_EXCEEDED
-  * Code 1192, Message E_SERVICE_USER_REQUEST_RATE_EXCEEDED
-  * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED
-  * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED
+  * Code 1191, User has more requests running than allowed
+  * Code 1192, User has exceeded request rate limit
+  * Code 1193, User has exceeded input network traffic limit
+  * Code 1194, User has exceeded results size limit
+  * Note: use the error code instead of the text to disambiguate the cause.
 * Search
   * HTTP 429, match body contains "num_concurrent_requests"
   * HTTP 429, match body contains "num_queries_per_min" 
