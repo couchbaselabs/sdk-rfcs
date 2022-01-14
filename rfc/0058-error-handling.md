@@ -340,10 +340,10 @@ Maps to:
   * Code 1193, Message E_SERVICE_USER_REQUEST_SIZE_EXCEEDED
   * Code 1194, Message E_SERVICE_USER_RESULT_SIZE_EXCEEDED
 * Search
-  * HTTP 429, `{"status": "fail", "error": "num_concurrent_requests, value >= limit"}`
-  * HTTP 429, `{"status": "fail", "error": "num_queries_per_min, value >= limit"}`
-  * HTTP 429, `{"status": "fail", "error": "ingress_mib_per_min >= limit"}`
-  * HTTP 429, `{"status": "fail", "error": "egress_mib_per_min >= limit"}`
+  * HTTP 429, match body contains "num_concurrent_requests"
+  * HTTP 429, match body contains "num_queries_per_min" 
+  * HTTP 429, match body contains "ingress_mib_per_min"
+  * HTTP 429, match body contains "egress_mib_per_min"
 * Not applicable to Analytics at the moment
 * Not applicable to views
 
@@ -361,7 +361,7 @@ Maps to:
 * Query
   * Code 5000, Body contains "Limit for number of indexes that can be created per scope has been reached. Limit : value"
 * Search
-  * HTTP 400 (Bad request), `{"status": "fail", "error": "rest_create_index: error creating index: {indexName}, err: manager_api: CreateIndex, Prepare failed, err: num_fts_indexes (active + pending) >= limit"}`
+  * HTTP 400 (Bad request), match body contains "num_fts_indexes"
 * Not applicable to Analytics at the moment
 * Not applicable to views
 
