@@ -325,7 +325,7 @@ The following methods must be implemented:
 
 ## GetAllIndexes
 
-Fetches all indexes from the server for the given bucket (and scope/collection if applicable).
+Fetches all indexes from the server for the given bucket (limiting to scope/collection if applicable).
 
 ### Signature
 
@@ -347,21 +347,21 @@ Iterable<QueryIndex> GetAllIndexes(string bucketName, [options])
 
 ### N1QL
 
-No collections set:
+No collections set, returns all indexes for the given bucket, for all scopes and collections:
 ```
 SELECT idx.* FROM system:indexes AS idx
-WHERE keyspace_id = "bucketName" AND `using`="gsi"
+WHERE ((bucket_id IS MISSING AND keyspace_id = "bucketName") OR bucket_id = "bucketName") AND `using`="gsi"
 ORDER BY is_primary DESC, name ASC
 ```
 
-Collection and scope set:
+Collection and scope set, returns all indexes for the given collection in the given scope, in the given bucket:
 ```
 SELECT idx.* FROM system:indexes AS idx
 WHERE keyspace_id = "collectionName" AND bucket_id= "bucketName" AND scope_id = "scopeName" AND `using`="gsi"
 ORDER BY is_primary DESC, name ASC
 ```
 
-Scope only set:
+Scope only set, returns all indexes for the given scope, in the given bucket:
 ```
 SELECT idx.* FROM system:indexes AS idx
 WHERE bucket_id= "bucketName" AND scope_id = "scopeName" AND `using`="gsi"
@@ -672,22 +672,30 @@ void BuildDeferredIndexes(string bucketName, [options])
 
 ### N1QL
 
-Performs a call to `GetAllIndexes` followed by:
-
-No collection set:
+No collection set, runs build index on only deferred indexes created on the bucket, this does not include indexes created on scopes and collections:
 ```
 
-"BUILD INDEX ON `bucketName` (`index1`, `index2`)"
+"BUILD INDEX ON `bucketName` (
+  (
+    SELECT RAW name FROM system:indexes 
+    WHERE (keyspace_id = "bucketName" AND bucket_id IS MISSING)
+        AND state = "deferred"
+  )
+)"
 ```
 
-where `index1` and `index2` are the names of the indexes returned by `GetAllIndexes`
-
-Collection set:
+Collection set, run build index on every deferred index for the given collection in the given scope, in the given bucket:
 ```
-"BUILD INDEX ON `bucketName`.`scopeName`.`collectionName` (`index1`, `index2`)"
+"BUILD INDEX ON `bucketName`.`scopeName`.`collectionName` (
+  (
+    SELECT RAW name FROM system:indexes 
+    WHERE bucket_id = "bucketName"
+      AND scope_id = "scopeName"
+      AND keyspace_id = "collectionName"
+      AND state = "deferred"
+  )
+)"
 ```
-
-where `index1` and `index2` are the names of the indexes returned by `GetAllIndexes`
 
 ### Returns
 
@@ -3348,6 +3356,10 @@ interface ScopeSpec {
   * Add support for collections to query index management.
     * Add `CollectionName` and `ScopeName` to all query index management functions.
     * Add `CollectionName` and `ScopeName` to `QueryIndex`
+  
+* January 19, 2022 - Revision #21 (by Charles Dixon)
+  * Reworked query for `GetAllIndexes` when only a bucket name is supplied.
+  * Reworked `BuildDeferredIndexes` to use only a single query rather than first performing a `GetAllIndexes` internally.
 
 # Signoff
 
