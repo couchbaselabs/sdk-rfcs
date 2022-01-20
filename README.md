@@ -61,6 +61,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 67    | Extended SDK Observability (also known as "Tracing & Metrics") [\[doc\]](https://docs.google.com/document/d/1BAPS8bPMv8-4FPIdysgpxEsKrUgd595EAGOU-_nXHRY/edit?usp=sharing) | Michael N. | DRAFT  |
 | 68    | Collection-Aware FTS Support [\[doc\]](https://docs.google.com/document/d/1mWD4Qa56iIE9nnwQT83GutU8BcLQ8RS7iW90qEfiElU)                                                    | Michael R. | DRAFT  |
 | 69    | ReplaceBodyWithXattr  Support [\[doc\]](https://docs.google.com/document/d/1pafGxfhhg4Nmw_huvjJoGuUBWA39kCCXpkMoIb1MtW0/edit?usp=sharing)                                                    | Graham P. | DRAFT  |
+| 71    | HTTP Client [\[doc\]](https://docs.google.com/document/d/161XtCxl2S-aT3_kEHKQBpm3q89NjwUJPtu902BewbME)                                                                     | David N.   | DRAFT  |
 
 ### Identified RFCs
 
@@ -76,7 +77,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 42    | Config Publish Interleave                                                           | Charlie | IDENTIFIED |
 | 44    | XDCR Durability                                                                     | SDK     | IDENTIFIED |
 
-[comment]: # Next RFC ID 68
+[comment]: # Next RFC ID 72
 
 ### Superseded and Deprecated RFCs
 
