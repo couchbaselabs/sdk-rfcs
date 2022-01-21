@@ -195,7 +195,7 @@ NameValuePairs nvp = NameValuePairs.ofPreEncoded(
 ### HttpBody
 
 Immutable value object.
-Represents the body of a POST request.
+Represents the body of a POST or PUT request.
 
 #### Properties
 
