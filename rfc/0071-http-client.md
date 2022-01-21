@@ -2,8 +2,8 @@
 
 ## Meta
 
-* RFC Name: SDK3 HTTP Client API
-* RFC ID: 0071-sdk3-http-client
+* RFC Name: HTTP Client
+* RFC ID: 0071-http-client
 * Start Date: 2022-01-19
 * Owner: David Nault
 * Current Status: Draft
@@ -102,7 +102,7 @@ Except where noted, ***all properties should be considered implementation detail
 Immutable value object.
 Identifies a specific node within a Couchbase cluster.
 
-An implementation that does not support targetting a specific node may omit this component.
+An implementation that does not support targeting a specific node may omit this component.
 
 #### Properties
 
@@ -120,12 +120,13 @@ Specifies where to dispatch the request.
 * `nodeIdentifier` NodeIdentifier (Optional). If absent, SDK selects an arbitrary node running the service.
 * `bucketName`: String (Optional). Required when dispatching to the VIEWS service, to select a node with active KV partitions.
 
-NOTE: An implementation may omit the `nodeIdentifer` property if they do not support targeting a specific node.
+NOTE: An implementation may omit the `nodeIdentifer` property if it does not support targeting a specific node.
 Likewise, the `bucketName` may be omitted if the implementation does not need it.
 
 #### Factory methods / Constructors
 
 1. `HttpTarget.analytics()`
+1. `HttpTarget.backup()`
 2. `HttpTarget.eventing()`
 3. `HttpTarget.manager()`
 4. `HttpTarget.query()`
@@ -216,7 +217,7 @@ Represents the body of a POST request.
    Creates an HTTP body with content type "application/x-www-form-urlencoded".
    Content is the `urlEncoded` property encoded as UTF-8.
 
-4. As a convenience, implementations may add `form` overloads whose signatures match the `NameValuePair` constructors and create the NameValuePair internally before delegating to `form(NameValuePair)`.
+As a convenience, implementations may add `form` overloads whose signatures match the `NameValuePair` constructors and create the NameValuePair internally before delegating to `form(NameValuePair)`.
 
 ### HttpResponse
 
@@ -238,6 +239,8 @@ These properties are public / visible to the user.
   Possibly zero-length, but never null.
 
 If the implementation does not have access to the response headers, it may omit the `contentType` property.
+
+As a convenience, implementations may add a `contentAsString()` method that interprets the content as a UTF-8 String.
 
 ### CouchbaseHttpClient
 
@@ -343,6 +346,9 @@ An implementation may provide multiple flavors of CouchbaseHttpClient to support
 ## Changelog
 * Jan 20, 2022 - Revision #1 (by David Nault)
     * Initial Draft
+* Jan 21, 2022 - Revision #2 (by David Nault)
+    * Added `HttpTarget.backup()`
+    * Added `HttpResponse.contentAsString()`
 
 
 ## Signoff
