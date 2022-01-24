@@ -126,14 +126,37 @@ Likewise, the `bucketName` may be omitted if the implementation does not need it
 #### Factory methods / Constructors
 
 1. `HttpTarget.analytics()`
-1. `HttpTarget.backup()`
-2. `HttpTarget.eventing()`
-3. `HttpTarget.manager()`
-4. `HttpTarget.query()`
-5. `HttpTarget.search()`
-6. `HttpTarget.views(String bucketName)`
+2. `HttpTarget.backup()`
+3. `HttpTarget.eventing()`
+4. `HttpTarget.manager()`
+5. `HttpTarget.query()`
+6. `HttpTarget.search()`
+7. `HttpTarget.views(String bucketName)`
 
 The `withNode(NodeIdentifier)` instance method creates a copy that targets the given node.
+
+### HttpPath
+
+Immutable value object.
+Represents the "path" component of a URI.
+
+#### Factory methods / Constructors
+
+1. `HttpPath.of(String template, String... args)`
+
+This method has two parameters: a template string, and a varargs array (or List) of argument strings.
+
+Each `{}` placeholder in the template string is replaced with the URL-encoded form of the corresponding additional argument.
+For example:
+```
+HttpPath.of("/foo/{}/bar/{}", "hello world", "a/b")
+```
+creates the path `/foo/hello%20world/bar/a%2Fb`
+
+If the number of placeholders in the template string does not match the number of additional arguments, this method throws IllegalArgumentException (or equivalent).
+
+**NOTE:** At the implementor's discretion, a path may be represented as a string instead of an `HttpPath`.
+In that case, the implementation should provide a static `formatPath(String template, String... args)` method that performs the placeholder substitution.
 
 ### NameValuePairs
 
@@ -255,67 +278,37 @@ Users do not create instances directly.
 
 Instance methods of CouchbaseHttpClient correspond to the supported HTTP verbs.
 
-Every method takes an optional `CommonOption` parameter block consisting of the usual `timeout`, `retryStrategy`, etc. common to all SDK 3 requests.
-
 ```java
 class CouchbaseHttpClient {
     HttpResponse get(
         HttpTarget target,
-        String path,
-        NameValuePairs queryString, // optional
-        CommonOptions common // optional
+        HttpPath path,
+        NameValuePairs queryString // optional
     );
 
   HttpResponse post(
       HttpTarget target,
-      String path,
-      HttpBody body, // optional
-      CommonOptions common // optional
+      HttpPath path,
+      HttpBody body // optional
   );
 
   HttpResponse put(
       HttpTarget target,
-      String path,
-      HttpBody body, // optional
-      CommonOptions common // optional
+      HttpPath path,
+      HttpBody body // optional
   );
 
   HttpResponse delete(
       HttpTarget target,
-      String path,
-      CommonOptions common // optional
+      HttpPath path
   );
 }
 ```
 
-Implementations in languages that lack support for default arguments might provide multiple overloads for each HTTP verb.
-For example:
+In addition to the parameters explicitly mentioned above, every method also has the optional parameters common to all SDK 3 management requests.
+The set of common parameters may vary by implementation, but typically includes "timeout", "retry strategy", and "parent span".
 
-```
-HttpResponse get(target, path)
-HttpResponse get(target, path, queryString)
-HttpResponse get(target, path, common)
-HttpResponse get(target, path, queryString, common)
-```
-
-Alternatively, an implementor might opt to bundle all optional parameters into a method-specific options block, such as `HttpGetOptions`, `HttpPostOptions`, etc.
-
-### Utility methods
-
-#### formatPath
-Implementations should provide a `formatPath` convenience method for building path strings.
-This can be a static method of the `CouchbaseHttpClient` class, or whatever makes the most sense for the implentation language.
-
-This method has two parameters: a template string, and a varargs array (or List) of argument strings.
-
-`fomatPath` replaces each `{}` placeholder in the template string with the URL-encoded form of the corresponding additional argument.
-For example:
-```
-formatPath("/foo/{}/bar/{}", "hello world", "a/b")
-```
-returns the string `/foo/hello%20world/bar/a%2Fb`
-
-If the number of placeholders in the template string does not match the number of additional arguments, this method throws IllegalArgumentException (or equivalent).
+If the implementation uses the notion of idempotency to control whether a request may be retried, GET requests are considered idempotent, and all other requests are non-idempotent.
 
 ### Implementation notes
 
@@ -329,7 +322,7 @@ For example, the following should be valid:
 ```
 val response = httpClient.get(
     target = HttpTarget.manager(),
-    path = formatPath("foo/bar?color={}", red),
+    path = HttpPath.of("foo/bar?color={}", red),
     queryString = NameValuePairs.of("magicWord" to "xyzzy"),
 )
 ```
@@ -349,6 +342,10 @@ An implementation may provide multiple flavors of CouchbaseHttpClient to support
 * Jan 21, 2022 - Revision #2 (by David Nault)
     * Added `HttpTarget.backup()`
     * Added `HttpResponse.contentAsString()`
+* Jan 24, 2022 - Revision #3 (by David Nault)
+    * Replaced "CommonOptions" with a note that all HTTP client methods have the same optional parameters common to all SDK 3 management requests.
+    * Added a note that GET requests should be considered idempotent, and all others are non-idempotent.
+    * Added `HttpPath` for representing paths. An implementation may still use a String instead.
 
 
 ## Signoff
