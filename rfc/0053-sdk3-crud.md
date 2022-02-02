@@ -471,7 +471,7 @@ Parameters
     - ArrayAddUnique - adds a value into an array element if the value does not already exist
       - Required
         - String path - path to the elements
-        - T value - the value to insert
+        - T value - the value to insert. The value to be inserted must be a primitive: null, string, boolean (true/false), or a number. Objects are not allowed as there is no way to easily determine the uniqueness of an object. 
       - Optional
         - PathFlags - see [Sub Document Command Spec](https://docs.google.com/document/d/1vaQJxIA5nhWJqji7X2R1xQDZadb5PabfKAid1kVe65o/edit#heading=h.ywgf7z5mjdb5)
           - Boolean CreatePath - maps to 0x01 if true, otherwise omitted - create the path if it doesn't exist
