@@ -60,6 +60,10 @@ A compliant implementation has the following capabilities:
 
 
 * POST and PUT requests may have a body with content type `application/json` or `application/x-www-form-urlencoded`.
+  The client automatically sets the "Content-Type" header to the appropriate value.
+
+
+* A user can specify additional HTTP request headers.
 
 
 * A user can specify query strings and form bodies with duplicate names. For example, `color=green&color=blue`.
@@ -97,18 +101,6 @@ Implementers should adhere to the reference design where it makes sense, and div
 
 Except where noted, ***all properties should be considered implementation details and hidden from the user*** (made `private` or equivalent).
 
-### NodeIdentifier
-
-Immutable value object.
-Identifies a specific node within a Couchbase cluster.
-
-An implementation that does not support targeting a specific node may omit this component.
-
-#### Properties
-
-* `hostname` String. Name of the machine hosting the node.
-* `managerPort` int. Port where the manager service is listening.
-
 ### HttpTarget
 
 Immutable value object.
@@ -117,11 +109,11 @@ Specifies where to dispatch the request.
 #### Properties
 
 * `serviceType` Enum. Identifies the Couchbase service (MANAGER, QUERY, etc.) that should service the request.
-* `nodeIdentifier` NodeIdentifier (Optional). If absent, SDK selects an arbitrary node running the service.
-* `bucketName`: String (Optional). Required when dispatching to the VIEWS service, to select a node with active KV partitions.
 
-NOTE: An implementation may omit the `nodeIdentifer` property if it does not support targeting a specific node.
-Likewise, the `bucketName` may be omitted if the implementation does not need it.
+NOTE: Since HttpTarget has only one property, you might wonder why we don't just use the ServiceType enum instead.
+A future enhancement might let a user target a specific node, and the node identifier would likely be part of the HttpTarget.
+Also, the Views service requires the bucket name so the SDK can route the request to a node hosting active partitions for the bucket.
+Even though we're not supporting the Views service, it's an example of how additional context may be required to target future services.
 
 #### Factory methods / Constructors
 
@@ -131,9 +123,6 @@ Likewise, the `bucketName` may be omitted if the implementation does not need it
 4. `HttpTarget.manager()`
 5. `HttpTarget.query()`
 6. `HttpTarget.search()`
-7. `HttpTarget.views(String bucketName)`
-
-The `withNode(NodeIdentifier)` instance method creates a copy that targets the given node.
 
 ### HttpPath
 
@@ -280,30 +269,38 @@ Instance methods of CouchbaseHttpClient correspond to the supported HTTP verbs.
 
 ```java
 class CouchbaseHttpClient {
-    HttpResponse get(
+  HttpResponse get(
         HttpTarget target,
         HttpPath path,
-        NameValuePairs queryString // optional
-    );
+        NameValuePairs queryString, // optional
+        List<Header> headers // optional
+  );
 
   HttpResponse post(
       HttpTarget target,
       HttpPath path,
-      HttpBody body // optional
+      HttpBody body, // optional
+      List<Header> headers // optional
   );
 
   HttpResponse put(
       HttpTarget target,
       HttpPath path,
-      HttpBody body // optional
+      HttpBody body, // optional
+      List<Header> headers // optional
   );
 
   HttpResponse delete(
       HttpTarget target,
-      HttpPath path
+      HttpPath path,
+      List<Header> headers // optional
   );
 }
 ```
+
+A `Header` is just a name and a value, both strings.
+These are additional headers the client will include in the HTTP request.
+The documentation for this option should make it clear the user is not responsible for setting the "Content-Type" header.
 
 In addition to the parameters explicitly mentioned above, every method also has the optional parameters common to all SDK 3 management requests.
 The set of common parameters may vary by implementation, but typically includes "timeout", "retry strategy", and "parent span".
@@ -346,6 +343,12 @@ An implementation may provide multiple flavors of CouchbaseHttpClient to support
     * Replaced "CommonOptions" with a note that all HTTP client methods have the same optional parameters common to all SDK 3 management requests.
     * Added a note that GET requests should be considered idempotent, and all others are non-idempotent.
     * Added `HttpPath` for representing paths. An implementation may still use a String instead.
+* Feb 9, 2022 - Revision #4 (by David Nault)
+    * Removed "views" HTTP target because views are on the way out.
+    * Removed NodeIdentifier because it was under-specified and specific to the Java SDK.
+    * Removed the "nodeIdentifier" and "bucketName" properties from HttpTarget.
+    * Added "headers" option to all HTTP client methods, for specifying custom HTTP request headers.
+    * Clarified that the client should automatically set the "Content-Type" header based on the HttpBody type.
 
 
 ## Signoff
