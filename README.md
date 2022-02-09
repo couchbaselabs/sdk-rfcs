@@ -62,6 +62,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 68    | Collection-Aware FTS Support [\[doc\]](https://docs.google.com/document/d/1mWD4Qa56iIE9nnwQT83GutU8BcLQ8RS7iW90qEfiElU)                                                    | Michael R. | DRAFT  |
 | 69    | ReplaceBodyWithXattr  Support [\[doc\]](https://docs.google.com/document/d/1pafGxfhhg4Nmw_huvjJoGuUBWA39kCCXpkMoIb1MtW0/edit?usp=sharing)                                                    | Graham P. | DRAFT  |
 | 71    | HTTP Client [\[doc\]](https://docs.google.com/document/d/161XtCxl2S-aT3_kEHKQBpm3q89NjwUJPtu902BewbME)                                                                     | David N.   | DRAFT  |
+| 72    | Queues And Topics [\[doc\]](https://docs.google.com/document/d/1x-wn--F1Qg6y342pBerLLfpWnAGud2HQRA0YpEVMkqU)  | Michael N. | DRAFT 
 
 ### Identified RFCs
 
