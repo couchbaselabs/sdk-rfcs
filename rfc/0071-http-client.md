@@ -109,9 +109,11 @@ Specifies where to dispatch the request.
 #### Properties
 
 * `serviceType` Enum. Identifies the Couchbase service (MANAGER, QUERY, etc.) that should service the request.
+  This is the SDK's existing ServiceType enum, if it has one.
 
-NOTE: Since HttpTarget has only one property, you might wonder why we don't just use the ServiceType enum instead.
-A future enhancement might let a user target a specific node, and the node identifier would likely be part of the HttpTarget.
+NOTE: Since HttpTarget has only one property, you might wonder why we don't just use the existing ServiceType enum instead.
+One reason is to prevent users from thinking they can make HTTP requests to the KV service.
+Also, a future enhancement might let a user target a specific node, and the node identifier would likely be part of the HttpTarget.
 Also, the Views service requires the bucket name so the SDK can route the request to a node hosting active partitions for the bucket.
 Even though we're not supporting the Views service, it's an example of how additional context may be required to target future services.
 
