@@ -10,7 +10,7 @@
 
 The SDK team has provided a common system for converting SDK data-types to storable formats for Couchbase Server which is common across all SDKs and provides the ability for the customer to seamlessly transition their data between numerous languages.
 
-In certain cases, the transcoder or serializer behaviours may be altered by the user providing a custom implementation of ITranscoder and/or IJsonSerializer. For example:
+In certain cases, the transcoder or serializer behaviours may be altered by the user providing a custom implementation of `ITranscoder` and/or `IJsonSerializer`. For example:
 
 A user has stored its data in Couchbase in a binary format and wants it to remain binary as a storage format.
 A user has stored its data in Couchbase in a binary format and wants to read it as binary and write it as JSON.
@@ -23,13 +23,13 @@ The first two cases are generally legacy/upgrade scenarios from customers or use
 
 Most SDKs use Transcoders and Serializers when reading or writing data to and from Couchbase using the various Services (Search, KV, Views, etc). 
 
-Transcoders handle the encoding and decoding of the documents when stored and retrieved from Couchbase Server using the Common Flags Specification. This is done so that documents can be written in one language’s SDK and read universally in another and vice versa. The RFC defines the format types of JSON, non-JSON string, and raw binary. Transcoders also delegate the reading or writing of the data using serializers or native conversions from bytes to concrete types and vice versa.
+Transcoders handle the encoding and decoding of the documents when stored and retrieved from Couchbase Server using the [Common Flags Specification][SDK-RFC#20]. This is done so that documents can be written in one language’s SDK and read universally in another and vice versa. The RFC defines the format types of JSON, non-JSON string, and raw binary. Transcoders also delegate the reading or writing of the data using serializers or native conversions from bytes to concrete types and vice versa.
 
 Serializers are used by Transcoders to handle converting the actual JSON bytes to and from native language objects (native data structures that mirror the JSON documents elements). These native objects are frequently very specific to a platform. 
 
 ## Technical Details
 
-The class diagram below shows the two major interfaces ITranscoder and IJsonSerializer. In addition to these interfaces, specific core libraries for converting to & from bytes and primitive types may be used within an implementation. 
+The class diagram below shows the two major interfaces `ITranscoder` and `IJsonSerializer`. In addition to these interfaces, specific core libraries for converting to & from bytes and primitive types may be used within an implementation. 
 
 
 ![figure 1: general design](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/figures/rfc55-uml1.png)
@@ -48,7 +48,7 @@ The default JsonSerializer implementation within the SDK should handle passing t
 
 ## Default Transcoders
 
-The SDK must implement a number of specific implementations of the ITranscoder interface, along with a default implementation of the IJsonSerializer interface.  The JsonTranscoder implementation should be the default transcoder utilized by the SDK should no other option be specified by the user, the default serializer should take advantage of whatever JSON serialization already exists within the SDK.  The following is a list of specific transcoder implementations which MUST be implemented by the SDK, along with information about their specific behaviours.  Note that some knowledge of the specifics of SDK-RFC#20[Common Flags] is assumed in the explanation of the transcoders below. 
+The SDK must implement a number of specific implementations of the `ITranscoder` interface, along with a default implementation of the IJsonSerializer interface.  The JsonTranscoder implementation should be the default transcoder utilized by the SDK should no other option be specified by the user, the default serializer should take advantage of whatever JSON serialization already exists within the SDK.  The following is a list of specific transcoder implementations which MUST be implemented by the SDK, along with information about their specific behaviours.  Note that some knowledge of the specifics of [Common Flags][SDK-RFC#20] is assumed in the explanation of the transcoders below. 
 
 ### LegacyTranscoder
 
@@ -97,7 +97,7 @@ The RawBinaryTranscoder provides the ability for the user to explicitly store an
 
 #### SDK Specific Transcoder
 
-A number of languages in the wild have custom serialization formats implicitly provided by the language.  For instance, in the case of Java there is Java Serialized Object Format, in the case of PHP there is the PHP Serialized Object Format.  In the case that a custom language specific serialization format exists for the implementing language, a custom transcoder which specifically acts against this format should be implemented.  The SDK MUST ensure that this custom format encodes the flags data according to the appropriate rules specified by SDK-RFC#20[Common Flags].
+A number of languages in the wild have custom serialization formats implicitly provided by the language.  For instance, in the case of Java there is Java Serialized Object Format, in the case of PHP there is the PHP Serialized Object Format.  In the case that a custom language specific serialization format exists for the implementing language, a custom transcoder which specifically acts against this format should be implemented.  The SDK MUST ensure that this custom format encodes the flags data according to the appropriate rules specified by [Common Flags][SDK-RFC#20].
 
 ### Language Specifics
 In languages such as Go, where there is a common language-level method of specifying an array of bytes that is specifically of JSON type (in Go this is the json.RawMessage type), the SDK is responsible for extending the LegacyTranscoder, JsonTranscoder and RawJsonTranscoder to support these types implicitly.  Additionally, depending on the context of any SDK Specific Transcoder, these too should support these specialized types.
@@ -106,16 +106,18 @@ In languages such as Go, where there is a common language-level method of specif
 (I’ll use Scala terms here, but some languages have similar and can make use of this.)
 Scala gets a small tweak to permit it to take advantage of its advanced type capabilities.  When app does:
 
+```scala
 val result = collection.get("id", transcoder = JsonTranscoder())
 result.contentAs[JsonObject]()
+```
 
-The contentAs method takes a Scala implicit parameter, a JsonSerializer[T] (technically a Type Trait).  The 'implicit' part means the compiler is asked to find a JsonSerializer[JsonObject], in various scopes.  There's a number of these JsonSerializable[T] provided out of the box, providing support for several popular JSON libraries, plus Strings and byte arrays.  For instance, a JsonSerializer[io.circe.Json] would use the Circe library to turn a byte array to and from the io.circe.Json type.  The user is also free to add their own to support e.g. another JSON library.  
+The contentAs method takes a Scala implicit parameter, a `JsonSerializer[T]` (technically a Type Trait).  The 'implicit' part means the compiler is asked to find a `JsonSerializer[JsonObject]`, in various scopes.  There's a number of these `JsonSerializable[T]` provided out of the box, providing support for several popular JSON libraries, plus Strings and byte arrays.  For instance, a `JsonSerializer[io.circe.Json]` would use the Circe library to turn a byte array to and from the `io.circe.Json` type.  The user is also free to add their own to support e.g. another JSON library.  
 
-That compiler-discovered JsonSerializer is then provided to the Transcoder previously specified in the GetOptions block, if a) it's a JsonTranscoder (the only one that can accept a JsonSerializer) and b) the app didn't specify a serializer for the transcoder already.  This is the only real change from the RFC - instead of the app having to choose and specify a serializer, it’s compiler provided.
+That compiler-discovered `JsonSerializer` is then provided to the Transcoder previously specified in the GetOptions block, if a) it's a `JsonTranscoder` (the only one that can accept a `JsonSerializer`) and b) the app didn't specify a serializer for the transcoder already.  This is the only real change from the RFC - instead of the app having to choose and specify a serializer, it’s compiler provided.
 
 #### Other examples:
 
-```
+```scala
 // Save byte array, unserialized, as Binary
 val imageData: Array[Byte] = // … 
 coll.replace("id", imageData, transcoder = RawBinaryTranscoder())
@@ -132,9 +134,9 @@ coll.replace("id", """{"hello":"world"}""")
 
 ### Custom Transcoders and Serializers
 
-The SDKs MUST ensure that the ITranscoder and IJsonSerializer types are able to be implemented by the user outside the scope of the default transcoders which are provided by the SDK.
+The SDKs MUST ensure that the `ITranscoder` and `IJsonSerializer` types are able to be implemented by the user outside the scope of the default transcoders which are provided by the SDK.
 
-Note that while utilizing a custom Transcoder may affect the ability for a customer to share data among various SDKs, a correctly implemented custom transcoder will still specify flags data conforming to SDK-RFC#20[Common Flags], and this case should be detectable by other SDKs to avoid attempting to parse potentially unparsable data and return an error instead.
+Note that while utilizing a custom Transcoder may affect the ability for a customer to share data among various SDKs, a correctly implemented custom transcoder will still specify flags data conforming to [Common Flags][SDK-RFC#20], and this case should be detectable by other SDKs to avoid attempting to parse potentially unparsable data and return an error instead.
 
 ## Changelog
 * June 13, 2019 - Revision #1 (by Jeffry Morris)
@@ -159,3 +161,4 @@ Clarified the behaviour of the JsonSerializer.
 |Ruby|Sergey Avseyev|Sept 27, 2019|#2 |
 
 
+[SDK-RFC#20]: /rfc/0020-common-flags.md
