@@ -63,6 +63,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 69    | ReplaceBodyWithXattr  Support [\[doc\]](https://docs.google.com/document/d/1pafGxfhhg4Nmw_huvjJoGuUBWA39kCCXpkMoIb1MtW0/edit?usp=sharing)                                                    | Graham P. | DRAFT  |
 | 71    | HTTP Client [\[doc\]](https://docs.google.com/document/d/161XtCxl2S-aT3_kEHKQBpm3q89NjwUJPtu902BewbME)                                                                     | David N.   | DRAFT  |
 | 72    | Queues And Topics [\[doc\]](https://docs.google.com/document/d/1x-wn--F1Qg6y342pBerLLfpWnAGud2HQRA0YpEVMkqU)  | Michael N. | DRAFT 
+| 73    | KV Range Scan [\[doc\]](https://docs.google.com/document/d/1ir4E9XRvVOncReuR_QgohyompgoIvnZ0De1ik0WkrYs) | David N. & Michael N. | DRAFT
 
 ### Identified RFCs
 
