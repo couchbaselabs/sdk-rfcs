@@ -369,7 +369,7 @@ Creates a new index.
 ### Signature
 
 ```
-void CreateIndex(string bucketName, string indexName, []string fields,  [options])
+void CreateIndex(string bucketName, string indexName, []string keys,  [options])
 ```
 
 ### Parameters
@@ -380,7 +380,8 @@ void CreateIndex(string bucketName, string indexName, []string fields,  [options
 
   * `indexName`: `string` - the name of the index.
 
-  * `fields`: `[]string` - the fields to create the index over.
+  * `keys`: `[]string` - the keys to create the index over. The SDK must escape each of these keys individually.
+    Note: this means that keywords like ASC/DESC cannot be used.
 
 * Optional:
 
