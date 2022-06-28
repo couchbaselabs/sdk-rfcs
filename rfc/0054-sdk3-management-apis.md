@@ -2089,6 +2089,8 @@ public interface IUserManager{
     void UpsertGroup(Group group, UpsertGroupOptions options);
 
     void DropGroup(string groupName, DropGroupOptions options);
+    
+    void ChangePassword(string newPassword, ChangePasswordOptions options);
 }
 ```
 
@@ -2407,6 +2409,47 @@ Nothing
 ### Throws
 
 * `GroupNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## ChangePassword
+
+Changes password for the currently authenticated user.
+
+API docs *must* state that ssage of this function will effectively invalidate the SDK instance and further requests 
+will fail due to authentication errors.
+After using this function the SDK must be reinitialized.
+
+REST Endpoint:
+
+    POST /controller/changePassword
+
+This endpoint accepts `application/x-www-form-urlencoded` and requires the data be sent as form data.
+The form contains an entry called `password` which contains the new password.
+
+### Signature
+
+```
+void ChangePassword(string newPassword, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `newPassword`: `string` - the new password.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
 
 * `InvalidArgumentsException`
 
