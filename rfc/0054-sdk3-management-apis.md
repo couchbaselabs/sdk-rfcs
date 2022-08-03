@@ -672,30 +672,33 @@ void BuildDeferredIndexes(string bucketName, [options])
 
 ### N1QL
 
-No collection set, runs build index on only deferred indexes created on the bucket, this does not include indexes created on scopes and collections:
+This is done by performing 2 querys; one to fetch the deferred indexes to build and the other to build the deferred
+indexes.
+
+No collection set:
+
+```
+SELECT RAW name from system:indexes WHERE (keyspace_id = $bucketName AND bucket_id IS MISSING) AND state = "deferred" AND `using` = "gsi"
 ```
 
-"BUILD INDEX ON `bucketName` (
-  (
-    SELECT RAW name FROM system:indexes 
-    WHERE (keyspace_id = "bucketName" AND bucket_id IS MISSING)
-        AND state = "deferred"
-  )
-)"
+followed by
+
+```
+BUILD INDEX ON `bucketName` (`filteredIndexes1`, `filteredIndexes2`, `filteredIndexes3`)
 ```
 
-Collection set, run build index on every deferred index for the given collection in the given scope, in the given bucket:
+Collection set:
+
 ```
-"BUILD INDEX ON `bucketName`.`scopeName`.`collectionName` (
-  (
-    SELECT RAW name FROM system:indexes 
-    WHERE bucket_id = "bucketName"
-      AND scope_id = "scopeName"
-      AND keyspace_id = "collectionName"
-      AND state = "deferred"
-  )
-)"
+SELECT RAW name from system:indexes WHERE bucket_id = $bucketName AND scope_id = $scopeName AND keyspace_id = $collectionName AND state = "deferred"  AND `using` = "gsi"
 ```
+
+```
+BUILD INDEX ON `bucketName`.`scopeName`.`collectionName` (`filteredIndexes1`, `filteredIndexes2`, `filteredIndexes3`)
+```
+
+Note that this is purposely done using two queries rather than one - older server versions do not support the syntax for
+the single query approach.
 
 ### Returns
 
