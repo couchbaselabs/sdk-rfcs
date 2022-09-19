@@ -73,7 +73,7 @@ Cluster cluster = Cluster.connect( … newEnv … );
 ### Implementation Suggestions
 #### Java (uses a builder)
 
-```
+```java
 ClusterEnvironment clusterEnv = ClusterEnvironment.builder()                                         
     .ioConfig(iocfg -> iocfg.numKvConnections(MY_NUM_KV_CONNECTIONS)) ← modify ioconfig              
     .applyProfile(“development”)  ← properties defined in “development” will overwrite               
@@ -81,7 +81,7 @@ ClusterEnvironment clusterEnv = ClusterEnvironment.builder()
     .build();                                                                                        
 ```
 
-####SDKs that use a struct
+#### SDKs that use a struct
 
 ```
 ClusterEnvironment originalEnv = …                                                                   
@@ -91,7 +91,7 @@ newOptions.ioConfig.maxHttpConnections = MY_MAX_HTTP_CONNECTIONS
 Cluster cluster = cluster.connect( … someEnv …)                                                      
 ```
 
-#### Note that it won’t be possible to implement profiles by representing the profile with the same data structure as the environment  (or builder) and merging the profile onto the existing one - unless there is a way to represent the properties as not being assigned a value (for java, some of the configuration values are primitives (i.e. int) and would need to use a special value to mean unassigned (such as -1)).  Otherwise every property of the profile would appear to be assigned, and it would completely overwrite the initial configuration. 
+**Note:** it won’t be possible to implement profiles by representing the profile with the same data structure as the environment (or builder) and merging the profile onto the existing one - unless there is a way to represent the properties as not being assigned a value (for java, some of the configuration values are primitives (i.e. int) and would need to use a special value to mean unassigned (such as -1)).  Otherwise every property of the profile would appear to be assigned, and it would completely overwrite the initial configuration. 
 
 ## Logging
 The configuration properties used by the SDK when connecting to the server should be logged to facilitate trouble-shooting.  This does not need to be in a standard format.  The Java SDK already does this as shown in the following sample:
@@ -107,7 +107,7 @@ INFO - {"timestamp":"2022-08-17 04:15:57.143","severity":"INFO","thread":"cb-eve
 ```
 
 ## Profiles
-Configurable Properties - from  SDK 3 Foundation RFC https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0059-sdk3-foundation.md
+Configurable Properties - from  SDK 3 Foundation RFC https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0059-sdk3-foundation.md. Note that only properties that are changed in the profile are included in this list (timeouts).
 
 | name                      | type           | default (SDK3 Foundation)| wan-development |
 |---------------------------|----------------|--------------------------|-----------------|
@@ -119,21 +119,6 @@ Configurable Properties - from  SDK 3 Foundation RFC https://github.com/couchbas
 | AnalyticsTimeout          | Duration       | 75s                      | 120s            |
 | SearchTimeout             | Duration       | 75s                      | 120s            |
 | ManagementTimeout         | Duration       | 75s                      | 120s            |
-| EnableTLS                 | boolean        | false                    |                 |
-| Transcoder                | Transcoder     | JSONTranscoder()         |                 |
-| JsonSerializer            | JsonSerializer | DefaultJsonSerializer()  |                 |
-| Tracer                    | Tracer         | ThresholdLoggingTracer() |                 |
-| Meter                     | Meter          | LoggingMeter()           |                 |
-| RetryStrategy             | RetryStrategy  | BestEffortRetryStrategy()|                 |
-| EnableMutationTokens      | boolean        | true                     |                 |
-| TcpKeepAliveTime          | Duration       | 4.5s                     |                 |
-| EnableTcpKeepAlives       | boolean        | true                     |                 |
-| ForceIPV4                 | boolean        | false                    |                 |
-| ConfigPollInterval        | Duration       | 2.5s                     |                 |
-| ConfigPollFloorInterval   | Duration       | 50ms                     |                 |
-| ConfigIdleRedialTimeout   | Duration       | 5m                       |                 |
-| MaxHttpConnections        | integer        | 12                       |                 |
-| IdleHttpConnectionTimeout | Duration       | 30s                      |                 |  
 
 ## Future Extensions
 Possibly maintain profiles in an external source (classpath resource, file etc) so that the values can be modified without changing code,  or that new profiles can be created. 
@@ -141,6 +126,8 @@ For spring-boot applications, there is already a number of mechanisms to externa
 
 
 ## Changelog
+* Sep 19, 2022 - Revision #2 (by Michael Nitschinger)
+    * Formatting Polish, Signoff
 * Aug 24, 2022 - Revision #1 (by Michael Reiche)
     * Version Draft 
 
@@ -148,16 +135,16 @@ For spring-boot applications, there is already a number of mechanisms to externa
 
 | Language     | Team Member        | Signoff Date | Revision |
 |--------------|--------------------|--------------|----------|
-| C            | Sergey Avseyev     | 2022-09-02   |          |
-| Connectors   | David Nault        | 2022-09-01   |          |
+| C            | Sergey Avseyev     | 2022-09-02   | #1       |
+| Connectors   | David Nault        | 2022-09-01   | #1       |
 | Go           | Charles Dixon      |              |          |
-| Java         | Michael Nitchinger |              |          |
-| .NET         | Jeffry Morris      | 2022-09-08   |          |
+| Java         | Michael Nitchinger | 2022-09-19   | #2       |
+| .NET         | Jeffry Morris      | 2022-09-08   | #1       |
 | Node.js      | Brett Lawson       |              |          |
-| PHP          | Sergey Avseyev     | 2022-09-02   |          |
-| Python       | Jared Casey        | 2022-09-02   |          |
-| Ruby         | Sergey Avseyev     | 2022-09-02   |          |
-| Scala        | Graham Pople       | 2022-09-08   |          |
+| PHP          | Sergey Avseyev     | 2022-09-02   | #1       |
+| Python       | Jared Casey        | 2022-09-02   | #1       |
+| Ruby         | Sergey Avseyev     | 2022-09-02   | #1       |
+| Scala        | Graham Pople       | 2022-09-08   | #1       |
 
 
 
