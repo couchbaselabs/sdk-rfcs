@@ -17,22 +17,22 @@ Provide a specification for an SDK API for Couchbase Server 5.0 and greater wher
 
 The Couchbase 3.0 SDKs support the new Collection paradigm and the natural hierarchy of resources and actions which can be done against Couchbase Server 6.5/7.
 
-Couchbase has traditionally used the concepts of Cluster as a sequence of interjoined nodes and Buckets as unit of multi tenancy within a Cluster. For Couchbase 6.5/7 the resource paradigm has been augmented to include Scopes, which are groupings of collections, and represent multi tenancy within a Bucket, and Collections within a Scope to segment documents. These are all “resource boundaries” for authentication.
+Couchbase has traditionally used the concepts of Cluster as a sequence of interjoined nodes and Buckets as unit of multi tenancy within a Cluster. For Couchbase 6.5/7 the resource paradigm has been augmented to include Scopes, which are groupings of collections, and represent multi tenancy within a Bucket, and Collections within a Scope to segment documents. These are all "resource boundaries" for authentication.
 
 For example, here is an example of connecting to a collection using C#:
 
 ```csharp
 //create a cluster and connect to it
 var cluster = Cluster.connect(
-  “couchbase://localhost”,
+  "couchbase://localhost",
   new ClusterOptions{
-    Username=”Administrator”,
-    Password=”password”
+    Username="Administrator",
+    Password="password"
 });
 
 //get the bucket and people collection with scope name
 var bucket = cluster.Bucket("default");
-var coll = bucket.Scope(“comxyz”).Collection( "people");
+var coll = bucket.Scope("comxyz").Collection( "people");
 ```
 
 And a similar example in Javascript:
@@ -40,7 +40,7 @@ And a similar example in Javascript:
 ```javascript
 //create a cluster and connect to it
 var cluster = new couchbase.Cluster(
-  'couchbase://localhost’, {
+  'couchbase://localhost', {
     username: 'Administrator',
     password: 'password'
 });
@@ -50,7 +50,7 @@ var bucket = cluster.bucket('default');
 var coll = bucket.scope('comxyz').collection('people');
 ```
 
-In the example above a Cluster object is created and then authenticated. It will use the “default” configuration. After that, the default bucket is fetched from the cluster and then a collection is opened with the scope “comxyz” and the name “people”. Once the collection is fetched, it can be used for basic CRUD and a new, terse collection specific query syntax API.
+In the example above a Cluster object is created and then authenticated. It will use the "default" configuration. After that, the default bucket is fetched from the cluster and then a collection is opened with the scope "comxyz" and the name "people". Once the collection is fetched, it can be used for basic CRUD and a new, terse collection specific query syntax API.
 
 The exact naming and use of the cluster configuration object as left as implementation dependent. For example, Java will use the name Environment instead of Configuration as its implementation involves this object owning some long-running resources.
 
@@ -58,17 +58,17 @@ Also, as outlined in the bootstrapping RFC, the bootstrap process itself is lazy
 
 ### Global vs Local Scope
 
-The structure of the API follows the natural path that a developer will encounter as they “dot operator” navigate using their IDE and it’s “intellisense” equivalent. This structure also follows the Couchbase resource boundaries defined by their cluster configuration. It also defines a means of building operations with repeatable defaults. In general, the pattern is to apply global attributes or settings on the resource and then overwrite them with finer detail on the more specific resource. Cluster level settings affect all buckets, all collections and finally all operations, however at the operation level these settings can be overridden with new value and then it will apply from that point on.
+The structure of the API follows the natural path that a developer will encounter as they "dot operator" navigate using their IDE and it's "intellisense" equivalent. This structure also follows the Couchbase resource boundaries defined by their cluster configuration. It also defines a means of building operations with repeatable defaults. In general, the pattern is to apply global attributes or settings on the resource and then overwrite them with finer detail on the more specific resource. Cluster level settings affect all buckets, all collections and finally all operations, however at the operation level these settings can be overridden with new value and then it will apply from that point on.
 
 For example, assume Timeout properties defined on different services in a cluster. This will apply to all resources under that cluster object: buckets, collections and operations.If this needs to be overridden for a single operation, then it can be and will only affect that one operation.
 
 Note that a property may exist at all levels or may be constrained at a resource boundary or operation. For example, a CAS value is specific to the operation level only, while kvTimeout or queryTimeout may be different on throughout the chain.
 
-Finally, some operations against Couchbase Server can be either “global” in that they can be done on the Cluster level or “local” in they can be done on Buckets and Collections level.
+Finally, some operations against Couchbase Server can be either "global" in that they can be done on the Cluster level or "local" in they can be done on Buckets and Collections level.
 
 ## Core API
 
-The core API revolves around using a “builder” pattern to associate zero or more parameters with a single operation while allowing operations to be reusable to minimize redundancy. Required parameters are always on the left hand-side, while optional parameters will be on the right. The method name is a verb that explicitly defines what the action (Insert, Query, etc) will be on the resource (bucket or collection).
+The core API revolves around using a "builder" pattern to associate zero or more parameters with a single operation while allowing operations to be reusable to minimize redundancy. Required parameters are always on the left hand-side, while optional parameters will be on the right. The method name is a verb that explicitly defines what the action (Insert, Query, etc) will be on the resource (bucket or collection).
 
 ### Key/Value API using the Bucket and Collection
 
@@ -552,7 +552,7 @@ Configuration is handled by top-level properties that apply to all operations an
 
 #### KVConnectTimeout
 
-Number of seconds the client should wait while attempting to connect to a node’s KV service via a socket. Initial connection, reconnecting, node added, etc.
+Number of seconds the client should wait while attempting to connect to a node's KV service via a socket. Initial connection, reconnecting, node added, etc.
 
 - Connection String: `kv_connect_timeout`
 - Type: `Duration`
@@ -875,3 +875,4 @@ APIs that are marked as Committed have a stable implementation. Uncommitted and 
 | Java       | Michael Nitschinger | 2020-04-16   | 6        |
 | C          | Sergey Avseyev      | 2020-04-22   | 6        |
 | Ruby       | Sergey Avseyev      | 2020-04-22   | 6        |
+
