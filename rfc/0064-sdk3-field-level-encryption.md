@@ -81,7 +81,7 @@ value is the name of the algorithm used to encrypt the field. The object
 also contains whatever other information is required to decrypt the
 value.
 
-Here’s what an encrypted value looks like. Note that in this example,
+Here's what an encrypted value looks like. Note that in this example,
 the "kid" (key ID) and "ciphertext" fields are specific to the standard
 "AEAD\_AES\_256\_CBC\_HMAC\_SHA512" algorithm. Custom algorithms may
 define different fields.
@@ -100,7 +100,7 @@ then reads the algorithm-specific fields.
 
 ## Field Name Mangling
 
-When a field is encrypted, the SDK mangles the field’s name by prefixing
+When a field is encrypted, the SDK mangles the field's name by prefixing
 it with a marker. The default prefix is "encrypted$". Implementations
 should allow the developer to specify a different prefix at a global
 level when configuring FLE.
@@ -112,7 +112,7 @@ with an underscore. Alternatively, the legacy field names can be updated
 using a N1QL query as described in this forum post:
 https://forums.couchbase.com/t/replacing-field-name-prefix/28786
 
-Here’s a document with a normal field called "foo" and an encrypted
+Here's a document with a normal field called "foo" and an encrypted
 field called "bar". Note that the name of the "bar" field has been
 mangled to indicate it holds an encrypted value:
 
@@ -230,7 +230,7 @@ JsonObjectCrypto instance are decrypted on read and encrypted on write.
 Attempting to read an unencrypted field via the crypto view has the same
 result as if the field does not exist.
 
-Here’s an example of how a developer might use JsonObjectCrypto to
+Here's an example of how a developer might use JsonObjectCrypto to
 perform manual encryption and decryption:
 
 ```java
@@ -291,13 +291,13 @@ Methods:
   version, returns the latest version of the key.
 
 SDKs should provide a Keyring implementation that gets keys from the
-platform’s native key store, if applicable. For example, the Java SDK
+platform's native key store, if applicable. For example, the Java SDK
 has a KeyStoreKeyring that gets keys from a Java KeyStore supplied by
 the developer.
 
 ### EncryptionResult
 
-Mutable value object. The encrypted form of a message. It’s a wrapper
+Mutable value object. The encrypted form of a message. It's a wrapper
 around a Map&lt;String, Object&gt; that corresponds directly to the JSON
 format of an encrypted value.
 
@@ -338,7 +338,7 @@ instance is registered. Only one decrypter may be registered for a given
 algorithm.
 
 A decrypter gets keys from a [Keyring](#keyring). The Keyring is
-passed as an argument to the decrypter’s constructor.
+passed as an argument to the decrypter's constructor.
 
 ### Encrypter
 
@@ -354,7 +354,7 @@ Methods:
   be any attributes required by the algorithm).
 
 An encrypter gets keys from a [Keyring](#keyring). This keyring
-is passed as an argument to the encrypter’s constructor.
+is passed as an argument to the encrypter's constructor.
 
 The name of the encryption key is passed as a constructor argument. The
 encrypter must ask the keyring for the key every time a message is
@@ -421,7 +421,7 @@ of the SDK that drive FLE.
 A provider is a factory for Encrypters and their associated Decrypter.
 It does not implement any interface, and is not strictly a part of the
 FLE framework. Its role is to simplify the configuration of related
-components. We’ll see an example in the [Sample
+components. We'll see an example in the [Sample
 Configuration](#sample-configuration) section.
 
 ### DefaultCryptoManager
@@ -455,7 +455,7 @@ developer when registering the legacy decrypters.
 
 A developer who wants to use Field-Level Encryption supplies a
 CryptoManager instance when configuring the SDK. The easiest way to do
-this is to build a DefaultCryptoManager. Here’s what that might look
+this is to build a DefaultCryptoManager. Here's what that might look
 like in Java:
 
 ```java
@@ -573,7 +573,7 @@ in such a way that that key rotation can be added by a developer. The
 extension point where developers can implement the key rotation scheme
 of their choice.
 
-As a simple example, consider a key naming convention where a key’s name
+As a simple example, consider a key naming convention where a key's name
 consists of a base name followed by a delimiter and then a version
 identifier. If we use "--" as a delimiter and ISO 8601 dates for the
 version, a full key name might look like "myKey--2020-04-29".
@@ -586,7 +586,7 @@ happens to be called "myKey--2020-04-29". This fully-qualified name is
 part of the [Key](#key-1) object returned to the encrypter.
 
 When the encrypter writes the "kid" property into the encryption result,
-it uses the full key name: "myKey--2020-04-29". When it’s time to
+it uses the full key name: "myKey--2020-04-29". When it's time to
 decrypt the message, the [Decrypter](#decrypter) gets the key
 name from the "kid" property and asks the keyring for
 "myKey--2020-04-29". Since this is a fully-qualified name, the keyring
@@ -608,7 +608,7 @@ Another goal is to make the API less opinionated about how to do
 encryption and how to manage keys, so developers can more easily
 customize the behavior of the FLE components.
 
-At the same time, it’s important to retain the ability to decrypt
+At the same time, it's important to retain the ability to decrypt
 messages encrypted by SDK 2.
 
 ## Universal Decryption
@@ -661,7 +661,7 @@ to authenticate old messages without knowing which signing key to use.
 
 Additionally, the implementations of these algorithms were inconsistent
 across SDKs. Due to confusion around signature calculation, the Java and
-.NET SDKs are unable to read each others’ encrypted messages.
+.NET SDKs are unable to read each others' encrypted messages.
 
 These algorithms are deprecated in favor of
 AEAD\_AES\_256\_CBC\_HMAC\_SHA\_512.
@@ -687,7 +687,7 @@ document. In SDK 3 they may be present at any depth and may be nested
 within one another.
 
 In SDK 2, the key name was included in signature calculations. In SDK 3
-it is not; if the user wants to rename their keys, that’s totally fine.
+it is not; if the user wants to rename their keys, that's totally fine.
 
 The EncryptedField annotation is renamed to "Encrypted", and its
 "provider" attribute is renamed to "encrypter". The attribute is
@@ -700,7 +700,7 @@ algorithm which is formally described by an Internet Draft:
 [Authenticated Encryption with AES-CBC and
 HMAC-SHA](https://tools.ietf.org/html/draft-mcgrew-aead-aes-cbc-hmac-sha2-05).
 
-It’s worth reading at least the
+It's worth reading at least the
 "[Rationale](https://tools.ietf.org/html/draft-mcgrew-aead-aes-cbc-hmac-sha2-05#section-4)"
 and "[Security
 Considerations](https://tools.ietf.org/html/draft-mcgrew-aead-aes-cbc-hmac-sha2-05#section-6)"
@@ -846,7 +846,7 @@ If an SDK provides a Transit integration, it must use the algorithm name
 key in the "kid" attribute, and store the encrypted data in the
 "ciphertext" attribute.
 
-Here’s an example of a field encrypted with Transit:
+Here's an example of a field encrypted with Transit:
 
 ```json
 {
@@ -868,7 +868,7 @@ server.
 
 - May 12, 2020 - Revision \#2 (by David Nault)
 
-    - Updated motivation to indicate Couchbase Server’s support for
+    - Updated motivation to indicate Couchbase Server's support for
       encryption at rest is provided by third party software.
 
     - CryptoException must be a subclass of CouchbaseException.

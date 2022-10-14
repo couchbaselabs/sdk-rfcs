@@ -20,7 +20,7 @@ With fast-failover, that time can be reduced to as little as a 5 seconds on the 
 
 # Current Implementations
 ## .NET
-The .NET SDK uses two means of determining if a failover has occurred and/or whether a node is unreachable. One is a means of determining if a node is no longer responsive (connections dropped, cannot reconnect, etc), the other is a check and compare of the server config for each active node with the SDK’s current configuration.
+The .NET SDK uses two means of determining if a failover has occurred and/or whether a node is unreachable. One is a means of determining if a node is no longer responsive (connections dropped, cannot reconnect, etc), the other is a check and compare of the server config for each active node with the SDK's current configuration.
 
 In the former, if `x` number of failures occur within a timespan `y`, then the node will be put into a `dead` state. Any K/V operations mapped to this node will result in a `NodeUnavailableException` being returned in the Exception property of the `IResult` implementation; N1QL and View requests will be routed towards other active nodes. Once a node is considered dead, then a timer will fire every 1s in an attempt to create a new connection and execute a NOOP against it. If the node responds, the node will become active again. If not, the timer will continue to fire until successful. The point of this is to keep the client from tieing up the application threads waiting for operations that will end up failing at the network level and instead just fail fast with an error until a connection can be made with the node.
 
@@ -29,7 +29,7 @@ For the latter, there is a timer that fires every 10s which requests a config fr
 ## Java
 In Java `core-io` we detect node failures through the following mechanisms in CCCP mode:
 
- - If an endpoint (socket) goes into a `DISCONNECTED` state we’ll proactively fetch a new configuration via `GET_CONFIG` from the cluster.
+ - If an endpoint (socket) goes into a `DISCONNECTED` state we'll proactively fetch a new configuration via `GET_CONFIG` from the cluster.
  - If the server returns a NMVB we take that config and apply it
  - Every 10 seconds, we also poll for a new config via `GET_CONFIG` from one of the nodes in the cluster (this is meant as a backup to grab a new config even if missed by the other two reactive approaches)
 As another proactive measure under CCCP when a config is marked as tainted (that is under rebalance when a FF-Map is available) we start polling every second for a new config until the rebalance finished (config is not marked tainted anymore).
@@ -37,20 +37,20 @@ As another proactive measure under CCCP when a config is marked as tainted (that
 For HTTP mode (if CCCP is not available/disabled), we have the streaming conn attached anyways, so we still do the NMVB override but both `GET_CONFIG` approaches (on disconnect & every 10s as well as the rebalance tainted polling) are essentially a `NOOP`.
 
 ## LCB
-LCB does not do background polling (it could, but it wouldn’t be useful for anything except node.js and other “true” async use cases).
+LCB does not do background polling (it could, but it wouldn't be useful for anything except node.js and other "true" async use cases).
 
 LCB has a default throttling of 10s: Whenever a network error occurs, lcb triggers a config request. This will cause it to query a node if no other config request has been performed in the prior 10 seconds.
 
 The config request takes place in a different subsystem, and varies on the config transport being used:
 
- - When using “CCCP” it will merely request from the next node in the list, with an index variable wrapping around. If the server does not respond within 2.5s (or some other error occurs), the config is requested from the next node.
- - When using HTTP it will expect a new config over the stream of the current ‘entry point node’; if there is no config pushed within 2.5s (configurable too!) it will assume that the node is down and request a config from the next node, which will effectively become the EP node.
+ - When using "CCCP" it will merely request from the next node in the list, with an index variable wrapping around. If the server does not respond within 2.5s (or some other error occurs), the config is requested from the next node.
+ - When using HTTP it will expect a new config over the stream of the current 'entry point node'; if there is no config pushed within 2.5s (configurable too!) it will assume that the node is down and request a config from the next node, which will effectively become the EP node.
 
 The throttle interval is configurable.
 
 ### LCB - Modifications
- - Lower the refresh-on-error ‘floor’ to 10ms from 100s.
- - “Background-poll” every 2.5 seconds. For clients that are synchronous, this will still poll every 2.5 seconds, or whenever the client is next active again -- depending on how active the client is. For clients that are async like node.js, it will behave similar to other clients’ behavior in the RFC.
+ - Lower the refresh-on-error 'floor' to 10ms from 100s.
+ - "Background-poll" every 2.5 seconds. For clients that are synchronous, this will still poll every 2.5 seconds, or whenever the client is next active again -- depending on how active the client is. For clients that are async like node.js, it will behave similar to other clients' behavior in the RFC.
 
 ## GO
 In gocbcore we detect node failures through the following mechanisms in CCCP mode:
@@ -155,12 +155,12 @@ Above is a timeline showing the events that occur with a Fast-failover time of 1
 
 Since we want to minimize blocking, platforms that provide multi-thread or some kind of parallel IO support should use a separate worker thread or equivalent means of offloading the polling from main processing.
 
-Once we have gotten a cluster map, the revision should be compared with the client’s current revision. If the revision is newer, the client should re-configure itself with the newer configuration to reflect the current server topology. Note that the polling should stop at the first config found and not continue through checking the configs over the entire cluster.
+Once we have gotten a cluster map, the revision should be compared with the client's current revision. If the revision is newer, the client should re-configure itself with the newer configuration to reflect the current server topology. Note that the polling should stop at the first config found and not continue through checking the configs over the entire cluster.
 
 # Conclusion
 Since we want to discover a cluster map change ASAP and because a cluster configuration can come in many flavors, a hybrid strategy for failover detection is probably our best bet. The client should react to errors related to connectivity (host not found, timeouts, etc) by checking for a config update when such errors occur; additionally, the client should implement a cluster map poll mechanism for detecting cluster map changes concurrently. In both cases the comparison algorithm (old vs new rev) should be the same and so should the reconfiguration process within the SDK.
 
-To ensure that we don’t spam the server with config requests from polling and pulling, the same timestamp checking for floor and ceiling should be used as introduced in the “K/V Pulling” section above. The floor for config checking should be some value such as 50ms where we skip a check if a config request has already happened within that time. The ceiling should be a larger value such as 2.5s - both values should be tunable via client configuration.
+To ensure that we don't spam the server with config requests from polling and pulling, the same timestamp checking for floor and ceiling should be used as introduced in the "K/V Pulling" section above. The floor for config checking should be some value such as 50ms where we skip a check if a config request has already happened within that time. The ceiling should be a larger value such as 2.5s - both values should be tunable via client configuration.
 
 # Addendum
 The following configuration properties and default values are defined - note that all must be tunable:

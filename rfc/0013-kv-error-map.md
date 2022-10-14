@@ -15,7 +15,7 @@ Currently `memcached` error codes are fixed and implemented either as sequences 
 # Changelog
 
  - *August 17 2016*: Initial Draft
- - *March 27 2017*: Add “processing chain” section, Add “retry intervals” section
+ - *March 27 2017*: Add "processing chain" section, Add "retry intervals" section
  - *March 28 2017*: Specify that error map is per-node, not per cluster.
  - *August 10 2017*: Finalization & cleanup based on last discussions
 
@@ -25,16 +25,16 @@ The server exposes the error map as a simple JSON blob that contains the mapping
 ## Control Flow
 
  1. The client must first advertise that it supports the KV Error Map feature by including the `XERROR (0x07)` feature in the HELLO negotiation command. This tells the server that it may send newer error codes to the client without risking confusing it. It also implies that the client will retrieve the error code map from the server.
- 2. Once the client has sent the `XERROR` feature and receive indication that the server also supports it (by receiving `XERROR` included in the server’s list of features), it sends a `CMD_GET_ERROR_MAP (0xfe)`, indicating the maximum format version of the error map the client understands. Currently there is only one version of the error map.
+ 2. Once the client has sent the `XERROR` feature and receive indication that the server also supports it (by receiving `XERROR` included in the server's list of features), it sends a `CMD_GET_ERROR_MAP (0xfe)`, indicating the maximum format version of the error map the client understands. Currently there is only one version of the error map.
  3. The server will reply with a JSON error map. The client must store this error map on a per node basis. The version and revision are contained in the error map, as well as the actual code-to-attribute mappings. The version is used to indicate new error attributes, whereas the revision is used to indicate updated error codes.
  4. When the client receives an unrecognized error code, it can consult the error map (as below).
 
 ## Negotiation
-The client should first indicate that it supports the KV Error Map feature by sending the `XERROR (0x07)` feature flag in `HELLO`. If the server responds back with `XERROR` in the list of features, then proceed to the next step. Otherwise, the server doesn’t support extended error codes.
+The client should first indicate that it supports the KV Error Map feature by sending the `XERROR (0x07)` feature flag in `HELLO`. If the server responds back with `XERROR` in the list of features, then proceed to the next step. Otherwise, the server doesn't support extended error codes.
 
 *Note:* `HELLO` should be done as the first step, even before auth, so that auth can return more detailed error information. This is known to break certain old and unsupported server versions, so if possible an escape hatch like a flag should be introduced which performs `HELLO` after authentication to keep them working.
 
-**The XERROR bit should be sent by default.** Since the client is under authority when to consult the error map, more information is always good but the clients need to ensure that backwards compatibility is not broken. So in some cases newer error codes or attributes need to be mapped back to old behavior when encountered to make sure the semantics of the SDK don’t change with different server versions.
+**The XERROR bit should be sent by default.** Since the client is under authority when to consult the error map, more information is always good but the clients need to ensure that backwards compatibility is not broken. So in some cases newer error codes or attributes need to be mapped back to old behavior when encountered to make sure the semantics of the SDK don't change with different server versions.
 
 ## Getting the Error Map
 To get the error map, send the `CMD_GET_ERROR_MAP (0xfe)` to the server. This should be done immediately after the client has received acknowledgment that the server actually supports extended error codes, as the server is now free to send any error code it wants in reply.
@@ -42,7 +42,7 @@ To get the error map, send the `CMD_GET_ERROR_MAP (0xfe)` to the server. This sh
 The `GET_ERROR_MAP` command requires a 2 byte payload, which is the network-encoded maximum version number the client can parse. At the time of this RFC, the only supported number is 1.The server should send back a reply with the JSON error map in the payload.
 
 ## Parsing the Error Map
-The error map’s format is defined in the [memcached Github repository](https://github.com/couchbase/kv_engine/blob/master/docs/ErrorMap.md), and will not be repeated here again. The client should parse the error map and ensure that all error attributes are understood and accounted for. If the error map seems corrupted in any way, it should ignore it, and renegotiate with the server (or reconnect) without the `XERROR` feature.
+The error map's format is defined in the [memcached Github repository](https://github.com/couchbase/kv_engine/blob/master/docs/ErrorMap.md), and will not be repeated here again. The client should parse the error map and ensure that all error attributes are understood and accounted for. If the error map seems corrupted in any way, it should ignore it, and renegotiate with the server (or reconnect) without the `XERROR` feature.
 
 Once the error map has been received, it should be stored in a per-node database. Different nodes may wish to dictate how different errors behave (for example, in respect to different cluster versions and/or retries).
 
@@ -50,7 +50,7 @@ Once the error map has been received, it should be stored in a per-node database
 Error attributes beyond the retry attributes (discussed further down), which is utilized to indicate that a client must use the retry semantics of the particular error are not in scope for this document.  A future RFC will provide details on additional attributes that may be added, and the behaviors they will provide. If in doubt if an attribute should be used, the SDK should use a conservative approach and favor backwards compatibility.
 
 # Error Attributes
-Error Categories act as the driving force behind the utility of the error map. Categories define the basic characteristics of an error condition so that even if the SDK does not understand a specific error code, it may determine the next course of action based on the error’s defined attributes.
+Error Categories act as the driving force behind the utility of the error map. Categories define the basic characteristics of an error condition so that even if the SDK does not understand a specific error code, it may determine the next course of action based on the error's defined attributes.
 
 Attributes are the most important part of the error map as they convey how an error code should be handled. An error code may have more than a single attribute.
 
@@ -77,7 +77,7 @@ It is important to reiterate while the attributes are important for unknown erro
 # Retry Intervals
 To offer full flexibility, tunable retry intervals may be defined. The intervals will be included in a `retry` specification. The `auto-retry` error attribute will be included in the attribute list to hint to the client that the command should be retried per the spec.
 
-The ‘retry’ field contains the intervals that would be used up by the client when the error occurs. The format of the retry specification is (other error map fields/structure in grey):
+The 'retry' field contains the intervals that would be used up by the client when the error occurs. The format of the retry specification is (other error map fields/structure in grey):
 
 ```
 "errors": {
@@ -163,7 +163,7 @@ Example Definition
 ```
 
 
-Here’s an example of client code handling the various backoff strategies
+Here's an example of client code handling the various backoff strategies
 
 ```
 Def handle_constant_backoff(Spec spec) {
@@ -206,7 +206,7 @@ Making use of the error map consists of the SDK consistently and intelligently d
 
 Note that this RFC does not specify exactly how each SDK should handle all the attributes (to follow in a new RFC). Here are some examples that might apply:
 
- 1. *Special-handling.* This error must be specially handled by the client. The connection must be dropped and reinitialized if it can’t handle the error properly.
+ 1. *Special-handling.* This error must be specially handled by the client. The connection must be dropped and reinitialized if it can't handle the error properly.
  2. Fetch-config: Hint that the client may wish to get a new cluster map. This attribute does not affect the processing of the given error, but may help avoid receiving such an error in the future.
  3. Temporary: Informational attribute that may be relayed to the user -- the operation may be retried at some point in the future without any modification
  4. Item-only: Informational attribute that may be relayed to the user
@@ -231,7 +231,7 @@ The client will keep track of the error map on a per-node basis so that each nod
 SDK settings must always take precedence and only unknown response status codes should be looked up. The SDK is the authority.
 
 **(Unknown) How does the client request a compatible version?**
-At the protocol level, the client can just write the version maximum version it desires as part of the “key”.
+At the protocol level, the client can just write the version maximum version it desires as part of the "key".
 
 **(Unknown) How is logging handled for each of these?  Predefined?  Part of the response?  Goal, I think, is common behaviors.**
 Logging is determined based on the general SDK logging facilities. Errors are normally somewhere at WARN while others might be DEBUG. The SDK should just hook this up into the usual logging flow.

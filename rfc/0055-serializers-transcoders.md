@@ -17,13 +17,13 @@ A user has stored its data in Couchbase in a binary format and wants to read it 
 A user wishes to use a serializer other than the default serializer (Jackson or NewtonSoft.NET for example) and provide a custom implementation of serializer.
 etc...
 
-The first two cases are generally legacy/upgrade scenarios from customers or users who started with very old Couchbase servers before JSON was a storage type. The last is done to satisfy the needs of a customer or user for whatever reason does not want to use the default serializer (usually for performance reasons or because they wish to reuse the custom configuration which they’ve already implemented with an alternative JSON serialization library).
+The first two cases are generally legacy/upgrade scenarios from customers or users who started with very old Couchbase servers before JSON was a storage type. The last is done to satisfy the needs of a customer or user for whatever reason does not want to use the default serializer (usually for performance reasons or because they wish to reuse the custom configuration which they've already implemented with an alternative JSON serialization library).
 
 ## Summary
 
 Most SDKs use Transcoders and Serializers when reading or writing data to and from Couchbase using the various Services (Search, KV, Views, etc). 
 
-Transcoders handle the encoding and decoding of the documents when stored and retrieved from Couchbase Server using the [Common Flags Specification][SDK-RFC#20]. This is done so that documents can be written in one language’s SDK and read universally in another and vice versa. The RFC defines the format types of JSON, non-JSON string, and raw binary. Transcoders also delegate the reading or writing of the data using serializers or native conversions from bytes to concrete types and vice versa.
+Transcoders handle the encoding and decoding of the documents when stored and retrieved from Couchbase Server using the [Common Flags Specification][SDK-RFC#20]. This is done so that documents can be written in one language's SDK and read universally in another and vice versa. The RFC defines the format types of JSON, non-JSON string, and raw binary. Transcoders also delegate the reading or writing of the data using serializers or native conversions from bytes to concrete types and vice versa.
 
 Serializers are used by Transcoders to handle converting the actual JSON bytes to and from native language objects (native data structures that mirror the JSON documents elements). These native objects are frequently very specific to a platform. 
 
@@ -103,7 +103,7 @@ A number of languages in the wild have custom serialization formats implicitly p
 In languages such as Go, where there is a common language-level method of specifying an array of bytes that is specifically of JSON type (in Go this is the json.RawMessage type), the SDK is responsible for extending the LegacyTranscoder, JsonTranscoder and RawJsonTranscoder to support these types implicitly.  Additionally, depending on the context of any SDK Specific Transcoder, these too should support these specialized types.
 
 ####  Languages With Type Trait Capabilities
-(I’ll use Scala terms here, but some languages have similar and can make use of this.)
+(I'll use Scala terms here, but some languages have similar and can make use of this.)
 Scala gets a small tweak to permit it to take advantage of its advanced type capabilities.  When app does:
 
 ```scala
@@ -113,7 +113,7 @@ result.contentAs[JsonObject]()
 
 The contentAs method takes a Scala implicit parameter, a `JsonSerializer[T]` (technically a Type Trait).  The 'implicit' part means the compiler is asked to find a `JsonSerializer[JsonObject]`, in various scopes.  There's a number of these `JsonSerializable[T]` provided out of the box, providing support for several popular JSON libraries, plus Strings and byte arrays.  For instance, a `JsonSerializer[io.circe.Json]` would use the Circe library to turn a byte array to and from the `io.circe.Json` type.  The user is also free to add their own to support e.g. another JSON library.  
 
-That compiler-discovered `JsonSerializer` is then provided to the Transcoder previously specified in the GetOptions block, if a) it's a `JsonTranscoder` (the only one that can accept a `JsonSerializer`) and b) the app didn't specify a serializer for the transcoder already.  This is the only real change from the RFC - instead of the app having to choose and specify a serializer, it’s compiler provided.
+That compiler-discovered `JsonSerializer` is then provided to the Transcoder previously specified in the GetOptions block, if a) it's a `JsonTranscoder` (the only one that can accept a `JsonSerializer`) and b) the app didn't specify a serializer for the transcoder already.  This is the only real change from the RFC - instead of the app having to choose and specify a serializer, it's compiler provided.
 
 #### Other examples:
 

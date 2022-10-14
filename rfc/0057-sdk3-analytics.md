@@ -40,7 +40,7 @@ IAnalyticsResult AnalyticsQuery(string statement, [AnalyticsOptions options]);
 
 * Required:
   * statement : string
-    * Specifies the Analytics statement in string form (i.e. “select foo from bar”)
+    * Specifies the Analytics statement in string form (i.e. "select foo from bar")
 * Optional (part of QueryOptions):
   * scanConsistency(AnalyticsScanConsistency) = undefined(NotBounded)
     * Specifies the level of consistency for the query.
@@ -49,7 +49,7 @@ IAnalyticsResult AnalyticsQuery(string statement, [AnalyticsOptions options]);
       * NotBounded: `not_bounded`
   * clientContextId(String) = UUID(),
     * Specifies a context ID string which is mirrored back from the query engine on response
-    * If not provided, the client must create and use a UUID instead. Sent as in the JSON payload as “client_context_id” as a JSON String `”foobar”`
+    * If not provided, the client must create and use a UUID instead. Sent as in the JSON payload as "client_context_id" as a JSON String `"foobar"`
   * raw(String key, JsonValue value) = undefined
     * Specifies values with their key and value as presented as part of the JSON payload
     * This is an escape hatch to support unknown commands and be forwards compatible
@@ -60,12 +60,12 @@ IAnalyticsResult AnalyticsQuery(string statement, [AnalyticsOptions options]);
     * Specifies positional or named parameters
     * For languages that do not support operator overloading, the alternative naming is positionalParameters(JsonArray) and namedParameters(JsonObject)
     * Sent in the JSON payload
-      * For positional parameters as a JSON array under the “args” key
-      * For named parameters directly in the JSON payload, but each named argument is prefixed with “$” if it doesn’t already have the dollar prefix provided by the user
+      * For positional parameters as a JSON array under the "args" key
+      * For named parameters directly in the JSON payload, but each named argument is prefixed with "$" if it doesn't already have the dollar prefix provided by the user
     * Setting JsonArray or JsonObject overrides any previously set parameters
   * priority(boolean) = undefined(0)
     * Allows to give certain requests higher priority than others.
-    * Sent on the wire in the HTTP header as “Analytics-Priority” a JSON Number. See the section on Priority in this RFC for more details how it should be encoded.
+    * Sent on the wire in the HTTP header as "Analytics-Priority" a JSON Number. See the section on Priority in this RFC for more details how it should be encoded.
   * timeout(Duration) = $Cluster::analyticsOperationTimeout
     * SSpecifies how long to allow the operation to continue running before it is cancelled.
   * serializer(JsonSerializer) = $Cluster::Serializer
@@ -95,7 +95,7 @@ An `IAnalyticsResult` that maps the result of the analytics query to an object.
 
 **Note:** named and positional parameters must not be set at the same time. If both are set the SDK must fail immediately with an IllegalArgumentException or similar.
 
-Named parameters are applied with a prefix “$” to the JSON payload, positional ones as an array in the “args” element.
+Named parameters are applied with a prefix "$" to the JSON payload, positional ones as an array in the "args" element.
 
 ## AnalyticsScanConsistency
 
@@ -125,7 +125,7 @@ So if priority is set to true, it must be written as numeric -1 on the wire.
 
 Also it is important that the priority is NOT part of the json blob, but rather set as a http header!
 
-* Header name: `“Analytics-Priority”`
+* Header name: `"Analytics-Priority"`
 * Header value: not present if 0 (false), set to -1 if true
 
 ## AnalyticsResult
@@ -167,7 +167,7 @@ struct AnalyticsMetrics {
 }
 ```
 
-The status needs to be decoded from the wire representation, which is in all cases the lowercase version of the enum. So “success” on the wire is turning into SUCCESS.
+The status needs to be decoded from the wire representation, which is in all cases the lowercase version of the enum. So "success" on the wire is turning into SUCCESS.
 
 ```
 enum AnalyticsStatus {

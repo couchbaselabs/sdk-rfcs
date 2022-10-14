@@ -2857,7 +2857,7 @@ The object names should be implemented in a way idiomatic to the implementing la
 
 * `dataverse` (string) - The dataverse that the link belongs to. Form is `bucket.name/scope.name`.
 * `name` (string) - The name of the link.
-* `connectionString` (string) - The connection string can be used as an authentication method, connectionString contains other authentication methods embedded inside the string. Only a single authentication method can be used. (e.g. “AccountName=myAccountName;AccountKey=myAccountKey”).
+* `connectionString` (string) - The connection string can be used as an authentication method, connectionString contains other authentication methods embedded inside the string. Only a single authentication method can be used. (e.g. "AccountName=myAccountName;AccountKey=myAccountKey").
 * `accountName` (string) - The Azure blob storage account name.
 * `accountKey` (string) - The Azure blob storage account key.
 * `sharedAccessSignature` (string) - Token that can be used for authentication.
@@ -3108,33 +3108,33 @@ interface ScopeSpec {
 
 * Nov 10, 2019 - Revision #4 (by David Nault)
 
-  * Add optional arguments “DataverseName” and “Force” to Analytics ConnectLink.
+  * Add optional arguments "DataverseName" and "Force" to Analytics ConnectLink.
 
   * Remove the FlushCollection method from CollectionManager, since server-side flushing was not implemented. The user can drop and
     recreate the collection instead.
 
-* Clarify that “IndexType” is string/enum with values “View” and “Gsi”.
+* Clarify that "IndexType" is string/enum with values "View" and "Gsi".
 
-  * Clarify that all optional timeouts default to the client’s global management request timeout.
+  * Clarify that all optional timeouts default to the client's global management request timeout.
 
-  * Clarify that all optional “IgnoreIfExists” parameters default to false.
+  * Clarify that all optional "IgnoreIfExists" parameters default to false.
 
   * Clarify that the Query Index Manager's optional "NumReplicas" and "Deferred" parameters default to omitting the parameter from the
     server request and letting the server decide the default value.
 
 * Nov 11, 2019 - Revision #5 (by David Nault)
 
-  * Renamed “IndexType” to “QueryIndexType” to disambiguate.
+  * Renamed "IndexType" to "QueryIndexType" to disambiguate.
 
 * Nov 20, 2019 - Revision #6 (by David Nault)
 
   * Collection Manager:
 
-     * Removed “scopeExists” and “collectionExists” methods.
+     * Removed "scopeExists" and "collectionExists" methods.
 
   * User Manager:
 
-     * RoleAndOrigins and RoleAndDescription MAY extend Role, at implementor’s discretion.
+     * RoleAndOrigins and RoleAndDescription MAY extend Role, at implementor's discretion.
 
      * Removed the version of UserAndMetadata.effectiveRoles() that returned Set<Role>.
 
@@ -3144,15 +3144,15 @@ interface ScopeSpec {
 
   * Collection Manager:
 
-     * Added “MaxTTL” to the CollectionSpec.
+     * Added "MaxTTL" to the CollectionSpec.
 
-     * Added how to send “MaxTTL” to the CreateCollection uri.
+     * Added how to send "MaxTTL" to the CreateCollection uri.
 
 * Mar 26, 2020 - Revision #8 (by Charles Dixon)
 
   * Collection Manager:
 
-     * Change “maxTTL” to “maxExpiry”
+     * Change "maxTTL" to "maxExpiry"
 
   * Bucket Manager:
 

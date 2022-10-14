@@ -32,7 +32,7 @@ The following diagram is a conceptual diagram showing the relationships and hier
 
 ### Base Exception
 
-The base exception should be a class, structure, or similar component which derives or implements the platform idiomatic class, structure or object representing and error or exception. The purpose is to readily distinguish an error handled and perhaps thrown by the SDK and a system or platform idiomatic error/exception. The name must be word “Couchbase” with either “Error” or “Exception” appended to it and derive from whatever system level generic exception or error is available. As always, idiomatic naming and casing should always apply to any SDK specific implementation.
+The base exception should be a class, structure, or similar component which derives or implements the platform idiomatic class, structure or object representing and error or exception. The purpose is to readily distinguish an error handled and perhaps thrown by the SDK and a system or platform idiomatic error/exception. The name must be word "Couchbase" with either "Error" or "Exception" appended to it and derive from whatever system level generic exception or error is available. As always, idiomatic naming and casing should always apply to any SDK specific implementation.
 
 Each CouchbaseException must have two properties:
 
@@ -40,7 +40,7 @@ Each CouchbaseException must have two properties:
 * An optional Cause
 
 ```Java
-class CouchbaseException extends “PlatformException” {
+class CouchbaseException extends "PlatformException" {
   context: ErrorContext,
   cause: Optional<Exception>
 }
@@ -77,7 +77,7 @@ Service specific context extends the generic Error context with the following at
 
 * SubDocumentErrorContext
   * Extends KeyValueErrorContext fields
-  * Adds “index” which describes the index of the error
+  * Adds "index" which describes the index of the error
 
 * QueryErrorContext
   * Query Statement
@@ -150,11 +150,11 @@ In certain situations, like bootstrapping, where multiple exceptions might be th
 
 Above is an example of the structure that a model of an AggregateException/Error may take, however, please defer to platform idiomatic design decisions when implementating.
 
-Aggregate exceptions can be platform specific and may not be needed / necessary in every language. If possible, errors should be distilled down to one exception with potentially multiple nested causes to make it easier for the user to figure out what’s going on.
+Aggregate exceptions can be platform specific and may not be needed / necessary in every language. If possible, errors should be distilled down to one exception with potentially multiple nested causes to make it easier for the user to figure out what's going on.
 
 ### User Surface Area
 
-The user is only expected to catch/handle the “leaf” nodes of the exception hierarchy and the generic Couchbase exception. The service exception groups will only be raised if no specific exception can be identified (i.e. a too generic or unknown exception) - it is expected to bubble up through the CouchbaseException still in this case.
+The user is only expected to catch/handle the "leaf" nodes of the exception hierarchy and the generic Couchbase exception. The service exception groups will only be raised if no specific exception can be identified (i.e. a too generic or unknown exception) - it is expected to bubble up through the CouchbaseException still in this case.
 
 So in its most simplest form, because based on the retry rfc, we are retrying everything we can already a user is expected to write code like this:
 
@@ -178,9 +178,9 @@ try {
 
 ## Error Definitions
 
-The next sections cover all the possible errors, but do not assign them to commands. Each command in a related RFC needs to refer to the exception type and ID thrown so that there are no “doubly linked lists” that easily get out of date.
+The next sections cover all the possible errors, but do not assign them to commands. Each command in a related RFC needs to refer to the exception type and ID thrown so that there are no "doubly linked lists" that easily get out of date.
 
-Note that for brevity reasons the suffix “Exception” is not used when describing each definition.
+Note that for brevity reasons the suffix "Exception" is not used when describing each definition.
 
 A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST NOT be surfaced to the user at this point. Future enhancements w.r.t permalinks from the SDKs can use these numbers as a baseline but additional research needs to be done.
 
@@ -271,7 +271,7 @@ A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST
 ### 13 AmbiguousTimeout
 
 * Raised When
-  * A timeout occurs and we aren’t sure if the underlying operation has completed.  This normally occurs because we sent the request to the server successfully, but timed out waiting for the response.  Note that idempotent operations should never return this, as they do not have ambiguity.
+  * A timeout occurs and we aren't sure if the underlying operation has completed.  This normally occurs because we sent the request to the server successfully, but timed out waiting for the response.  Note that idempotent operations should never return this, as they do not have ambiguity.
 
 ### 14 UnambiguousTimeout
 
@@ -297,7 +297,7 @@ A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST
   * Analytics
     * Raised When 24047
   * Search
-    * Http status code 400 AND text contains “index not found”
+    * Http status code 400 AND text contains "index not found"
 
 ### 18 IndexExists
 
@@ -596,7 +596,7 @@ KV Code 0xc1
 
 * Raised When
   * Http status code 404
-  * Reason or error contains “not_found”
+  * Reason or error contains "not_found"
 
 ### 502 DesignDocumentNotFound
 
@@ -687,7 +687,7 @@ KV Code 0xc1
   * Added Error Context
   * Extended sections for each error code
 * Nov 11, 2019 - Revision #4 (by Michael Nitchinger)
-  * Change KeyNotFound, KeyExists and KeyLocked to DocumentNotFound, DocumentExists and DocumentLocked, since mixing “id” and “key” is not a good idea
+  * Change KeyNotFound, KeyExists and KeyLocked to DocumentNotFound, DocumentExists and DocumentLocked, since mixing "id" and "key" is not a good idea
   * Changed InvalidArguments to InvalidArgument
 * Nov 15, 2019 - Revision #5 (by Michael Nitchinger)
   * Added SubdocException and a note which errors extend from it, including the index reference
@@ -702,10 +702,10 @@ KV Code 0xc1
   * Renamed RequestTimeoutException to TimeoutException
   * Added Unambiguous and Ambiguous Timeout Exception
 * Nov 22, 2019 - Revision #8 (by Michael Nitchinger)
-  * Added a “not_found” payload case to ViewNotFound (in addition to 404)
+  * Added a "not_found" payload case to ViewNotFound (in addition to 404)
 * Dec 6, 2019 - Revision #9 (by Michael Nitchinger)
   * Subdoc DeltaRangeException changed to DeltaInvalidException
-  * Added #124 - #129, explicit “explosion” of all xattr exceptions into the list
+  * Added #124 - #129, explicit "explosion" of all xattr exceptions into the list
   * Changed ParsingFailed to ParsingFailure
   * Changed PlanningFailed to PlanningFailure
   * Changed CompilationFailed to CompilationFailure
@@ -715,7 +715,7 @@ KV Code 0xc1
   * Added UserNotFound and GroupNotFound to the generic mgmt api section
   * Added BucketAlreadyExists to the generic mgmt api section
 * Dec 11, 2019 - Revision #11 (by Michael Nitchinger)
-  * Removed SubDocumentException, Added SubDocumentErrorContext (which holds the additional “index” field)
+  * Removed SubDocumentException, Added SubDocumentErrorContext (which holds the additional "index" field)
   * Subdoc CannotInsertValue renamed to ValueInvalid
   * Renamed InternalServer to InternalServerFailure
   * Renamed Authentication to AuthenticationFailure
@@ -725,7 +725,7 @@ KV Code 0xc1
   * Renamed AnalyticsLinkNotFound to LinkNotFound
   * Added Encoding and DecodingFailure which should cover generically anything that breaks while encoding or decoding user data (both KV and services)
 * Dec 17, 2019 - Revision #12 (by Michael Nitchinger)
-  * Changed IndexExists for query regex to match on “...exist” and not “...exists” because of a typo in the query engine
+  * Changed IndexExists for query regex to match on "...exist" and not "...exists" because of a typo in the query engine
 * Jan 13, 2020 - Revision #13 (by Michael Nitchinger)
   * Renamed PreparedStatement to PreparedStatementFailure (#203)
   * Renamed CollectionAlreadyExists to CollectionExists (#601)
@@ -736,11 +736,11 @@ KV Code 0xc1
   * Renamed ScopeAlreadyExists to ScopeExists (#602)
   * Renamed BucketAlreadyExists to BucketExists (#605)
 * Jan 15, 2020 - Revision #15 (by Michael Nitchinger)
-  * Added Analytics parameters to the analytics error context (and renamed “params” to “parameters”)
+  * Added Analytics parameters to the analytics error context (and renamed "params" to "parameters")
 * Jan 16, 2020 - Revision #16 (by Michael Nitchinger)
   * Moved EncodingFailure and DecodingFailure to the end of the list and gave it number #19 and #20.
   * Added definition for HTTPErrorContext to cover generic HTTP errors.
-  * Fixed a bunch of missing error code “raised when” status values.
+  * Fixed a bunch of missing error code "raised when" status values.
   * Removed the MutationLost error and mapped that case under DurabilityAmbiguous instead.
   * Added descriptions to many different error codes.
 * April 30, 2020

@@ -61,7 +61,7 @@ ClusterEnvironment originalEnv = …;
 // Optionally modify the resulting environment (or builder) with existing API                        
 originalEnv.setXXXX(...)                                                                             
 // Optionally apply a configuration profile to the original environment (or environment builder)     
-ClusterEnvironment newEnv = applyProfile(originalEnv, “development”);                                
+ClusterEnvironment newEnv = applyProfile(originalEnv, "development");                                
                                                                                                      
 // Optionally modify the resulting environment (or builder) with existing API                        
 newEnv.setXXXX(...)                                                                                  
@@ -76,7 +76,7 @@ Cluster cluster = Cluster.connect( … newEnv … );
 ```java
 ClusterEnvironment clusterEnv = ClusterEnvironment.builder()                                         
     .ioConfig(iocfg -> iocfg.numKvConnections(MY_NUM_KV_CONNECTIONS)) ← modify ioconfig              
-    .applyProfile(“development”)  ← properties defined in “development” will overwrite               
+    .applyProfile("development")  ← properties defined in "development" will overwrite               
     .ioConfig(iocfg -> iocfg.maxHttpConnections(MY_MAX_HTTP_CONNECTIONS)) ← modify ioconfig          
     .build();                                                                                        
 ```
@@ -86,12 +86,12 @@ ClusterEnvironment clusterEnv = ClusterEnvironment.builder()
 ```
 ClusterEnvironment originalEnv = …                                                                   
 newOptions.ioConfig.numKvConnections = MY_NUM_KV_CONNECTIONS;                                        
-ClusterEnvironment newEnv = applyProfile(originalEnv, ‘development’)                                 
+ClusterEnvironment newEnv = applyProfile(originalEnv, 'development')                                 
 newOptions.ioConfig.maxHttpConnections = MY_MAX_HTTP_CONNECTIONS                                     
 Cluster cluster = cluster.connect( … someEnv …)                                                      
 ```
 
-**Note:** it won’t be possible to implement profiles by representing the profile with the same data structure as the environment (or builder) and merging the profile onto the existing one - unless there is a way to represent the properties as not being assigned a value (for java, some of the configuration values are primitives (i.e. int) and would need to use a special value to mean unassigned (such as -1)).  Otherwise every property of the profile would appear to be assigned, and it would completely overwrite the initial configuration. 
+**Note:** it won't be possible to implement profiles by representing the profile with the same data structure as the environment (or builder) and merging the profile onto the existing one - unless there is a way to represent the properties as not being assigned a value (for java, some of the configuration values are primitives (i.e. int) and would need to use a special value to mean unassigned (such as -1)).  Otherwise every property of the profile would appear to be assigned, and it would completely overwrite the initial configuration. 
 
 ## Logging
 The configuration properties used by the SDK when connecting to the server should be logged to facilitate trouble-shooting.  This does not need to be in a standard format.  The Java SDK already does this as shown in the following sample:
