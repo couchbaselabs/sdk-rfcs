@@ -303,6 +303,13 @@ Nothing
 
 The Query Index Manager interface contains the means for managing indexes used for queries.
 
+It is used for indexes at the bucket level.
+For indexes at the collection level, users should use QueryCollectionIndexManager.
+
+In 7.0 and above, "bucket level" really means the index is on the default collection of that bucket.
+So in effect, all indexes are really collection level, and users should use QueryCollectionIndexManager for all operations on servers 7.0 and above.
+QueryIndexManager can be viewed as semi-deprecated, and can be formally deprecated once all pre-7.0 servers are EOL: currently expected to be October 2023.
+
 ```
 public interface QueryIndexManger {
     Iterable<QueryIndex> GetAllIndexes(string bucketName, GetAllQueryIndexOptions options);
@@ -577,6 +584,272 @@ void BuildDeferredIndexes(string bucketName, [options])
 * Required:
 
   * `bucketName`: `string` - name of the bucket.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `InvalidArgumentException`
+
+* Any exceptions raised by the underlying platform
+
+# QueryCollectionIndexManager
+
+The Query Collection Index Manager interface contains the means for managing collection-level indexes used for queries.
+
+It's a cleaner solution for this than the scopeName and collectionName parameters added to QueryIndexManager option blocks.
+Those should now be deprecated.
+
+The interface is identical to QueryIndexManager, except with the removal of the `string bucketName` parameter.
+
+QueryCollectionIndexManager appears on the Collection interface, in the form `collection.queryIndexes()`.
+
+```
+public interface QueryCollectionIndexManger {
+    Iterable<QueryIndex> GetAllIndexes(GetAllQueryIndexOptions options);
+
+    void CreateIndex(string indexName, []string fields, CreateQueryIndexOptions options);
+
+    void CreatePrimaryIndex(CreatePrimaryQueryIndexOptions options);
+
+    void DropIndex(string indexName, DropQueryIndexOptions options);
+
+    void DropPrimaryIndex(DropPrimaryQueryIndexOptions options);
+
+    void WatchIndexes([]string indexNames, timeout duration, WatchQueryIndexOptions options);
+
+    void BuildDeferredIndexes(BuildQueryIndexOptions options);
+}
+```
+
+The following methods must be implemented:
+
+## GetAllIndexes
+
+Fetches all indexes on this collection.
+
+### Signature
+
+```
+Iterable<QueryIndex> GetAllIndexes(string bucketName, [options])
+```
+
+### Parameters
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+An array of [`QueryIndex`](#queryindex).
+
+### Throws
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## CreateIndex
+
+Creates a new index.
+[CREATE INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createindex.html)
+
+### Signature
+
+```
+void CreateIndex(string indexName, []string fields,  [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `indexName`: `string` - the name of the index.
+
+  * `fields`: `[]string` - the fields to create the index over.
+
+* Optional:
+
+  * `IgnoreIfExists` (`bool`) - Don't error/throw if the index already exists. Default to false.
+
+  * `NumReplicas` (`int`) - The number of replicas that this index should have. Uses the WITH keyword and num_replica. Default to omitting
+    the parameter from the server request.
+
+  * `Deferred` (`bool`) - Whether the index should be created as a deferred index. Default to omitting the parameter from the server request.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `IndexExistsException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## CreatePrimaryIndex
+
+Creates a new primary index.
+[CREATE PRIMARY INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createprimaryindex.html)
+
+### Signature
+
+```
+void CreatePrimaryIndex([options])
+```
+
+### Parameters
+
+* Optional:
+
+  * `indexName`: `string` - name of the index.
+
+  * `IgnoreIfExists` (`bool`) - Don't error/throw if the index already exists. Default to false.
+
+  * `NumReplicas` (`int`) - The number of replicas that this index should have. Uses the WITH keyword and num_replica. Default to omitting
+    the parameter from the server request.
+
+  * `Deferred` (`bool`) - Whether the index should be created as a deferred index. Default to omitting the parameter from the server
+    request.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexAlreadyExistsException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## DropIndex
+
+Drops an index.
+[DROP INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/dropindex.html)
+
+### Signature
+
+```
+void DropIndex(string indexName, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `indexName`: `string` - name of the index.
+
+* Optional:
+
+  * `IgnoreIfNotExists` (`bool`) - Don't error/throw if the index does not exist.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## DropPrimaryIndex
+
+Drops a primary index.
+[DROP PRIMARY INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/dropprimaryindex.html)
+
+### Signature
+
+```
+void DropPrimaryIndex([options])
+```
+
+### Parameters
+
+* Optional:
+
+  * `IndexName`: `string` - name of the index.
+
+  * `IgnoreIfNotExists` (`bool`) - Don't error/throw if the index does not exist.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## WatchIndexes
+
+Watch polls indexes until they are online.
+
+### Signature
+
+```
+void WatchIndexes([]string indexNames, timeout duration, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `indexNames`: `[]string` - name(s) of the index(es).
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+* Optional:
+
+  * `WatchPrimary` (`bool`) - whether or not to watch the primary index.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## BuildDeferredIndexes
+
+Build Deferred builds all indexes which are currently in deferred state.
+
+### Signature
+
+```
+void BuildDeferredIndexes([options])
+```
+
+### Parameters
 
 * Optional:
 
