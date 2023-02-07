@@ -304,10 +304,10 @@ Nothing
 The Query Index Manager interface contains the means for managing indexes used for queries.
 
 It is used for indexes at the bucket level.
-For indexes at the collection level, users should use QueryCollectionIndexManager.
+For indexes at the collection level, users should use CollectionQueryIndexManager.
 
 In 7.0 and above, "bucket level" really means the index is on the default collection of that bucket.
-So in effect, all indexes are really collection level, and users should use QueryCollectionIndexManager for all operations on servers 7.0 and above.
+So in effect, all indexes are really collection level, and users should use CollectionQueryIndexManager for all operations on servers 7.0 and above.
 QueryIndexManager can be viewed as semi-deprecated, and can be formally deprecated once all pre-7.0 servers are EOL: currently expected to be October 2023.
 
 ```
@@ -599,23 +599,23 @@ Nothing
 
 * Any exceptions raised by the underlying platform
 
-# QueryCollectionIndexManager
+# CollectionQueryIndexManager
 
-The Query Collection Index Manager interface contains the means for managing collection-level indexes used for queries.
+This interface contains the means for managing collection-level indexes used for queries.
 
 It's a cleaner solution for this than the scopeName and collectionName parameters added to QueryIndexManager option blocks.
 Those should now be deprecated.
 
 The interface is identical to QueryIndexManager, except with the removal of the `string bucketName` parameter.
 
-QueryCollectionIndexManager appears on the Collection interface, in the form `collection.queryIndexes()`.
+CollectionQueryIndexManager appears on the Collection interface, in the form `collection.queryIndexes()`.
 
 All queries will be sent with a `query_context` parameter of "default:`bucket`.`scope`".  
 This is a mandatory parameter for 7.5, and a primary driver for adding this API.
 (It also means that this API cannot be used with servers below 7.0.)
 
 ```
-public interface QueryCollectionIndexManger {
+public interface CollectionQueryIndexManager {
     Iterable<QueryIndex> GetAllIndexes(GetAllQueryIndexOptions options);
 
     void CreateIndex(string indexName, []string fields, CreateQueryIndexOptions options);
@@ -3561,7 +3561,7 @@ interface ScopeSpec {
   * Add `CUSTOM` `ConflictResolutionType` at stability level volatile.
 
 * February 3, 2023 - Revision #22 (by Graham Pople)
-  * Add `QueryCollectionIndexManager`.
+  * Add `CollectionQueryIndexManager`.
 
 # Signoff
 
