@@ -610,6 +610,10 @@ The interface is identical to QueryIndexManager, except with the removal of the 
 
 QueryCollectionIndexManager appears on the Collection interface, in the form `collection.queryIndexes()`.
 
+All queries will be sent with a `query_context` parameter of "default:`bucket`.`scope`".  
+This is a mandatory parameter for 7.5, and a primary driver for adding this API.
+(It also means that this API cannot be used with servers below 7.0.)
+
 ```
 public interface QueryCollectionIndexManger {
     Iterable<QueryIndex> GetAllIndexes(GetAllQueryIndexOptions options);
@@ -645,6 +649,25 @@ Iterable<QueryIndex> GetAllIndexes(string bucketName, [options])
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+If the collection is a default collection (e.g. appears on scope `_default`, collection `_default`), then a special case statement must be used to retrieve indexes:
+```
+SELECT idx.* FROM system:indexes AS idx
+WHERE ((bucket_id=$bucketName AND scope_id=$scopeName AND keyspace_id=$collectionName)
+ OR (bucket_id IS MISSING and keyspace_id=$bucketName)) 
+ AND `using`="gsi"
+ORDER BY is_primary DESC, name ASC
+```
+
+Otherwise, this can be used:
+```
+SELECT idx.* FROM system:indexes AS idx
+WHERE (bucket_id=$bucketName AND scope_id=$scopeName AND keyspace_id=$collectionName)
+ AND `using`="gsi"
+ORDER BY is_primary DESC, name ASC
+```
 
 ### Returns
 
@@ -686,6 +709,12 @@ void CreateIndex(string indexName, []string fields,  [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
+### SQL++
+
+```
+CREATE INDEX `indexName` ON `bucketName`.`scopeName`.`collectionName`(field1,field2,field3) [WITH...]
+```
+
 ### Returns
 
 Nothing
@@ -725,6 +754,12 @@ void CreatePrimaryIndex([options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
+### SQL++
+
+```
+CREATE PRIMARY INDEX [`indexName`] ON `bucketName`.`scopeName`.`collectionName` [WITH...]
+```
+
 ### Returns
 
 Nothing
@@ -760,6 +795,12 @@ void DropIndex(string indexName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
+### SQL++
+
+```
+DROP INDEX `indexName` ON `bucketName`.`scopeName`.`collectionName`
+```
+
 ### Returns
 
 Nothing
@@ -792,6 +833,12 @@ void DropPrimaryIndex([options])
   * `IgnoreIfNotExists` (`bool`) - Don't error/throw if the index does not exist.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+DROP PRIMARY INDEX ON `bucketName`.`scopeName`.`collectionName`
+```
 
 ### Returns
 
@@ -854,6 +901,12 @@ void BuildDeferredIndexes([options])
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+BUILD INDEX ON `bucketName`.`scopeName`.`collectionName` (`filteredIndexes1`, `filteredIndexes2`, `filteredIndexes3`)
+```
 
 ### Returns
 
@@ -3506,6 +3559,9 @@ interface ScopeSpec {
 
 * December 7, 2021 (by Charles Dixon)
   * Add `CUSTOM` `ConflictResolutionType` at stability level volatile.
+
+* February 3, 2023 - Revision #22 (by Graham Pople)
+  * Add `QueryCollectionIndexManager`.
 
 # Signoff
 
