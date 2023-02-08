@@ -303,6 +303,13 @@ Nothing
 
 The Query Index Manager interface contains the means for managing indexes used for queries.
 
+It is used for indexes at the bucket level.
+For indexes at the collection level, users should use CollectionQueryIndexManager.
+
+In 7.0 and above, "bucket level" really means the index is on the default collection of that bucket.
+So in effect, all indexes are really collection level, and users should use CollectionQueryIndexManager for all operations on servers 7.0 and above.
+QueryIndexManager can be viewed as semi-deprecated, and can be formally deprecated once all pre-7.0 servers are EOL: currently expected to be October 2023.
+
 ```
 public interface QueryIndexManger {
     Iterable<QueryIndex> GetAllIndexes(string bucketName, GetAllQueryIndexOptions options);
@@ -581,6 +588,325 @@ void BuildDeferredIndexes(string bucketName, [options])
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `InvalidArgumentException`
+
+* Any exceptions raised by the underlying platform
+
+# CollectionQueryIndexManager
+
+This interface contains the means for managing collection-level indexes used for queries.
+
+It's a cleaner solution for this than the scopeName and collectionName parameters added to QueryIndexManager option blocks.
+Those should now be deprecated.
+
+The interface is identical to QueryIndexManager, except with the removal of the `string bucketName` parameter.
+
+CollectionQueryIndexManager appears on the Collection interface, in the form `collection.queryIndexes()`.
+
+All queries will be sent with a `query_context` parameter of "default:`bucket`.`scope`".  
+This is a mandatory parameter for 7.5, and a primary driver for adding this API.
+(It also means that this API cannot be used with servers below 7.0.)
+
+```
+public interface CollectionQueryIndexManager {
+    Iterable<QueryIndex> GetAllIndexes(GetAllQueryIndexOptions options);
+
+    void CreateIndex(string indexName, []string fields, CreateQueryIndexOptions options);
+
+    void CreatePrimaryIndex(CreatePrimaryQueryIndexOptions options);
+
+    void DropIndex(string indexName, DropQueryIndexOptions options);
+
+    void DropPrimaryIndex(DropPrimaryQueryIndexOptions options);
+
+    void WatchIndexes([]string indexNames, timeout duration, WatchQueryIndexOptions options);
+
+    void BuildDeferredIndexes(BuildQueryIndexOptions options);
+}
+```
+
+The following methods must be implemented:
+
+## GetAllIndexes
+
+Fetches all indexes on this collection.
+
+### Signature
+
+```
+Iterable<QueryIndex> GetAllIndexes(string bucketName, [options])
+```
+
+### Parameters
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+If the collection is a default collection (e.g. appears on scope `_default`, collection `_default`), then a special case statement must be used to retrieve indexes:
+```
+SELECT idx.* FROM system:indexes AS idx
+WHERE ((bucket_id=$bucketName AND scope_id=$scopeName AND keyspace_id=$collectionName)
+ OR (bucket_id IS MISSING and keyspace_id=$bucketName)) 
+ AND `using`="gsi"
+ORDER BY is_primary DESC, name ASC
+```
+
+Otherwise, this can be used:
+```
+SELECT idx.* FROM system:indexes AS idx
+WHERE (bucket_id=$bucketName AND scope_id=$scopeName AND keyspace_id=$collectionName)
+ AND `using`="gsi"
+ORDER BY is_primary DESC, name ASC
+```
+
+### Returns
+
+An array of [`QueryIndex`](#queryindex).
+
+### Throws
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## CreateIndex
+
+Creates a new index.
+[CREATE INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createindex.html)
+
+### Signature
+
+```
+void CreateIndex(string indexName, []string fields,  [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `indexName`: `string` - the name of the index.
+
+  * `fields`: `[]string` - the fields to create the index over.
+
+* Optional:
+
+  * `IgnoreIfExists` (`bool`) - Don't error/throw if the index already exists. Default to false.
+
+  * `NumReplicas` (`int`) - The number of replicas that this index should have. Uses the WITH keyword and num_replica. Default to omitting
+    the parameter from the server request.
+
+  * `Deferred` (`bool`) - Whether the index should be created as a deferred index. Default to omitting the parameter from the server request.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+CREATE INDEX `indexName` ON `bucketName`.`scopeName`.`collectionName`(field1,field2,field3) [WITH...]
+```
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `IndexExistsException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## CreatePrimaryIndex
+
+Creates a new primary index.
+[CREATE PRIMARY INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createprimaryindex.html)
+
+### Signature
+
+```
+void CreatePrimaryIndex([options])
+```
+
+### Parameters
+
+* Optional:
+
+  * `indexName`: `string` - name of the index.
+
+  * `IgnoreIfExists` (`bool`) - Don't error/throw if the index already exists. Default to false.
+
+  * `NumReplicas` (`int`) - The number of replicas that this index should have. Uses the WITH keyword and num_replica. Default to omitting
+    the parameter from the server request.
+
+  * `Deferred` (`bool`) - Whether the index should be created as a deferred index. Default to omitting the parameter from the server
+    request.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+CREATE PRIMARY INDEX [`indexName`] ON `bucketName`.`scopeName`.`collectionName` [WITH...]
+```
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexAlreadyExistsException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## DropIndex
+
+Drops an index.
+[DROP INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/dropindex.html)
+
+### Signature
+
+```
+void DropIndex(string indexName, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `indexName`: `string` - name of the index.
+
+* Optional:
+
+  * `IgnoreIfNotExists` (`bool`) - Don't error/throw if the index does not exist.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+DROP INDEX `indexName` ON `bucketName`.`scopeName`.`collectionName`
+```
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## DropPrimaryIndex
+
+Drops a primary index.
+[DROP PRIMARY INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/dropprimaryindex.html)
+
+### Signature
+
+```
+void DropPrimaryIndex([options])
+```
+
+### Parameters
+
+* Optional:
+
+  * `IndexName`: `string` - name of the index.
+
+  * `IgnoreIfNotExists` (`bool`) - Don't error/throw if the index does not exist.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+DROP PRIMARY INDEX ON `bucketName`.`scopeName`.`collectionName`
+```
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## WatchIndexes
+
+Watch polls indexes until they are online.
+
+### Signature
+
+```
+void WatchIndexes([]string indexNames, timeout duration, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `indexNames`: `[]string` - name(s) of the index(es).
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+* Optional:
+
+  * `WatchPrimary` (`bool`) - whether or not to watch the primary index.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## BuildDeferredIndexes
+
+Build Deferred builds all indexes which are currently in deferred state.
+
+### Signature
+
+```
+void BuildDeferredIndexes([options])
+```
+
+### Parameters
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+BUILD INDEX ON `bucketName`.`scopeName`.`collectionName` (`filteredIndexes1`, `filteredIndexes2`, `filteredIndexes3`)
+```
 
 ### Returns
 
@@ -3233,6 +3559,9 @@ interface ScopeSpec {
 
 * December 7, 2021 (by Charles Dixon)
   * Add `CUSTOM` `ConflictResolutionType` at stability level volatile.
+
+* February 3, 2023 - Revision #22 (by Graham Pople)
+  * Add `CollectionQueryIndexManager`.
 
 # Signoff
 
