@@ -349,8 +349,8 @@ Iterable<QueryIndex> GetAllIndexes(string bucketName, [options])
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
-  * `CollectionName` - the name of the collection to restrict indexes to.
-  * `ScopeName` - the name of the scope to restrict indexes to.
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
 
 ### N1QL
 
@@ -420,8 +420,8 @@ void CreateIndex(string bucketName, string indexName, []string keys,  [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
-  * `CollectionName` - the name of the collection to restrict indexes to.
-  * `ScopeName` - the name of the scope to restrict indexes to.
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
     * If either `CollectionName` or `ScopeName` are set then both *must* be set.
 
 ### N1QL
@@ -481,8 +481,8 @@ void CreatePrimaryIndex(string bucketName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
-  * `CollectionName` - the name of the collection to restrict indexes to.
-  * `ScopeName` - the name of the scope to restrict indexes to.
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
     * If either `CollectionName` or `ScopeName` are set then both *must* be set.
     
 ### N1QL
@@ -534,8 +534,8 @@ void DropIndex(string bucketName, string indexName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
-  * `CollectionName` - the name of the collection to restrict indexes to.
-  * `ScopeName` - the name of the scope to restrict indexes to.
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
     * If either `CollectionName` or `ScopeName` are set then both *must* be set.
 
 ### N1QL
@@ -586,8 +586,8 @@ void DropPrimaryIndex(string bucketName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
-  * `CollectionName` - the name of the collection to restrict indexes to.
-  * `ScopeName` - the name of the scope to restrict indexes to.
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
     * If either `CollectionName` or `ScopeName` are set then both *must* be set.
 
 ### N1QL
@@ -638,8 +638,8 @@ void WatchIndexes(string bucketName, []string indexNames, timeout duration, [opt
 
   * `WatchPrimary` (`bool`) - whether or not to watch the primary index.
 
-  * `CollectionName` - the name of the collection to restrict indexes to.
-  * `ScopeName` - the name of the scope to restrict indexes to.
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
     * If either `CollectionName` or `ScopeName` are set then both *must* be set.
 
 ### Returns
@@ -674,8 +674,8 @@ void BuildDeferredIndexes(string bucketName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
-  * `CollectionName` - the name of the collection to restrict indexes to.
-  * `ScopeName` - the name of the scope to restrict indexes to.
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
     * If either `CollectionName` or `ScopeName` are set then both *must* be set.
 
 ### N1QL
@@ -722,12 +722,13 @@ Nothing
 
 This interface contains the means for managing collection-level indexes used for queries.
 
-It's a cleaner solution for this than the scopeName and collectionName parameters added to QueryIndexManager option blocks.
+It's a cleaner solution for this than the scopeName and collectionName parameters added to `QueryIndexManager` option blocks.
 Those should now be deprecated.
+If either is used with any method on `CollectionQueryIndexManager`, an `InvalidArgumentException` must be raised.
 
-The interface is identical to QueryIndexManager, except with the removal of the `string bucketName` parameter.
+The interface is identical to `QueryIndexManager`, except with the removal of the `string bucketName` parameter.
 
-CollectionQueryIndexManager appears on the Collection interface, in the form `collection.queryIndexes()`.
+`CollectionQueryIndexManager` appears on the `Collection` interface, in the form `collection.queryIndexes()`.
 
 All queries will be sent with a `query_context` parameter of "default:`bucket`.`scope`".  
 This is a mandatory parameter for 7.5, and a primary driver for adding this API.
@@ -3754,6 +3755,9 @@ interface ScopeSpec {
 
 * February 3, 2023 - Revision #22 (by Graham Pople)
   * Add `CollectionQueryIndexManager`.
+
+* February 10, 2023 - Revision #23 (by Graham Pople)
+  * Specify that trying to use `scopeName` or `collectionName` with `CollectionQueryIndexManager` should result in an `InvalidArgumentException`
 
 # Signoff
 
