@@ -5,6 +5,7 @@
 * Start date: 12/6/2017
 * Owner: Jeff Morris
 * Current Status: ACCEPTED
+* Superseded By: [RFC 64 - SDK 3: Field-Level Encruption](0064-sdk3-field-level-encryption.md)
 
 ## Summary
 
