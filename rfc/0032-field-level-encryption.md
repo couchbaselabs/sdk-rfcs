@@ -5,10 +5,11 @@
 * Start date: 12/6/2017
 * Owner: Jeff Morris
 * Current Status: ACCEPTED
+* Superseded By: [RFC 64 - SDK 3: Field-Level Encruption](0064-sdk3-field-level-encryption.md)
 
 ## Summary
 
-As Couchbase Server continues to add more and more security features, one feature that customers continuously ask for is document and/or field encryption within the SDK. This RFC defines the motivation, general design and language specifics with respect to field encryption providing a blueprint for the implementation across all Couchbase SDK’s and documents any idiomatic differences between the SDK implementations. 
+As Couchbase Server continues to add more and more security features, one feature that customers continuously ask for is document and/or field encryption within the SDK. This RFC defines the motivation, general design and language specifics with respect to field encryption providing a blueprint for the implementation across all Couchbase SDK's and documents any idiomatic differences between the SDK implementations. 
 
 ## Motivation
 
@@ -46,20 +47,20 @@ There are three major components which make up the entirety of the solution:
 
 ![figure 1: general design](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/figures/rfc32-fig1.PNG)
 
-Above is a high-level architectural model explaining the various actors and their responsibilities. It’s important to note that the current spec is for field encryption is to be client-side only, however, a future enhancement may include server-side collaboration.
+Above is a high-level architectural model explaining the various actors and their responsibilities. It's important to note that the current spec is for field encryption is to be client-side only, however, a future enhancement may include server-side collaboration.
 
-It’s important to note that Key Management and initialization of Data Encryption are done during configuration of the SDK and the Data Encryption API is done at runtime while the application is doing its normal read/write operations.
+It's important to note that Key Management and initialization of Data Encryption are done during configuration of the SDK and the Data Encryption API is done at runtime while the application is doing its normal read/write operations.
 
 ### Key Management
 
-Nearly every platform has its own standard key and/or certificate store. For instance, Java (and appears GO, Node, Python, etc as well) uses the [Java Keystore](https://en.wikipedia.org/wiki/Keystore) and Windows uses the Windows Registry via The [Certificate Store](https://superuser.com/questions/217719/what-are-the-windows-system-certificate-stores). Other solutions include 3rd party API’s like [Hashicorp Vault](https://www.vaultproject.io/?_ga=2.157641401.2008868641.1512607701-1757330291.1509988984) which are platform agnostic relying on HTTP based API’s.
+Nearly every platform has its own standard key and/or certificate store. For instance, Java (and appears GO, Node, Python, etc as well) uses the [Java Keystore](https://en.wikipedia.org/wiki/Keystore) and Windows uses the Windows Registry via The [Certificate Store](https://superuser.com/questions/217719/what-are-the-windows-system-certificate-stores). Other solutions include 3rd party API's like [Hashicorp Vault](https://www.vaultproject.io/?_ga=2.157641401.2008868641.1512607701-1757330291.1509988984) which are platform agnostic relying on HTTP based API's.
 
-We will support a pluggable “provider” model for the keystore so that via configuration the SDK user can chose the key management infrastructure or solution of their choosing. The default implementation should be the platform idiomatic keystore for a given SDK. 
+We will support a pluggable "provider" model for the keystore so that via configuration the SDK user can chose the key management infrastructure or solution of their choosing. The default implementation should be the platform idiomatic keystore for a given SDK. 
 
 The keystore component should be pluggable and extensible to support at the least, the following providers:
 
   * An in-memory keystore for development and testing
-  * A native key store for the SDK’s platform (Java Keystore, etc)
+  * A native key store for the SDK's platform (Java Keystore, etc)
   * A Hashicorp Vault keystore
 
 Here is an example of the simplest interface for the key management API:
@@ -76,11 +77,11 @@ Here is an example of the simplest interface for the key management API:
 | ------------- |:-------------:| :-----|
 | GetKey     | false | Returns an encryption key from a keystore given a unique key-name or path as a Base64 encoded byte array. |
 
-The implementation of the keystore should use any necessary libraries or 3rd party API’s to enable the retrieval and storage of signing keys. The simplest implementation should be an in-memory solution for development and testing where the keys are simply stored as fields and be retrievable by key-name or path. The path would likely be the location of the key(s) on disk or perhaps URI for some remote host if a 3rd party key-management solution is implemented, like Hashicorp Vault. 
+The implementation of the keystore should use any necessary libraries or 3rd party API's to enable the retrieval and storage of signing keys. The simplest implementation should be an in-memory solution for development and testing where the keys are simply stored as fields and be retrievable by key-name or path. The path would likely be the location of the key(s) on disk or perhaps URI for some remote host if a 3rd party key-management solution is implemented, like Hashicorp Vault. 
 
-Note that the IKeyProvider is specifically terse so that it's easier to support a large number of disparate implementations.  It’s implied that concrete implementations will contain specialized constructors, properties and/or fields so that a wide-range of key-store options (JKS, DATAPI, Hashicorp Vault, etc) can be supported.
+Note that the IKeyProvider is specifically terse so that it's easier to support a large number of disparate implementations.  It's implied that concrete implementations will contain specialized constructors, properties and/or fields so that a wide-range of key-store options (JKS, DATAPI, Hashicorp Vault, etc) can be supported.
 
-Here is an example of an in-memory store for development and testing called the “InsecureKeyStore”, because it is, well, not very secure...:
+Here is an example of an in-memory store for development and testing called the "InsecureKeyStore", because it is, well, not very secure...:
 
 ```C#
     public class InsecureKeyProvider : IKeyProvider
@@ -162,11 +163,11 @@ And then algorithm implementations would include support for asymmetric and symm
 
 Since this component is largely internal, the underlying interface definition should be tailored to the platform or language for each SDK. They main point to illustrate is that there is interaction between the KeyStore and the crypto-provider and that the crypto-provider will be handling the encryption and decryption of data using keys stored securely in a key-store. It is up to the SDK author to design a structure that enables this interaction and allows for multiple algorithms to be supported.
 
-Note, whatever the internal implementation, SDKs MUST be able to encrypt/decrypt fields given the same keys, data, salt, IV, etc. across all SDKs. See section “Example Test Data” below.
+Note, whatever the internal implementation, SDKs MUST be able to encrypt/decrypt fields given the same keys, data, salt, IV, etc. across all SDKs. See section "Example Test Data" below.
 
 #### Failure Scenarios and Exceptions
 
-If during a read there is an error while decrypting the field, the entire read should fail to minimize the risk of an SDK writing back a document with “garbled” data. The same goes for a write; the SDK should fail-fast and return an error back to the application without saving the document.
+If during a read there is an error while decrypting the field, the entire read should fail to minimize the risk of an SDK writing back a document with "garbled" data. The same goes for a write; the SDK should fail-fast and return an error back to the application without saving the document.
 
 The following are common configuration and runtime exceptions that should be thrown when the state is invalid:
 
@@ -184,17 +185,17 @@ The following are common configuration and runtime exceptions that should be thr
 
 ### Field Encryption API
 
-The public API differs slightly between SDK’s, however parameter and method naming must be consistent and follow this RFC.
+The public API differs slightly between SDK's, however parameter and method naming must be consistent and follow this RFC.
 
 #### Annotation API
 
-For Java, .NET and other SDKs which use annotations to define the fields to be encrypted, the annotation must be named EncryptedField and take a single string parameter named “provider”. The provider name is an alias which maps to the crypto-provider instance that has been configured. Here are examples for .NET and Java:
+For Java, .NET and other SDKs which use annotations to define the fields to be encrypted, the annotation must be named EncryptedField and take a single string parameter named "provider". The provider name is an alias which maps to the crypto-provider instance that has been configured. Here are examples for .NET and Java:
 
 **Java**
 ```Java
 public class Person
 {
-	@EncryptedField(provide=”MyProvider”)
+	@EncryptedField(provide="MyProvider")
 	public String password;
 }
 ```
@@ -203,13 +204,13 @@ public class Person
 ```C#
 public class Person
 {
-	[EncryptedField(provider=”MyProvider”)]
+	[EncryptedField(provider="MyProvider")]
 	public string Password {get;set;
 }
 
 ```
 
-For SDK languages that do not support annotations in this manner, an equivalent marker can be used, but must be named consistent with EncryptField. If a namespace prefix is required by the platform, it is acceptable to add one. For example in GO the prefix is “cb”:
+For SDK languages that do not support annotations in this manner, an equivalent marker can be used, but must be named consistent with EncryptField. If a namespace prefix is required by the platform, it is acceptable to add one. For example in GO the prefix is "cb":
 
 
 **Go**
@@ -241,13 +242,13 @@ Decrypt_Fields(Json document,  Object fields) : Json
 
 ```C#
 CryptoManager cryptoMgr = new CryptoManager();
-cryptoMgr.Register(“MyProvider”, new AesCryptoProvider(new KeyStore(“mykey”)));
+cryptoMgr.Register("MyProvider", new AesCryptoProvider(new KeyStore("mykey")));
 
 var doc = {
 	String password;
 }
 
-var fields = [{“MyProvider”, “password”}];
+var fields = [{"MyProvider", "password"}];
 
 var encryptedDoc = cryptoMgr.Encrypt_Fields(doc, fields);
 var decryptedDoc = cryptoMgr.Decrypt_Fields(encryptedDoc, fields);
@@ -262,12 +263,12 @@ For consistent encryption/decryption of fields on documents between SDKs, a dist
 The format includes both the temporary field name used to hold the encrypted value, plus additional metadata associated with the algorithm used and the public key:
 
 ```
-__[PREFIX]_[FIELDNAME]” : {
-	“kid” : “[KEY_IDENTIFIER]”,
-	“alg”: “[ALGORITHM”],
-	“ciphertext”: “[BASE64_ENCRYPTED_DATA]”,
-	“sig”: “[BASE64_HMAC_SIGNATURE]”,
-	“Iv” : [“INITIALIZATION_VECTOR”]
+__[PREFIX]_[FIELDNAME]" : {
+	"kid" : "[KEY_IDENTIFIER]",
+	"alg": "[ALGORITHM"],
+	"ciphertext": "[BASE64_ENCRYPTED_DATA]",
+	"sig": "[BASE64_HMAC_SIGNATURE]",
+	"Iv" : ["INITIALIZATION_VECTOR"]
 }
 ```
 
@@ -281,19 +282,19 @@ Where:
 
 | Name       | Description          |
 | ------------- |:-------------:|
-|PREFIX | Prefix for temporary field that holds content of encrypted field. This should be configurable so that naming conflicts can be easily resolved at the application level. The default is “crypt”.|
+|PREFIX | Prefix for temporary field that holds content of encrypted field. This should be configurable so that naming conflicts can be easily resolved at the application level. The default is "crypt".|
 |FIELDNAME |The original name of the field that contained the data to be encrypted |
-|“kid”| The “key-identifier” for resolving the key used to decrypt/encrypt from the KeyStore. See section on Key Management above.|
-|“alg” |The algorithm used to encrypt/decrypt. |
-|“ciphertext” | A Base64 encoded string that is the value from the field that has been encrypted.|
-|“sig”|Optional, required for AES. The HMAC signature of the following fields concatenating and then base64 encoding them: “alg”, “iv”, and “ciphertext”. Order is important and must be respected across all implementations |
-|“iv”|Optional, required by AES. The Base64 encoded initialization vector used for the cipher-text. |
+|"kid"| The "key-identifier" for resolving the key used to decrypt/encrypt from the KeyStore. See section on Key Management above.|
+|"alg" |The algorithm used to encrypt/decrypt. |
+|"ciphertext" | A Base64 encoded string that is the value from the field that has been encrypted.|
+|"sig"|Optional, required for AES. The HMAC signature of the following fields concatenating and then base64 encoding them: "alg", "iv", and "ciphertext". Order is important and must be respected across all implementations |
+|"iv"|Optional, required by AES. The Base64 encoded initialization vector used for the cipher-text. |
 
 The purpose for the temporary field for storing the encrypted data is so that we store the encrypted data as a string; if we chose to store in the original field, there may be a type-mismatch if the field type was say a integer. For strongly typed languages this may cause an exception or error when deserializing and the string value is assigned to its original property.
 
-By making the temporary field name a composite of the field name and the string literal “__crypt”, fields that have been encrypted can be easily identified for auditing purposes (see OBJECT_NAMES N1QL function) and the original field can be derived for decrypting when the document is read from the database. 
+By making the temporary field name a composite of the field name and the string literal "__crypt", fields that have been encrypted can be easily identified for auditing purposes (see OBJECT_NAMES N1QL function) and the original field can be derived for decrypting when the document is read from the database. 
 
-For example, given a field element on a json document called “foo” with a value of 2:
+For example, given a field element on a json document called "foo" with a value of 2:
 
 ```JSON
 {
@@ -324,13 +325,13 @@ The encryptable JSON Encoded payload is anything that comes after a field in a J
 
 | Type     | Example          | Payload |
 | ------------- |:-------------:| :-----|
-|string|"magicWord":"xyzzy"|“xyzzy"|
-|string|“coffeePrice”:”10”|“10”|
+|string|"magicWord":"xyzzy"|"xyzzy"|
+|string|"coffeePrice":"10"|"10"|
 |object|"score": {"dance":10,"looks":3}|{"dance":10,"looks":3}|
 |numeric|"myint" : 10|10|
 |null|"isnull":null|null|
 
-Note that it should be an application error for a child field to be identified for encryption if it’s parent has already been identified for encryption. 
+Note that it should be an application error for a child field to be identified for encryption if it's parent has already been identified for encryption. 
 
 ## Ciphers
 
@@ -341,7 +342,7 @@ Note that it should be an application error for a child field to be identified f
    * block size: 128
    * IV size: 16
 
-The HMAC signature defined in Table 3 as “sig”, is computed as follows:
+The HMAC signature defined in Table 3 as "sig", is computed as follows:
 
 #### String Example:
 
@@ -595,9 +596,9 @@ public static class Entity {
 Node.js does not provide any features which would enable document structure annotations or document type deduction.  This means that implementing any method of _automatic_ document encrypt/decrypt is likely not possible.  In its stead, we will implement methods to enable before-store and after-retrieve cryptographics.  For example:
 
 ```Javascript
-bucket.get(‘somekey’, function(err, res) {
+bucket.get('somekey', function(err, res) {
   var doc = cbfieldcrypt.decrypt(res.value, {
-    ‘fieldname’: new cbfieldcrypt.AesCryptoProvider(keystore, ‘keyname’)
+    'fieldname': new cbfieldcrypt.AesCryptoProvider(keystore, 'keyname')
   })
 });
 ```
@@ -700,11 +701,11 @@ static void get_encrypted(lcb_t instance, const char *key)
 
 ## Testing Notes
 
-See: “Ciphers” section above - each table contains necessary data.
+See: "Ciphers" section above - each table contains necessary data.
 
 ## SDK Verification
 
-Verification that each SDK’s implementation of the FLE matches the RFC.
+Verification that each SDK's implementation of the FLE matches the RFC.
 
 
 |SDK |References| Verified|

@@ -7,10 +7,10 @@
  - Current Status: Accepted
 
 # Summary
-This project aims to provide a consistent method for storing document meta-data.  Specifically it will define the exact formatting of the flags field as well as the datatype field to allow the server to make reasonable assumptions as well.  This document additionally attempts to define a set of ‘universally supported’ document formats. Bits are currently set aside for compression in this proposal, but it does not constrain how those bits may be used and a future extension to this proposal may choose to use them differently.
+This project aims to provide a consistent method for storing document meta-data.  Specifically it will define the exact formatting of the flags field as well as the datatype field to allow the server to make reasonable assumptions as well.  This document additionally attempts to define a set of 'universally supported' document formats. Bits are currently set aside for compression in this proposal, but it does not constrain how those bits may be used and a future extension to this proposal may choose to use them differently.
 
 # Risks and Assumptions
-This proposal assumes that no clients currently abuse the top 8 bits of the flags object, this has been confirmed to be the case with all existing memcached and couchbase clients, but may not be the case for any clients developed by third-parties. It should be noted this will not break anything for those third-party clients; it merely won’t solve any interoperability issues for them.  Additionally, it is assumed that any consumer of the flags data (customers with custom transcoders) will continue to use custom transcoders with the new SDKs which implement this proposal, and thus will be a non-concern as the proposals logic will not be concerned with these implementations.
+This proposal assumes that no clients currently abuse the top 8 bits of the flags object, this has been confirmed to be the case with all existing memcached and couchbase clients, but may not be the case for any clients developed by third-parties. It should be noted this will not break anything for those third-party clients; it merely won't solve any interoperability issues for them.  Additionally, it is assumed that any consumer of the flags data (customers with custom transcoders) will continue to use custom transcoders with the new SDKs which implement this proposal, and thus will be a non-concern as the proposals logic will not be concerned with these implementations.
 
 # Problem Area
 Currently, there is no defined method by which multiple SDKs or the clients can coordinate.  This means there is a fair chance that documents stored by one SDK may not be able to be retrieved by another.
@@ -30,7 +30,7 @@ When writing, the client should set the upper 8 bits according to the format bel
 If a client encounters a format or compression type which is unknown, an error should be propagated to the user advising them that the data is stored with an unknown format.  Additionally, any bits which are marked as reserved must be zero, an error should be propagated if this is not the case.
 
 The format of the upper 8 bits is as follows:
-The top 3 bits are used to specify the type of compression that is being used, the lower 4 bits are used to define the format, the middle 1 bit is currently reserved to allow expanding of compression or format fields as needed.  The following is a list of all supposed formats, note that the ‘private’ format is used for sdk-specific encodings and the ‘reserved’ format is used to avoid a completely zeroed upper 8 bits which would interfere with detecting the presence of common flags.
+The top 3 bits are used to specify the type of compression that is being used, the lower 4 bits are used to define the format, the middle 1 bit is currently reserved to allow expanding of compression or format fields as needed.  The following is a list of all supposed formats, note that the 'private' format is used for sdk-specific encodings and the 'reserved' format is used to avoid a completely zeroed upper 8 bits which would interfere with detecting the presence of common flags.
 
 Flags (32 bits):
 
@@ -66,7 +66,7 @@ All Server Components
 No public facing interfaces should be affect by this change.  However, clients SHOULD provide a custom transcoder interface to ensure any edge-cases have a workaround, this may affect public facing interfaces.
 
 # Documentation Impact
-The change to the internal representation of flags field MUST be documented clearly for customers.  This is especially important as data that was stored in the old format will end up being ‘on the fly’ converted and may not be fully compatible with old memcached clients without implementing a custom transcoder.
+The change to the internal representation of flags field MUST be documented clearly for customers.  This is especially important as data that was stored in the old format will end up being 'on the fly' converted and may not be fully compatible with old memcached clients without implementing a custom transcoder.
 
 # Packaging and Delivery Impact
 No impact.  This proposal is attached to the SDK 2.0 proposal, which already encompasses all necessary changes.

@@ -188,6 +188,10 @@ SearchResult SearchQuery(string indexName, SearchQuery query, [SearchOptions opt
 
       This is an escape hatch to support unknown commands and be forward compatible in future.
 
+    * `includeLocations` (`bool`) = `false`. JSON path: `includeLocations`
+
+      The boolean `includeLocations` field triggers inclusion of search row locations.
+
 ### Returns
 
 A `ISearchResult` object with the results of the query or error message if the query failed on the server.
@@ -209,6 +213,7 @@ A `ISearchResult` object with the results of the query or error message if the q
 
 ### MatchQuery
 
+
 A match query analyzes the input text and uses that analyzed text to query the index. An attempt is made to use the same analyzer that was
 used when the field was indexed.
 
@@ -229,6 +234,10 @@ JSON paths:
 * `boost` (`float`) = undefined. The boost parameter is used to increase the relative weight of a clause (with a boost greater than 1) or
   decrease the relative weight (with a boost between 0 and 1).
 
+* `operator` (`MatchOperator`) = undefined: Defines how the individual match terms should be logically concatenated.
+    * `MatchOperator` is an enum containing
+      * OR (json:`"or"`) = undefined. Individual match terms are concatenated with a logical OR - this is the default if not provided.
+      * AND (json: `"and"`) = undefined. Individual match terms are concatenated with a logical AND.
 ### MatchPhraseQuery
 
 The input text is analyzed and a phrase query is built with the terms resulting from the analysis. This type of query searches for terms
@@ -821,6 +830,10 @@ interface SearchMetrics {
 
 * October 14, 2020 - Revision #8 (by Charles Dixon)
     * Expanded `SearchFacetResult` providing further implementation details.
+
+* December 7, 2021 (by Charles Dixon)
+    * Added `includeLocations` to `SearchOptions`.
+    * Added `MatchOperator` and added `operator` to `MatchQuery`.
 
 # Signoff
 

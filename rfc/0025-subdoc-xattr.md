@@ -36,7 +36,7 @@ To facilitate development of frameworks and storage of data which is otherwise n
 
 # General Design
 
-Accessing XATTRs is done through the subdocument API. The Memcached protocol will feature new flags, `SUBDOC_FLAG_XATTR_PATH` and `SUBDOC_FLAG_EXPAND_MACROS`. These flags can be OR’d with the existing flags (`FLAG_MKDIR_P` and `FLAG_MKDOC`) to access XATTRs.
+Accessing XATTRs is done through the subdocument API. The Memcached protocol will feature new flags, `SUBDOC_FLAG_XATTR_PATH` and `SUBDOC_FLAG_EXPAND_MACROS`. These flags can be OR'd with the existing flags (`FLAG_MKDIR_P` and `FLAG_MKDOC`) to access XATTRs.
 
 On the SDK side, XATTR support is added through exposing a new "xattr access" feature to the existing subdocument API.
 
@@ -58,7 +58,7 @@ The following table lists the various subdoc options. These options must be able
 | Name | Description | Protocol Flag |
 | ---- | ----------- | ------------- |
 | CreatePath        | Create path if it does not exist (For use in mutations)| `SUBDOC_FLAG_MKDIR_P` = `0x01` |
-| Xattr       | Current path refers to a location within the document’s hidden/extended attributes, not the document body |  `SUBDOC_FLAG_XATTR_PATH` = `0x04` |
+| Xattr       | Current path refers to a location within the document's hidden/extended attributes, not the document body |  `SUBDOC_FLAG_XATTR_PATH` = `0x04` |
 | ExpandMacroValues [Private]     | Value contains references to macros (such as `${Mutation.CAS}`, etc.. Implies Xattr. | `SUBDOC_FLAG_EXPAND_MACROS` = `0x010` |
 
 
@@ -91,7 +91,7 @@ There are also some additional response status codes related to XATTR operations
 
 Pattern: `<Method>(String path, Object value, SubdocDocFlags docFlags)` -> `MutateInBuilder`
 
-This new overload (or ‘Ex’) variant will allow to set document-specific flags for entire operations.
+This new overload (or 'Ex') variant will allow to set document-specific flags for entire operations.
 
  * `Upsert(String path, Object value, SubdocPathFlags options)`
  * `Insert(String path, Object value, SubdocPathFlags options)`
@@ -132,7 +132,7 @@ While not strictly related to extended attributes, the server also now allows se
 
 In the SDKs the proposed way to expose this is by allowing an empty path to the `get()` and `upsert()` sub-functions of *LookupInBuilder*. *MutateInBuilder*.
 
-**Note:** You must encapsulate a `CMD_SET` or `CMD_GET` in a `MULTI_MUTATION/MULTI_LOOKUP` command, as these opcodes have other meanings in their standalone context. It actually doesn’t make sense to have a standalone `CMD_SET` in a subdoc context anyway, as it’s then equivalent to a normal CMD_SET.
+**Note:** You must encapsulate a `CMD_SET` or `CMD_GET` in a `MULTI_MUTATION/MULTI_LOOKUP` command, as these opcodes have other meanings in their standalone context. It actually doesn't make sense to have a standalone `CMD_SET` in a subdoc context anyway, as it's then equivalent to a normal CMD_SET.
 
 ### LookupInBuilder
 
@@ -160,7 +160,7 @@ See the [Subdocument commands specification # GET_COUNT](https://github.com/couc
 
 ## Materialized (Virtual) Attributes
 
-Materialized attributes are implemented in the server using the *$document* xattr, e.g. `lookup_in(sd.get(‘$document’, xattr=True))`. These attributes are generated on-demand to expose storage-level document metadata and are not actually part of the document.
+Materialized attributes are implemented in the server using the *$document* xattr, e.g. `lookup_in(sd.get('$document', xattr=True))`. These attributes are generated on-demand to expose storage-level document metadata and are not actually part of the document.
 
 At this point, no additional API changes beyond xattr support is required to support virtual attributes.
 
@@ -180,17 +180,17 @@ print cb.lookup_in(docid, SD.get('my.macrod', xattr=True))
 cb.mutate_in('mattup', SD.upsert('foo.bar.baz', 'foo'), upsert_document=True) # PYCBC-424: upsert_document fixing
 # cb.mutate_in(docid, SD.upsert(...), insert_document=True)
 
-cb.mutate_in(docid, SD.upsert(‘my.xattr’, xattr=True, _expand_macros=True))
+cb.mutate_in(docid, SD.upsert('my.xattr', xattr=True, _expand_macros=True))
 
-cb.lookup_in(docid, SD.get(‘my.xattr’, xattr=True))
+cb.lookup_in(docid, SD.get('my.xattr', xattr=True))
 
-cb.mutate_in(docid, SD.upsert(‘foo.bar.baz’), upsert_document=True)
+cb.mutate_in(docid, SD.upsert('foo.bar.baz'), upsert_document=True)
 
 cb.mutate_in(docid, SD.upsert(...), insert_document=True)
 
-cb.lookup_in(docid, SD.get_doc(), SD.get(‘my.xattr’, xattr=True))
+cb.lookup_in(docid, SD.get_doc(), SD.get('my.xattr', xattr=True))
 
-cb.mutate_in(docid, SD.upsert_doc(docid), SD.upsert(‘my.xattr’, xattr=True))
+cb.mutate_in(docid, SD.upsert_doc(docid), SD.upsert('my.xattr', xattr=True))
 ```
 
 ## Java
@@ -224,7 +224,7 @@ var mutateResult = _bucket.MutateIn<dynamic>(key)
   .Upsert("_data.created_by", username, SubdocPathFlags.CreatePath | SubdocPathFlags.Xattr).Execute();
 
 bucket.MutateIn<dynamic>("key")
-  .Upsert("app.created_by", “mike”, SubdocMutateFlags.AttributePath | SubdocMutateFlags.CreatePath)
+  .Upsert("app.created_by", "mike", SubdocMutateFlags.AttributePath | SubdocMutateFlags.CreatePath)
   .Execute();
 ```
 
@@ -252,27 +252,27 @@ Note that specifying any of these attributes implies `F_XATTTRPATH`
 
 ### Node.js
 
- - `bucket.lookupIn(‘key’).get(‘app.created_by’, {xattr:true}).execute()`
- - `bucket.mutateIn(‘key’).upsert(‘app.created_by’, ‘mike’, {xattr:true, createParents:true}).execute()`
+ - `bucket.lookupIn('key').get('app.created_by', {xattr:true}).execute()`
+ - `bucket.mutateIn('key').upsert('app.created_by', 'mike', {xattr:true, createParents:true}).execute()`
 
 ### Go
 
- - `bucket.LookupIn("key").GetEx(“app.created_by”, SubdocFlagXattr).Execute()`
- - `bucket.MutateIn("key").UpsertEx(“app.created_by”, “mike”, SubdocFlagXattr | SubDocFlagMkDir).Execute()`
+ - `bucket.LookupIn("key").GetEx("app.created_by", SubdocFlagXattr).Execute()`
+ - `bucket.MutateIn("key").UpsertEx("app.created_by", "mike", SubdocFlagXattr | SubDocFlagMkDir).Execute()`
 
 ### PHP
 
- - `$bucket->lookupIn("key")->get(“app.created_by”, [“xattr” => true])->execute();`
- - `$bucket->mutateIn("key")->upsert(“app.created_by”, “mike”, [“xattr” => true, “createPath” => true])->execute();`
+ - `$bucket->lookupIn("key")->get("app.created_by", ["xattr" => true])->execute();`
+ - `$bucket->mutateIn("key")->upsert("app.created_by", "mike", ["xattr" => true, "createPath" => true])->execute();`
 
 # Questions
 
 **(Matt) How would I retrieve all XATTRS?**
-You don’t.
+You don't.
 
 **(Unknown) How would one access the TTL on the XATTR?**
 
-At this time, access virtual attributes of a document will be performed through the same pathway used to access normal extended-attributes, virtual attributes exist as a virtual extended-attribute called `$document`.  For instance, `lookup_in(key).get(‘$document.exptime’, xattr=True)`.  No specialized API will be provided for this.
+At this time, access virtual attributes of a document will be performed through the same pathway used to access normal extended-attributes, virtual attributes exist as a virtual extended-attribute called `$document`.  For instance, `lookup_in(key).get('$document.exptime', xattr=True)`.  No specialized API will be provided for this.
 
 **(Unknown) Can I store arbitrary byte[]?**
 
@@ -285,15 +285,15 @@ Extended attributes can be streamed via DCP with special flags being enabled.  T
 **(Unknown) Are materialized xattributes (ie: virtual attributes) going to handled specially?
 **No.  They will be handled as any other extended-attribute would be.
 
-**(Brett) Should we expose some method of ‘generic application meta-data’ (ie: a default xattribute where you can store meta-data for your application)?**
+**(Brett) Should we expose some method of 'generic application meta-data' (ie: a default xattribute where you can store meta-data for your application)?**
 
 At this point in time, we do not which to expose xattrs for generic application meta-data, but instead limit it to framework-oriented use-cases.  For this reason, there will be no specific application xattrs.
 
-**(Unknown) Is there any use in providing access to the ‘expand macros’ API? - note, this is probably still needed for Python and Go, but the question is whether it’s also needed for other SDKs or common use cases.**
+**(Unknown) Is there any use in providing access to the 'expand macros' API? - note, this is probably still needed for Python and Go, but the question is whether it's also needed for other SDKs or common use cases.**
 
 ExpandMacros will be an available operation for sub-document operations, enabling the use of them.  We will not provide an explicit API at this time.  The python and go usage is for internal to Couchbase only.  Macros are further defined in the [Mobile Convergence KV-Engine Specification](https://docs.google.com/document/d/18UVa5j8KyufnLLy29VObbWRtoBn9vs8pcxttuMt6rz8/edit#heading=h.t0wlj1ke9naq).
 
-**(Unknown) How should we call AttributeAccess? Python uses ‘xattr’, other languages might do something different.**
+**(Unknown) How should we call AttributeAccess? Python uses 'xattr', other languages might do something different.**
 
 We will use the term "XATTR" to refer to extended-attribute access within the SDKs.
 

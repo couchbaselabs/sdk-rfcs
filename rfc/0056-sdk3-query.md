@@ -40,7 +40,7 @@ QueryResult Query(string statement, [QueryOptions options]);
 
 * Required:
   * statement : string
-    * Specifies the N1QL query statement in string form (i.e. “select foo from bar”)
+    * Specifies the N1QL query statement in string form (i.e. "select foo from bar")
 * Optional (part of QueryOptions):
   * scanConsistency(QueryScanConsistency) = undefined(NotBounded)
     * Specifies the level of consistency for the query.
@@ -50,36 +50,36 @@ QueryResult Query(string statement, [QueryOptions options]);
     * This option overrides any setting that was previously set on consistentWith
   * adhoc(boolean),
     * Specifies if the prepared statement logic should be executed internally.
-    * This option is not sent over the wire but rather internally controls the prepared statement behavior as outlined in the “Enhanced Prepared Statements RFC”
+    * This option is not sent over the wire but rather internally controls the prepared statement behavior as outlined in the "Enhanced Prepared Statements RFC"
   * clientContextId(String) = UUID(),
     * Specifies a context ID string which is mirrored back from the query engine on response
-    * If not provided, the client must create and use a UUID instead. Sent as in the JSON payload as “client_context_id” as a JSON String `”foobar”`
+    * If not provided, the client must create and use a UUID instead. Sent as in the JSON payload as "client_context_id" as a JSON String `"foobar"`
   * consistentWith(MutationState) = undefined
-    * Specifies custom scan consistency through “at_plus” with mutation state token vectors
-    * On the wire represented as a custom scan_consistency together with a scan_vector. See the section on “ConsistentWith Handling” in this RFC for details
+    * Specifies custom scan consistency through "at_plus" with mutation state token vectors
+    * On the wire represented as a custom scan_consistency together with a scan_vector. See the section on "ConsistentWith Handling" in this RFC for details
     * This option overrides any setting that was previously set on scanConsistency
   * maxParallelism(uint32) = undefined(0),
     * The maximum number of logical cores to use in parallel for this query
-    * Sent in the JSON payload as “max_parallelism” as a JSON String i.e. `”1”`.
+    * Sent in the JSON payload as "max_parallelism" as a JSON String i.e. `"1"`.
   * parameters(JsonObject | JsonArray) = undefined
     * Specifies positional or named parameters
     * For languages that do not support operator overloading, the alternative naming is positionalParameters(JsonArray) and namedParameters(JsonObject)
     * Sent in the JSON payload
-      * For positional parameters as a json array under the “args” key
-      * For named parameters directly in the JSON payload, but each named argument is prefixed with “$” if it doesn’t already have the dollar prefix provided by the user
+      * For positional parameters as a json array under the "args" key
+      * For named parameters directly in the JSON payload, but each named argument is prefixed with "$" if it doesn't already have the dollar prefix provided by the user
     * Setting JsonArray or JsonObject overrides any previously set parameters
   * pipelineBatch(uint32) = undefined
     * Specifies pipeline batching characteristics
-    * Sent in the JSON payload as “pipeline_batch” as a JSON String
+    * Sent in the JSON payload as "pipeline_batch" as a JSON String
   * pipelineCap(uint32) = undefined
     * Specifies pipeline cap characteristics
-    * Sent in the JSON payload as “pipeline_cap” as a JSON String
+    * Sent in the JSON payload as "pipeline_cap" as a JSON String
   * profile(QueryProfile) = undefined(Off)
     * Specifies the profiling level to enable
     * Sent within the JSON payload as `profile` and is encoded as:
-      * Off: `”off”`
-      * Phases: `”phases”`
-      * Timings: `”timings”`
+      * Off: `"off"`
+      * Phases: `"phases"`
+      * Timings: `"timings"`
   * raw(String key, JsonValue value)
     * Specifies values with their key and value as presented in the map as part of the JSON payload
     * This is an escape hatch to support unknown commands and be forwards compatible
@@ -91,14 +91,18 @@ QueryResult Query(string statement, [QueryOptions options]);
     * Sent within the JSON Payload as `metrics` as a JSON boolean
   * scanWait(Duration) = undefined
     * Specifies the maximum time wait for a scan.
-    * Sent within the JSON payload as `scan_wait` encoded as a JSON String in go format! (so “1s” for example)
+    * Sent within the JSON payload as `scan_wait` encoded as a JSON String in go format! (so "1s" for example)
   * scanCap(uint32) = undefined
     * Specifies scan cap characteristics
-    * Sent in the JSON payload as “scan_cap” as a JSON String
+    * Sent in the JSON payload as "scan_cap" as a JSON String
   * timeout(Duration) = $Cluster::queryOperationTimeout
     * Specifies how long to allow the operation to continue running before it is cancelled.
   * serializer(JsonSerializer) = $Cluster::Serializer
     * Specifies the serializer which should be used for deserialization of rows returned.
+  * preserveExpiry(boolean) = undefined(false)
+    * Specifies that the query engine should preserve expiration values set on any documents modified by this query.
+    * Sent within the JSON Payload as `preserve_expiry` as a JSON boolean
+    * Should be added at API stability level of uncommitted.
 
 
 **Returns:**
@@ -201,7 +205,7 @@ struct QueryMetrics {
 }
 ```
 
-The status needs to be decoded from the wire representation, which is in all cases the lowercase version of the enum. So “success” on the wire is turning into SUCCESS.
+The status needs to be decoded from the wire representation, which is in all cases the lowercase version of the enum. So "success" on the wire is turning into SUCCESS.
 
 ```
 enum QueryStatus {
@@ -241,6 +245,8 @@ class QueryWarning {
   * QueryStatus enum values are converted from uppercase to camel case
 * April 30, 2020
   * Moved RFC to ACCEPTED state.
+* January 5, 2022
+  * Added preserveExpiry to QueryOptions.
 
 
 # Signoff

@@ -303,6 +303,13 @@ Nothing
 
 The Query Index Manager interface contains the means for managing indexes used for queries.
 
+It is used for indexes at the bucket level.
+For indexes at the collection level, users should use CollectionQueryIndexManager.
+
+In 7.0 and above, "bucket level" really means the index is on the default collection of that bucket.
+So in effect, all indexes are really collection level, and users should use CollectionQueryIndexManager for all operations on servers 7.0 and above.
+QueryIndexManager can be viewed as semi-deprecated, and can be formally deprecated once all pre-7.0 servers are EOL: currently expected to be October 2023.
+
 ```
 public interface QueryIndexManger {
     Iterable<QueryIndex> GetAllIndexes(string bucketName, GetAllQueryIndexOptions options);
@@ -325,7 +332,7 @@ The following methods must be implemented:
 
 ## GetAllIndexes
 
-Fetches all indexes from the server.
+Fetches all indexes from the server for the given bucket (limiting to scope/collection if applicable).
 
 ### Signature
 
@@ -342,12 +349,29 @@ Iterable<QueryIndex> GetAllIndexes(string bucketName, [options])
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
 
 ### N1QL
 
+No collections set, returns all indexes for the given bucket, for all scopes and collections:
 ```
 SELECT idx.* FROM system:indexes AS idx
-WHERE keyspace_id = "bucketName" AND `using`="gsi"
+WHERE ((bucket_id IS MISSING AND keyspace_id = "bucketName") OR bucket_id = "bucketName") AND `using`="gsi"
+ORDER BY is_primary DESC, name ASC
+```
+
+Collection and scope set, returns all indexes for the given collection in the given scope, in the given bucket:
+```
+SELECT idx.* FROM system:indexes AS idx
+WHERE keyspace_id = "collectionName" AND bucket_id= "bucketName" AND scope_id = "scopeName" AND `using`="gsi"
+ORDER BY is_primary DESC, name ASC
+```
+
+Scope only set, returns all indexes for the given scope, in the given bucket:
+```
+SELECT idx.* FROM system:indexes AS idx
+WHERE bucket_id= "bucketName" AND scope_id = "scopeName" AND `using`="gsi"
 ORDER BY is_primary DESC, name ASC
 ```
 
@@ -363,13 +387,13 @@ An array of [`QueryIndex`](#queryindex).
 
 ## CreateIndex
 
-Creates a new index.
+Creates a new index on the given bucket (and scope/collection if applicable).
 [CREATE INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createindex.html)
 
 ### Signature
 
 ```
-void CreateIndex(string bucketName, string indexName, []string fields,  [options])
+void CreateIndex(string bucketName, string indexName, []string keys,  [options])
 ```
 
 ### Parameters
@@ -380,7 +404,8 @@ void CreateIndex(string bucketName, string indexName, []string fields,  [options
 
   * `indexName`: `string` - the name of the index.
 
-  * `fields`: `[]string` - the fields to create the index over.
+  * `keys`: `[]string` - the keys to create the index over. The SDK must escape each of these keys individually.
+    Note: this means that keywords like ASC/DESC cannot be used.
 
 * Optional:
 
@@ -394,6 +419,22 @@ void CreateIndex(string bucketName, string indexName, []string fields,  [options
   * `Deferred` (`bool`) - Whether the index should be created as a deferred index. Default to omitting the parameter from the server request.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+
+### N1QL
+
+No collection set:
+```
+"CREATE INDEX `indexName` ON `bucketName`"
+```
+
+Collection set: 
+```
+"CREATE INDEX `indexName` ON `bucketName`.`scopeName`.`collectionName`"
+```
 
 ### Returns
 
@@ -409,7 +450,7 @@ Nothing
 
 ## CreatePrimaryIndex
 
-Creates a new primary index.
+Creates a new primary index for the given bucket (and scope/collection if applicable).
 [CREATE PRIMARY INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createprimaryindex.html)
 
 ### Signature
@@ -440,6 +481,22 @@ void CreatePrimaryIndex(string bucketName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+    
+### N1QL
+
+No collection set:
+```
+"CREATE PRIMARY INDEX ON `bucketName`"
+```
+
+Collection set:
+```
+"CREATE PRIMARY INDEX ON `bucketName`.`scopeName`.`collectionName`"
+```
+
 ### Returns
 
 Nothing
@@ -454,7 +511,7 @@ Nothing
 
 ## DropIndex
 
-Drops an index.
+Drops an index for the given bucket (and scope/collection if applicable).
 [DROP INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/dropindex.html)
 
 ### Signature
@@ -477,6 +534,21 @@ void DropIndex(string bucketName, string indexName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+
+### N1QL
+
+No collection set:
+```
+"DROP INDEX `bucketName`.`indexName`"
+```
+
+Collection set:
+```
+"DROP INDEX `indexName` ON  `bucketName`.`scopeName`.`collectionName`"
+```
 ### Returns
 
 Nothing
@@ -491,7 +563,7 @@ Nothing
 
 ## DropPrimaryIndex
 
-Drops a primary index.
+Drops a primary index for the given bucket (and scope/collection if applicable).
 [DROP PRIMARY INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/dropprimaryindex.html)
 
 ### Signature
@@ -514,6 +586,380 @@ void DropPrimaryIndex(string bucketName, [options])
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+
+### N1QL
+
+No collection set:
+```
+"DROP PRIMARY INDEX ON `bucketName`"
+```
+
+Collection set:
+```
+"DROP PRIMARY INDEX ON `bucketName`.`scopeName`.`collectionName`"
+```
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## WatchIndexes
+
+Watch polls indexes until they are online for the given bucket (and scope/collection if applicable).
+
+### Signature
+
+```
+void WatchIndexes(string bucketName, []string indexNames, timeout duration, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `bucketName`: `string` - name of the bucket.
+
+  * `indexNames`: `[]string` - name(s) of the index(es).
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+* Optional:
+
+  * `WatchPrimary` (`bool`) - whether or not to watch the primary index.
+
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## BuildDeferredIndexes
+
+Build Deferred builds all indexes which are currently in deferred state,  for the given bucket (and scope/collection if applicable).
+
+### Signature
+
+```
+void BuildDeferredIndexes(string bucketName, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `bucketName`: `string` - name of the bucket.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+  * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+  * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
+    * If either `CollectionName` or `ScopeName` are set then both *must* be set.
+
+### N1QL
+
+This is done by performing 2 querys; one to fetch the deferred indexes to build and the other to build the deferred
+indexes.
+
+No collection set:
+
+```
+SELECT RAW name from system:indexes WHERE (keyspace_id = $bucketName AND bucket_id IS MISSING) AND state = "deferred" AND `using` = "gsi"
+```
+
+followed by
+
+```
+BUILD INDEX ON `bucketName` (`filteredIndexes1`, `filteredIndexes2`, `filteredIndexes3`)
+```
+
+Collection set:
+
+```
+SELECT RAW name from system:indexes WHERE bucket_id = $bucketName AND scope_id = $scopeName AND keyspace_id = $collectionName AND state = "deferred"  AND `using` = "gsi"
+```
+
+```
+BUILD INDEX ON `bucketName`.`scopeName`.`collectionName` (`filteredIndexes1`, `filteredIndexes2`, `filteredIndexes3`)
+```
+
+Note that this is purposely done using two queries rather than one - older server versions do not support the syntax for
+the single query approach.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `InvalidArgumentException`
+
+* Any exceptions raised by the underlying platform
+
+# CollectionQueryIndexManager
+
+This interface contains the means for managing collection-level indexes used for queries.
+
+It's a cleaner solution for this than the scopeName and collectionName parameters added to `QueryIndexManager` option blocks.
+Those should now be deprecated.
+If either is used with any method on `CollectionQueryIndexManager`, an `InvalidArgumentException` must be raised.
+
+The interface is identical to `QueryIndexManager`, except with the removal of the `string bucketName` parameter.
+
+`CollectionQueryIndexManager` appears on the `Collection` interface, in the form `collection.queryIndexes()`.
+
+All queries will be sent with a `query_context` parameter of "default:`bucket`.`scope`".  
+This is a mandatory parameter for 7.5, and a primary driver for adding this API.
+(It also means that this API cannot be used with servers below 7.0.)
+
+```
+public interface CollectionQueryIndexManager {
+    Iterable<QueryIndex> GetAllIndexes(GetAllQueryIndexOptions options);
+
+    void CreateIndex(string indexName, []string fields, CreateQueryIndexOptions options);
+
+    void CreatePrimaryIndex(CreatePrimaryQueryIndexOptions options);
+
+    void DropIndex(string indexName, DropQueryIndexOptions options);
+
+    void DropPrimaryIndex(DropPrimaryQueryIndexOptions options);
+
+    void WatchIndexes([]string indexNames, timeout duration, WatchQueryIndexOptions options);
+
+    void BuildDeferredIndexes(BuildQueryIndexOptions options);
+}
+```
+
+The following methods must be implemented:
+
+## GetAllIndexes
+
+Fetches all indexes on this collection.
+
+### Signature
+
+```
+Iterable<QueryIndex> GetAllIndexes(string bucketName, [options])
+```
+
+### Parameters
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+If the collection is a default collection (e.g. appears on scope `_default`, collection `_default`), then a special case statement must be used to retrieve indexes:
+```
+SELECT idx.* FROM system:indexes AS idx
+WHERE ((bucket_id=$bucketName AND scope_id=$scopeName AND keyspace_id=$collectionName)
+ OR (bucket_id IS MISSING and keyspace_id=$bucketName)) 
+ AND `using`="gsi"
+ORDER BY is_primary DESC, name ASC
+```
+
+Otherwise, this can be used:
+```
+SELECT idx.* FROM system:indexes AS idx
+WHERE (bucket_id=$bucketName AND scope_id=$scopeName AND keyspace_id=$collectionName)
+ AND `using`="gsi"
+ORDER BY is_primary DESC, name ASC
+```
+
+### Returns
+
+An array of [`QueryIndex`](#queryindex).
+
+### Throws
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## CreateIndex
+
+Creates a new index.
+[CREATE INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createindex.html)
+
+### Signature
+
+```
+void CreateIndex(string indexName, []string fields,  [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `indexName`: `string` - the name of the index.
+
+  * `fields`: `[]string` - the fields to create the index over.
+
+* Optional:
+
+  * `IgnoreIfExists` (`bool`) - Don't error/throw if the index already exists. Default to false.
+
+  * `NumReplicas` (`int`) - The number of replicas that this index should have. Uses the WITH keyword and num_replica. Default to omitting
+    the parameter from the server request.
+
+  * `Deferred` (`bool`) - Whether the index should be created as a deferred index. Default to omitting the parameter from the server request.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+CREATE INDEX `indexName` ON `bucketName`.`scopeName`.`collectionName`(field1,field2,field3) [WITH...]
+```
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `IndexExistsException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## CreatePrimaryIndex
+
+Creates a new primary index.
+[CREATE PRIMARY INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createprimaryindex.html)
+
+### Signature
+
+```
+void CreatePrimaryIndex([options])
+```
+
+### Parameters
+
+* Optional:
+
+  * `indexName`: `string` - name of the index.
+
+  * `IgnoreIfExists` (`bool`) - Don't error/throw if the index already exists. Default to false.
+
+  * `NumReplicas` (`int`) - The number of replicas that this index should have. Uses the WITH keyword and num_replica. Default to omitting
+    the parameter from the server request.
+
+  * `Deferred` (`bool`) - Whether the index should be created as a deferred index. Default to omitting the parameter from the server
+    request.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+CREATE PRIMARY INDEX [`indexName`] ON `bucketName`.`scopeName`.`collectionName` [WITH...]
+```
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexAlreadyExistsException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## DropIndex
+
+Drops an index.
+[DROP INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/dropindex.html)
+
+### Signature
+
+```
+void DropIndex(string indexName, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `indexName`: `string` - name of the index.
+
+* Optional:
+
+  * `IgnoreIfNotExists` (`bool`) - Don't error/throw if the index does not exist.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+DROP INDEX `indexName` ON `bucketName`.`scopeName`.`collectionName`
+```
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `QueryIndexNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## DropPrimaryIndex
+
+Drops a primary index.
+[DROP PRIMARY INDEX](https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/dropprimaryindex.html)
+
+### Signature
+
+```
+void DropPrimaryIndex([options])
+```
+
+### Parameters
+
+* Optional:
+
+  * `IndexName`: `string` - name of the index.
+
+  * `IgnoreIfNotExists` (`bool`) - Don't error/throw if the index does not exist.
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+DROP PRIMARY INDEX ON `bucketName`.`scopeName`.`collectionName`
+```
+
 ### Returns
 
 Nothing
@@ -533,14 +979,12 @@ Watch polls indexes until they are online.
 ### Signature
 
 ```
-void WatchIndexes(string bucketName, []string indexNames, timeout duration, [options])
+void WatchIndexes([]string indexNames, timeout duration, [options])
 ```
 
 ### Parameters
 
 * Required:
-
-  * `bucketName`: `string` - name of the bucket.
 
   * `indexNames`: `[]string` - name(s) of the index(es).
 
@@ -569,18 +1013,20 @@ Build Deferred builds all indexes which are currently in deferred state.
 ### Signature
 
 ```
-void BuildDeferredIndexes(string bucketName, [options])
+void BuildDeferredIndexes([options])
 ```
 
 ### Parameters
 
-* Required:
-
-  * `bucketName`: `string` - name of the bucket.
-
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### SQL++
+
+```
+BUILD INDEX ON `bucketName`.`scopeName`.`collectionName` (`filteredIndexes1`, `filteredIndexes2`, `filteredIndexes3`)
+```
 
 ### Returns
 
@@ -1090,6 +1536,14 @@ public interface IAnalyticsIndexManager{
      void DisconnectLink(DisconnectLinkAnalyticsOptions options);
 
      map[string]map[string]int GetPendingMutations(GetPendingMutationsAnalyticsOptions options);
+
+     void CreateLink(AnalyticsLink link, CreateLinkAnalyticsOptions options);
+
+     void ReplaceLink(AnalyticsLink link, ReplaceLinkAnalyticsOptions options);
+
+     void DropLink(string linkName, string dataverseName, DropLinkAnalyticsOptions options);
+
+     List<AnalyticsLink> GetLinks(GetLinksAnalyticsOptions options);
 }
 ```
 
@@ -1108,6 +1562,9 @@ void CreateDataverse(string dataverseName, [options])
 * Required:
 
   * `dataverseName`: `string` - name of the dataverse.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
 * Optional:
 
@@ -1143,6 +1600,9 @@ void DropDataverse(string dataverseName,  [options])
 * Required:
 
   * `dataverseName`: `string` - name of the dataverse.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
 * Optional:
 
@@ -1190,6 +1650,9 @@ void CreateDataset(string datasetName, string bucketName, [options])
 
   * `DataverseName` (`string`) - The name of the dataverse to use, default to none. If set then will be used as `CREATE DATASET
     dataverseName.datasetName`. If not set then will be `CREATE DATASET datasetName`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
@@ -1228,6 +1691,9 @@ void DropDataset(string datasetName,  [options])
 
   * `DataverseName` (`string`) - The name of the dataverse to use, default to none. If set then will be used as `DROP DATASET
     dataverseName.datasetName`. If not set then will be `DROP DATASET datasetName`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
@@ -1299,6 +1765,9 @@ void CreateIndex(string indexName, string datasetName, map[string]string fields,
 
   * `DataverseName` (`string`) - The name of the dataverse to use, default to none. If set then will be used as `DROP INDEX
     dataverseName.datasetName.indexName`. If not set then will be `DROP INDEX datasetName.indexName`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the
     client.
@@ -1337,6 +1806,9 @@ void DropIndex(string indexName, string datasetName, [options])
 
   * `DataverseName` (`string`) - The name of the dataverse to use, default to none. If set then will be used as `DROP INDEX
     dataverseName.datasetName.indexName`. If not set then will be `DROP INDEX datasetName.indexName`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
@@ -1397,6 +1869,9 @@ void ConnectLink([options])
 * Optional:
 
   * `DataverseName` (`string`) - name of the dataverse to connect to. Default to `"Default"`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `LinkName` (`string`) - name of the link. Default to `"Local"`.
 
@@ -1432,6 +1907,11 @@ void DisconnectLink([options])
 * Required: None
 
 * Optional:
+
+  * `DataverseName` (`string`) - name of the dataverse to connect to. Default to `"Default"`.
+    * This name may contain one or more `/`, the `/` must be split on and retokenized before sending.
+    * Retokenizing follows the following rule: `bucket.name/scope.name` becomes `` `bucket.name` ``.`` `scope.name` ``.
+    * Note that there can be multiple instance of `/` within a name and all must be retokenized.
 
   * `linkName`: `string` - name of the link. Default to `"Local"`.
 
@@ -1493,6 +1973,190 @@ Map where top level keys are dataverse names, and values are a map of dataset na
 ### URI
 
     GET http://localhost:8095/analytics/node/agg/stats/remaining
+
+## CreateLink
+
+Creates a new link.
+
+### Signature
+
+```
+void CreateLink(AnalyticsLink link, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `link`: `AnalyticsLink` - the link to be created.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `AnalyticsLinkExistsException`
+
+* `DataverseNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+
+Data is sent as `"application/x-www-form-urlencoded"`.
+
+* The link's `dataverse` can contain one or more `/`.
+* The path to use depends on the `dataverse`.
+* If `dataverse` contains a `/` then the name is url encoded to escape any `/` within the name and URI is:
+  * POST http://localhost:8095/analytics/link/<dataverse>/<linkname>
+* If `dataverse` does not contain a `/` then the `dataverse` and `name` are included within the payload of the request (as `dataverse` and `name`)
+  * The URI is:
+    * POST http://localhost:8095/analytics/link
+
+
+## ReplaceLink
+
+Replaces an existing link.
+
+### Signature
+
+```
+void ReplaceLink(AnalyticsLink link, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `link`: `AnalyticsLink` - the link to be replaced.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `DataverseNotFoundException`
+
+* `AnalyticsLinkNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+
+Data is sent as `"application/x-www-form-urlencoded"`.
+
+* The link's `dataverse` can contain one or more `/`.
+* The path to use depends on the `dataverse`.
+* If `dataverse` contains a `/` then the name is url encoded to escape any `/` within the name and URI is:
+  * PUT http://localhost:8095/analytics/link/<dataverse>/<linkname>
+* If `dataverse` does not contain a `/` then the `dataverse` and `name` are included within the payload of the request (as `dataverse` and `name`)
+  * The URI is:
+    * POST http://localhost:8095/analytics/link
+
+## DropLink
+
+Drops an existing link from a scope.
+
+### Signature
+
+```
+void DropLink(string linkName, string scopeName, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `linkName`: `string` - the link to be removed.
+  * `scopeName`: `string` - the scope in which the link belongs, in the format `bucket/scope`.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `DataverseNotFoundException`
+
+* `AnalyticsLinkNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+
+* The link's `dataverse` can contain one or more `/`.
+* The path to use depends on the `dataverse`.
+* If `dataverse` contains a `/` then the name is url encoded to escape any `/` within the name and URI is:
+  * DELETE http://localhost:8095/analytics/link/<dataverse>/<linkname>
+* If `dataverse` does not contain a `/` then the `dataverse` and `name` are included within the payload of the request (as `dataverse` and `name`)
+  * The URI is:
+    * POST http://localhost:8095/analytics/link
+
+## GetLinks
+
+Gets existing links.
+
+### Signature
+
+```
+List<AnalyticsLink> GetLinks([options])
+```
+
+### Parameters
+
+* Required:
+
+None
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+  * `Dataverse` (string) - the name of the dataverse to restrict links to.
+  * `Name` (string) - the name of the link to fetch.
+  * `LinkType` (AnalyticsLinkType) - the type of links to restrict returned links to.
+  
+Note: If `Name` is set then `Dataverse` must be set, otherwise an `InvalidArgumentsException` must be thrown.
+
+### Returns
+
+`List<AnalyticsLink>` - a list of the interface type which must be cast to the relevant underlying type.
+``
+### Throws
+
+* `DataverseNotFoundException`
+
+* `InvalidArgumentsException`
+
+### URI
+The URI is dependent on the options.
+If `dataverse` is not set then:
+
+    GET http://localhost:8095/analytics/link?type=<linktype>
+
+* If `dataverse` is set and contains a `/` then the name is url encoded to escape any `/` within the name and URI is:
+  *  If `dataverse` is set and `name` is not:
+    * `GET http://localhost:8095/analytics/link/<dataverse>?type=<linktype>`
+  *  If `dataverse` is and `name` are both set:
+    * `GET http://localhost:8095/analytics/link/<dataverse>/<linkname>?type=<linktype>`
+  
+* If `dataverse` does not contain a `/` then the `dataverse` and `name` are included within the querystring of the request (as `dataverse` and `name`)
+  *  Only include `name` if `name` is set.
+  * Uri is:
+    * `GET http://localhost:8095/analytics/link?dataverse=<dataverse>&name=<name>&type=<linktype>`
 
 # BucketManager
 
@@ -1733,14 +2397,15 @@ Unless otherwise indicated, all objects SHOULD be immutable.
 
 A role identifies a specific permission.
 
-CAVEAT: The properties of a role are likely to change with the introduction of collection-level permissions. Until then, here's what the
-accessor methods look like:
-
 ```
 interface Role {
     String name()
 
     Optional<String> bucket()
+
+    Optional<String> Collection()   // Uncommitted
+
+    Optional<String> Scope()   // Uncommitted
 }
 ```
 
@@ -1870,6 +2535,8 @@ public interface IUserManager{
     void UpsertGroup(Group group, UpsertGroupOptions options);
 
     void DropGroup(string groupName, DropGroupOptions options);
+    
+    void ChangePassword(string newPassword, ChangePasswordOptions options);
 }
 ```
 
@@ -1915,6 +2582,9 @@ When parsing the "get" and "getAll" responses, take care to distinguish between 
 
 If the server response does not include an "origins" field for a role, then it was generated by a server version prior to 6.5 and the SDK
 MUST treat the role as if it had a single origin of `type="user"`.
+
+If a `Role` `Scope()` or `Collection()` properties are set to `"*"` then they should reset to an empty string.
+This is to provide a consistent experience across server versions.
 
 ## GetAllUsers
 
@@ -1984,6 +2654,9 @@ given User domain object (so that the password is only changed if the calling co
 For backwards compatibility with Couchbase Server 6.0 and earlier, the "groups" parameter MUST be omitted if the group list is
 empty. Couchbase Server 6.5 treats the absent parameter the same as an explicit parameter with no value (removes any existing group
 associations, which is what we want in this case).
+
+For backwards compatibility with Couchbase Server 6.5 and earlier if a `Role` `Scope()` or `Collection()` properties are 
+set to `"*"` then they should reset to an empty string.
 
 ## DropUser
 
@@ -2182,6 +2855,47 @@ Nothing
 ### Throws
 
 * `GroupNotFoundException`
+
+* `InvalidArgumentsException`
+
+* Any exceptions raised by the underlying platform
+
+## ChangePassword
+
+Changes password for the currently authenticated user.
+
+API docs *must* state that ssage of this function will effectively invalidate the SDK instance and further requests 
+will fail due to authentication errors.
+After using this function the SDK must be reinitialized.
+
+REST Endpoint:
+
+    POST /controller/changePassword
+
+This endpoint accepts `application/x-www-form-urlencoded` and requires the data be sent as form data.
+The form contains an entry called `password` which contains the new password.
+
+### Signature
+
+```
+void ChangePassword(string newPassword, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `newPassword`: `string` - the new password.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+### Returns
+
+Nothing
+
+### Throws
 
 * `InvalidArgumentsException`
 
@@ -2451,8 +3165,31 @@ interface QueryIndex {
     Iterable<String> IndexKey();
 
     Optional<String> Condition();
+    
+    Optional<String> Partition()
+    
+    String BucketName();
+    
+    Optional<String> ScopeName();
+    
+    Optional<String> CollectionName()
 }
 ```
+
+When collections are not in use:
+* `keyspace` will be set to the bucket name.
+
+When collections are in use:
+* `keyspace` will be set to the collection name.
+* `bucket_id` will contain the bucket name.
+* `scope_id` will contain the scope name.
+
+The following are primarily to help improve UX, especially in the case where the user was not using collections and now is:
+
+The `BucketName()` function should always return the name of the bucket, whether it was in the `keyspace` or `bucket_id` field.
+This means that sometimes `Keyspace()` and `BucketName()` will be the same value.
+
+The `CollectionName()` function should return the value from `keyspace` when collections are being used, i.e. `bucket_id` and `scope_id` are populated in the JSON payload.
 
 ## SearchIndex
 
@@ -2523,6 +3260,165 @@ interface AnalyticsIndex{
 }
 ```
 
+## AnalyticsLinkInterface
+
+`AnalyticsLink` provides a means of mapping analytics link details into an object.
+The interface methods are primarily designed for creation and modification of links.
+Note: Analytics link management is only supported for server 7.0+.
+
+```
+interface AnalyticsLink {
+  String Name();
+  
+  String DataverseName();
+
+  List<Byte> FormEncode();
+  
+  Validate();
+  
+  AnalyticsLinkType LinkType();
+}
+```
+
+### CouchbaseRemoteAnalyticsLink
+
+`CouchbaseRemoteAnalyticsLink` provides a means of mapping remote couchbase analytics link details into an object.
+The following fields are named according to how they are sent when form/json encoded.
+The object names should be implemented in a way idiomatic to the implementing language.
+
+* `dataverse` (string) - The dataverse that the link belongs to. Form can be one part `dataversename` or two parts `bucket.name/scope.name`.
+* `name` (string) - The name of the link.
+* `hostname` (string) - The hostname of the target couchbase cluster. This is `activeHostname` in the returned JSON payload for a get.
+* `encryption` (CouchbaseAnalyticsEncryptionSettings) - The encryption settings for the link. The contents of this field are flattened to the top level of the payload.
+* `username` (string) - The username to use for authentication.
+* `password` (string) - The password to use for authentication.
+
+A value for `type` of `couchbase` must be sent in the form payload, this is returned in the same manner in the JSON payload.
+This field is not exposed on the object and is either inferred from the object type or by calling `LinkType()`.
+
+The `Validate()` implementation must verify that:
+* `dataverse` is set.
+* `name` is set.
+* `hostname` is set.
+* When encryption level is set to "none" or "half":
+  * `username` is set.
+  * `password` is set.
+* When encryption level is set to "full":
+  * `certificate` is set.
+  * Either both `username` and `password` are set OR both `clientCertificate` and `clientKey` are set.
+
+The `LinkType()` implementation must return a value that corresponds to `"couchbase"`.
+
+On fetching a `CouchbaseRemoteAnalyticsLink`:
+  * The `hostname` property is present as `activeHostname`.
+  * The `password` property must be blanked out/left unset.
+  * The `clientKey` property must be blanked out/left unset.
+  * The `dataverse` property must be set by first checking the `dataverse` field in the response body and if empty falling back to the `scope` field.
+
+### CouchbaseAnalyticsEncryptionSettings
+
+`CouchbaseAnalyticsEncryptionSettings` are the settings available for setting encryption level on an analytics link.
+When present these fields are encoded into the form data at the top level, alongside `hostname` etc...
+If any of these fields are not set then they should not be encoded into the payload, except `encryptionLevel` which can be sent as `none` when not set.
+See above validation section on when these fields must be set.
+
+* `encryptionLevel` (AnalyticsEncryptionLevel) - Encoded in the payload as `encryption`. The encryption level to apply.
+* `certificate` (List<Byte>) - The certificate to use for the encryption when encryption level is set to "full".
+* `clientCertificate` (List<Byte>) - The client certificate to use for authenticating when encryption level is set to "full".
+* `clientKey` (List<Byte>) - The client key to use for authenticating when encryption level is set to "full".
+
+### S3ExternalAnalyticsLink
+
+`S3ExternalAnalyticsLink` provides a means of mapping external s3 analytics link details into an object.
+The following fields are named according to how they are sent when form/json encoded.
+The object names should be implemented in a way idiomatic to the implementing language.
+
+* `dataverse` (string) - The dataverse that the link belongs to. Form can be one part `dataversename` or two parts `bucket.name/scope.name`.
+* `name` (string) - The name of the link.
+* `accessKeyID` (string) - The AWS S3 access key.
+* `secretAccessKey` (string) - The AWS S3 secret key.
+* `sessionToken` (string) - The AWS S3 token if temporary credentials are provided. Only available in server 7.0+.
+* `region` (string) - The AWS S3 region.
+* `serviceEndpoint` (string) - The AWS S3 service endpoint.
+
+A value for `type` of `s3` must be sent in the form payload, this is returned in the same manner in the JSON payload.
+This field is not exposed on the object and is either inferred from the object type or by calling `LinkType()`.
+
+The `Validate()` implementation must verify that:
+* `dataverse` is set.
+* `name` is set.
+* `accessKeyID` is set.
+* `secretAccessKey` is set.
+* `region` is set.
+
+The `LinkType()` implementation must return a value that corresponds to `"s3"`.
+
+On fetching a `S3ExternalAnalyticsLink`:
+* The `secretAccessKey` property must be blanked out/left unset.
+* The `sessionToken` property must be blanked out/left unset.
+* The `dataverse` property must be set by first checking the `dataverse` field in the response body and if empty falling back to the `scope` field.
+
+### AzureBlobExternalAnalyticsLink
+
+`AzureBlobExternalAnalyticsLink` provides a means of mapping external azure analytics link details into an object.
+The `AzureBlobExternalAnalyticsLink` is available in server 7.0 Developer Preview mode and must be marked as `volatile` API stability.
+The following fields are named according to how they are sent when form/json encoded.
+The object names should be implemented in a way idiomatic to the implementing language.
+
+* `dataverse` (string) - The dataverse that the link belongs to. Form is `bucket.name/scope.name`.
+* `name` (string) - The name of the link.
+* `connectionString` (string) - The connection string can be used as an authentication method, connectionString contains other authentication methods embedded inside the string. Only a single authentication method can be used. (e.g. "AccountName=myAccountName;AccountKey=myAccountKey").
+* `accountName` (string) - The Azure blob storage account name.
+* `accountKey` (string) - The Azure blob storage account key.
+* `sharedAccessSignature` (string) - Token that can be used for authentication.
+* `blobEndpoint` (string) - The Azure blob storage endpoint.
+* `endpointSuffix` (string) - The Azure blob endpoint suffix.
+
+A value for `type` of `azureblob` must be sent in the form payload, this is returned in the same manner in the JSON payload.
+This field is not exposed on the object and is either inferred from the object type or by calling `LinkType()`.
+
+The `Validate()` implementation must verify that:
+* `dataverse` is set.
+* `name` is set.
+* Either `connectionString` is set, or `accountName` and `accountKey` are both set, or `accountName` and `sharedAccessSignature` are both set.
+
+The `LinkType()` implementation must return a value that corresponds to `"azureblob"`.
+
+On fetching an `AzureBlobExternalAnalyticsLink`:
+* The `connectionString` property must be blanked out/left unset.
+* The `accountKey` property must be blanked out/left unset.
+* The `sharedAccessSignature` property must be blanked out/left unset.
+* The `dataverse` property must be set from the `scope` field in the response body.
+
+### AnalyticsLinkType
+
+`AnalyticsLinkType` describes the type of link that an object corresponds to.
+
+```
+enum AnalyticsLinkType {
+  S3External("s3")
+  
+  AzureBlobExternal("azureblob")
+  
+  CouchbaseRemote("couchbase")
+}
+```
+
+### AnalyticsEncryptionLevel
+
+`AnalyticsEncryptionLevel` describes the encryption level for a couchbase analytics link.
+
+```
+enum AnalyticsEncryptionLevel {
+  NONE("none")
+  
+  HALF("half")
+  
+  FULL("full")
+}
+  
+```
+
 ## CompressionMode
 
 ```
@@ -2561,6 +3457,16 @@ enum BucketType {
 }
 ```
 
+## StorageBackend
+
+```
+enum StorageBackend {
+    COUCHSTORE("couchstore"),
+
+    MAGMA("magma")
+}
+```
+
 ## BucketSettings
 
 `BucketSettings` provides a means of mapping bucket settings into an object.
@@ -2589,6 +3495,10 @@ enum BucketType {
 
 * `compressionMode` ([`CompressionMode`](#compressonmode)) - The compression mode to use.
 
+* `MinimumDurabilityLevel` (`DurabilityLevel`) - The minimum durability level to use for all KV operations.
+
+* `StorageBackend` ([`StorageBackend`](#storagebackend)) - The storage type to use (note: Magma is EE only).
+
 ## ConflictResolutionType
 
 ```
@@ -2596,6 +3506,9 @@ enum ConflictResolutionType {
     TIMESTAMP("lww"),
 
     SEQUENCE_NUMBER("seqno")
+    
+    // CUSTOM is available in server 7.1 Developer Preview mode and must be marked as `volatile` API stability.
+    CUSTOM("custom")
 }
 ```
 
@@ -2677,6 +3590,8 @@ interface ScopeSpec {
 * Analytics management
 
   * https://docs.couchbase.com/server/current/analytics/5_ddl.html
+  * https://docs.google.com/document/d/1tpcHrcsTZj2bme8yqL5QEQeMMOG9LerOaDD3caXgJ3U
+  * https://docs-staging.couchbase.com/server/7.0/analytics/rest-links.html
 
 # Changes
 
@@ -2703,33 +3618,33 @@ interface ScopeSpec {
 
 * Nov 10, 2019 - Revision #4 (by David Nault)
 
-  * Add optional arguments “DataverseName” and “Force” to Analytics ConnectLink.
+  * Add optional arguments "DataverseName" and "Force" to Analytics ConnectLink.
 
   * Remove the FlushCollection method from CollectionManager, since server-side flushing was not implemented. The user can drop and
     recreate the collection instead.
 
-* Clarify that “IndexType” is string/enum with values “View” and “Gsi”.
+* Clarify that "IndexType" is string/enum with values "View" and "Gsi".
 
-  * Clarify that all optional timeouts default to the client’s global management request timeout.
+  * Clarify that all optional timeouts default to the client's global management request timeout.
 
-  * Clarify that all optional “IgnoreIfExists” parameters default to false.
+  * Clarify that all optional "IgnoreIfExists" parameters default to false.
 
   * Clarify that the Query Index Manager's optional "NumReplicas" and "Deferred" parameters default to omitting the parameter from the
     server request and letting the server decide the default value.
 
 * Nov 11, 2019 - Revision #5 (by David Nault)
 
-  * Renamed “IndexType” to “QueryIndexType” to disambiguate.
+  * Renamed "IndexType" to "QueryIndexType" to disambiguate.
 
 * Nov 20, 2019 - Revision #6 (by David Nault)
 
   * Collection Manager:
 
-     * Removed “scopeExists” and “collectionExists” methods.
+     * Removed "scopeExists" and "collectionExists" methods.
 
   * User Manager:
 
-     * RoleAndOrigins and RoleAndDescription MAY extend Role, at implementor’s discretion.
+     * RoleAndOrigins and RoleAndDescription MAY extend Role, at implementor's discretion.
 
      * Removed the version of UserAndMetadata.effectiveRoles() that returned Set<Role>.
 
@@ -2739,15 +3654,15 @@ interface ScopeSpec {
 
   * Collection Manager:
 
-     * Added “MaxTTL” to the CollectionSpec.
+     * Added "MaxTTL" to the CollectionSpec.
 
-     * Added how to send “MaxTTL” to the CreateCollection uri.
+     * Added how to send "MaxTTL" to the CreateCollection uri.
 
 * Mar 26, 2020 - Revision #8 (by Charles Dixon)
 
   * Collection Manager:
 
-     * Change “maxTTL” to “maxExpiry”
+     * Change "maxTTL" to "maxExpiry"
 
   * Bucket Manager:
 
@@ -2781,13 +3696,75 @@ interface ScopeSpec {
 * September 16, 2020 - Revision #11 (by Charles Dixon)
 
   * Changed the return value of Analytics `GetPendingMutations` from `map[string]int` to `map[string]map[string]int`.
+  
+* September 22, 2020 - Revision #12 (by Charles Dixon)
+
+  * Add `Collection` and `Scope` to `Role`.
+
+* November 25, 2020 - Revision #13 (by Charles Dixon)
+
+  * Added `MinimumDurabilityLevel` to `BucketSettings`.
+
+* March 3, 2021 - Revision #14 (by Charles Dixon)
+
+  * Added `Partition` to `QueryIndex`.
+
+* April 29, 2021 - Revision #15 (by Charles Dixon)
+
+  * Added Analytics Links management to `AnalyticsIndexManager`.
+  * Added LinkName to `AnalyticsIndexManager` `CreateDataset` options.
+
+* May 11, 2021 - Revision #16 (by Charles Dixon)
+
+  * Rework Analytics Links management to only support server 7.0+.
+    * Removed `Dataverse` links functions and from links objects.
+    * Removed `GetLink` functions all together.
+    * Added `name` to `GetAllLinksOptions`.
+  
+* May 17, 2021 - Revision #17 (by Charles Dixon)
+  
+  * Rework Analytics Link management to once again support server 6.6
+    * Updated all link and method parameters to refer to `dataverse` only.
+    * Clarified behaviour to follow on parsing link response bodies.
+    * Added detail on how to parse `dataverse` names and which URLs to use depending on the name.
+  * Update Analytics management API to include information on how to parse `dataverse` names containing `/`.
+
+* June 1, 2021 - Revision #18 (by Charles Dixon)
+  * Remove `AnalyticsScopeNotFoundException` and replace references to it with `DataverseNotFoundException`.
+  * Rename `LinkAlreadyExistsException` to `AnalyticsLinkExistsException`.
+  * Renamed `CouchbaseAnalyticsEncryptionSettings` `encryption` field to `encryptionLevel`, note that this field is still sent in the payload as `encryption`.
+  * Added some extra detail on how to encode `CouchbaseAnalyticsEncryptionSettings`.
+
+* June 8, 2021 - Revision #19 (by Charles Dixon)
+  * Rename `GetAllLinks` to `GetLinks`.
+  * Rename `GetAllLinksOptions` to `GetLinksOptions`.
+  * Add `Name` and `DataverseName` to `AnalyticsLink` interface.
+  * Remove `linkName` option from `CreateDataset`.
+  
+* January 10, 2022 - Revision #20 (by Charles Dixon)
+  * Add support for collections to query index management.
+    * Add `CollectionName` and `ScopeName` to all query index management functions.
+    * Add `CollectionName` and `ScopeName` to `QueryIndex`
+  
+* January 19, 2022 - Revision #21 (by Charles Dixon)
+  * Reworked query for `GetAllIndexes` when only a bucket name is supplied.
+  * Reworked `BuildDeferredIndexes` to use only a single query rather than first performing a `GetAllIndexes` internally.
+
+* December 7, 2021 (by Charles Dixon)
+  * Add `CUSTOM` `ConflictResolutionType` at stability level volatile.
+
+* February 3, 2023 - Revision #22 (by Graham Pople)
+  * Add `CollectionQueryIndexManager`.
+
+* February 10, 2023 - Revision #23 (by Graham Pople)
+  * Specify that trying to use `scopeName` or `collectionName` with `CollectionQueryIndexManager` should result in an `InvalidArgumentException`
 
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |
 |------------|---------------------|----------------|----------|
 | Node.js    | Brett Lawson        | April 16, 2020 | #9       |
-| Go         | Charles Dixon       | September 16, 2020 | #11       |
+| Go         | Charles Dixon       | April 29, 2021 | #19      |
 | Connectors | David Nault         | April 29, 2020 | #9       |
 | PHP        | Sergey Avseyev      | April 22, 2020 | #9       |
 | Python     | Ellis Breen         | April 29, 2020 | #9       |
