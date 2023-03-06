@@ -1588,13 +1588,13 @@ So, the SDK needs to create and pass the "{bucketName}.{scopeName}.{index}" name
 If the new endpoints are used on a server prior to 7.5, a 404 error will be returned.  
 This should be mapped into a `FeatureNotAvailableException` with a message along the lines of "Scope-level indexes can not be used with this server version".
 
-If the user uses the "bucket.scope.index" form with `SearchIndexManager` on a server version prior to 7.5, the server will return a 400 bad request error containing a message "CreateIndex, indexName is invalid".
-This should be mapped into a `FeatureNotAvailableException` with a message along the lines of "Scope-level indexes should be used with scope.searchQuery() and scope.searchIndexes()".
+If the user uses the "bucket.scope.index" form with `SearchIndexManager` or `cluster.searchQuery()` on a server version prior to 7.5, the server will return a 400 bad request error containing a message "CreateIndex, indexName is invalid".
+This should be mapped into a `FeatureNotAvailableException` with a message along the lines of "scope.searchQuery() and scope.searchIndexes() should be used for scope-level indexes".
 
-If the user accidentally does `scope.searchIndexes().getIndex("bucket.scope.index")`, the server will return a 400 bad request error containing a message "CreateIndex, indexName is invalid".
+If the user accidentally does `scope.searchIndexes().getIndex("bucket.scope.index")`, `scope.searchQuery("bucket.scope.index", ...)`, or similar), the server will return a 400 bad request error containing a message "CreateIndex, indexName is invalid".
 This should be mapped into a `InvalidArgumentException` with a message along the lines of "Only the index name should be provided, without a '{bucketName}.{scopeName}.' prefix".
 (Note that this is the same error message from the server as mentioned earlier for a different situation.  
-So the SDK will need the context of knowing whether it is `SearchIndexManager` or `ScopeSearchIndexManager` performing this operation, to raise a `FeatureNotAvailableException` or `InvalidArgumentException` as appropriate.)  
+So the SDK will need the context of knowing whether it is `SearchIndexManager` or `ScopeSearchIndexManager` (or `cluster.searchQuery()` or `scope.searchQuery()`) performing this operation, to raise a `FeatureNotAvailableException` or `InvalidArgumentException` as appropriate.)  
 
 ## Compatibility of `SearchIndexManager` with scope-level indexes
 
