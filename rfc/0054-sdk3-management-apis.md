@@ -32,6 +32,19 @@ On the bucket interface:
 [ViewIndexManager](#viewindexmanager) ViewIndexes();
 </pre></big>
 
+On the scope interface:
+
+<big><pre>
+[ScopeSearchIndexManager](#scopesearchindexmanager) SearchIndexes();
+</pre></big>
+
+
+On the collection interface:
+
+<big><pre>
+[CollectionQueryIndexManager](#collectionqueryindexmanager) QueryIndexes();
+</pre></big>
+
 # Service Not Configured
 
 If a manager is requested for a service which is not configured on the cluster then a `ServiceNotConfiguredException` must be raised. This
@@ -1508,6 +1521,55 @@ return the value containing within the analyze key.
 ### URI
 
     POST /api/index/{indexName}/analyzeDoc
+
+# ScopeSearchIndexManager
+
+Server 7.5 adds a new form of FTS scope-level indexes, with a new set of endpoints.
+ScopeSearchIndexManager manages exclusively these, while SearchIndexManager (at the Cluster level) manages exclusively the original global-level indexes.
+
+References:
+
+* [SDK Proposal for Search Indexes
+  ](https://docs.google.com/document/d/1FUoR3pulZ6HNJ93xmXrwlmb-hZaYzrWKnlBeUq0lUE8/edit#)
+* [MB-55102](https://issues.couchbase.com/browse/MB-55102)
+* [Index Naming via Query Parameters for Search / FTS
+  ](https://docs.google.com/document/d/1NOaeorWp9Ap8oQySg1LLNpaTg3QXuBA56uWH1LuLDGA/edit#)
+
+The API for `ScopeSearchIndexManager` is identical to `SearchIndexManager` (same methods, same option blocks), so will not be repeated here.
+The existing options objects, e.g. `GetSearchIndexOptions`, should be used.
+
+`SearchIndexManager` is not deprecated, as global indexes are also not formally deprecated (yet).
+
+The full name for a scope-level index is "bucket.scope.index".
+The user will use that as `scope.searchIndexes().getIndex("index")` - NOT `scope.searchIndexes().getIndex("bucket.scope.index")`.
+The SDK should not try to split a "bucket.scope.index" name and extract "index": we will aim to educate the user instead.
+
+Put another way: we don't want the user to be using "bucket.scope.index" form anywhere in their application.
+It would be analagous to the user passing "bucket.scope.collection" around.
+We have `Bucket` and `Scope` objects already that correspond to "bucket.scope", so the most consistent UX for the user is for them to just use "index".
+
+The only thing that changes in the implementation of `ScopeSearchIndexManager` are the endpoints used:
+
+* `GetIndex`, `UpsertIndex`, `DropIndex`: `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}`
+* `GetAllIndexes`: `/api/bucket/{bucketName}/scope/{scopeName}/index`
+
+All other operations (`PauseIngest` etc.) continue to use the existing endpoints for global-level indexes.
+The SDK needs to create and pass the "{bucketName}.{scopeName}.{index}" name to these.
+
+Due to an FTS implementation detail, the "bucket.scope.index" form can be passed to the Cluster-level `SearchIndexManager`, and all operations (except creating an index) will happen to work.
+We will regard this as an undocumented and not-recommended 'backdoor' that we or the server could break in the future.
+For scope-level indexes the user should use `ScopeSearchIndexManager`; for global indexes, `SearchIndexManager`.
+
+The name returned by the server will be in the "bucket.scope.index" form, so e.g. this won't work:
+
+```
+SearchIndex index = scope.searchIndexes().getIndex("index");
+// Will fail because index.name() is "bucket.scope.index"
+scope.searchIndexes().dropIndex(index.name());
+```
+
+As above, the SDK should not (currently) try and solve this by e.g. changing the index's name to "index" or some other workaround.
+We are requesting the FTS make some changes to better align with the desired SDK UX.
 
 # AnalyticsIndexManager
 
@@ -3759,6 +3821,9 @@ interface ScopeSpec {
 * February 10, 2023 - Revision #23 (by Graham Pople)
   * Specify that trying to use `scopeName` or `collectionName` with `CollectionQueryIndexManager` should result in an `InvalidArgumentException`
 
+* March 6th, 2023 - Revision #24 (by Graham Pople)
+  * Adding `ScopeSearchIndexManager`.
+  
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |
