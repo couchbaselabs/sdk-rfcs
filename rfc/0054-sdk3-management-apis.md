@@ -1525,7 +1525,10 @@ return the value containing within the analyze key.
 # ScopeSearchIndexManager
 
 Server 7.5 adds a new form of FTS scope-level indexes, with a new set of endpoints.
-ScopeSearchIndexManager manages exclusively these, while SearchIndexManager (at the Cluster level) manages exclusively the original global-level indexes.
+`ScopeSearchIndexManager` manages exclusively these, while `SearchIndexManager` (at the Cluster level) manages exclusively the original global-level indexes.
+
+Querying is also done via a new endpoint, with an API of `scope.searchQuery()`.
+This will be detailed in another RFC.
 
 References:
 
@@ -1556,20 +1559,28 @@ The only thing that changes in the implementation of `ScopeSearchIndexManager` a
 All other operations (`PauseIngest` etc.) continue to use the existing endpoints for global-level indexes.
 The SDK needs to create and pass the "{bucketName}.{scopeName}.{index}" name to these.
 
+Error handling: if the new endpoints are used on a server prior to 7.5, a 404 error will be returned.  
+This should be mapped into a `FeatureNotAvailable` with a message along the lines of "Scope-level indexes can not be used with this server version".
+
 Due to an FTS implementation detail, the "bucket.scope.index" form can be passed to the Cluster-level `SearchIndexManager`, and all operations (except creating an index) will happen to work.
 We will regard this as an undocumented and not-recommended 'backdoor' that we or the server could break in the future.
 For scope-level indexes the user should use `ScopeSearchIndexManager`; for global indexes, `SearchIndexManager`.
 
-The name returned by the server will be in the "bucket.scope.index" form, so e.g. this won't work:
+If the user uses the "bucket.scope.index" form with `SearchIndexManager` on a server version prior to 7.5, the server will return an error indicating the index name is invalid (todo: check the exact message).
+This should be mapped into a `FeatureNotAvailable` with a message along the lines of "Scope-level indexes should be used with scope.searchQuery() and scope.searchIndexes()".
+
+The name returned by the server from `getIndex` be in the "bucket.scope.index" form, so e.g. this won't work:
 
 ```
 SearchIndex index = scope.searchIndexes().getIndex("index");
-// Will fail because index.name() is "bucket.scope.index"
+
+// Both of these will fail because index.name() is "bucket.scope.index":
 scope.searchIndexes().dropIndex(index.name());
+scope.searchQuery(index.name(), ...);
 ```
 
-As above, the SDK should not (currently) try and solve this by e.g. changing the index's name to "index" or some other workaround.
-We are requesting the FTS make some changes to better align with the desired SDK UX.
+As above, the SDK should not try and solve this by e.g. changing the index's name to "index" or some other workaround.
+We are requesting the FTS team make some changes to better align with the desired SDK UX.
 
 # AnalyticsIndexManager
 
