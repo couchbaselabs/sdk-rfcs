@@ -1188,9 +1188,18 @@ public interface ILookupInResult : IResult {
 }
 ```
 
-- Exists(..) will return true if the item exists for a given index, otherwise false.
+- Exists
+  1. Throws InvalidIndexException if the index is < 0 or >= the number of lookups.
+  2. Returns true if the status code at the index is `SUCCESS`.
+  3. Returns false if the status code at the index is `PATH_NOT_FOUND`.
+  4. For all other status codes, throws an exception matching the status code. See [RFC-0058](0058-error-handling.md) for error definitions.
 
-- ContentAs will throw a NotFoundException if the item does not exist; if the index is invalid a InvalidIndexException will be thrown.
+- ContentAs
+  1. Throws InvalidIndexException if the index is < 0 or >= the number of lookups.
+  2. Gets the value at the index, in one of two ways depending on the lookup type:
+     1. If the result came from an `exists` lookup, calls Exists to get a boolean, and uses the JSON representation of that boolean as the "value" in the next step. Propagates any exceptions thrown by `Exists`.
+     2. Otherwise, uses the value returned by the server as the "value" in the next step. If the status code at the index is not `SUCCESS`, throws an exception matching the status code. See [RFC-0058](0058-error-handling.md) for error definitions. 
+  3. Returns the value at the index, converted to the requested type.
 
 #### IMutationResult Interface
 
@@ -1654,6 +1663,10 @@ Invalid operation
   - Converted to Markdown.
   - Fixed a few typos.
   - Restructured a couple of sections for clarity (no content altered).
+
+- April 4, 2023 - Revision #19 (by David Nault)
+
+  - Clarified behavior of `ILookupInResult.Exists` and `ILookupInResult.ContentAs`.
 
   # Signoff
 
