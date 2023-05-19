@@ -226,8 +226,8 @@ The API and implementation are identical to `ICluster::SearchQuery`, except it u
 The user provides `scope.searchQuery("indexName", query, [options])` (rather than `scope.searchQuery("bucket.scope.indexName", query, [options])`).
 
 The SDK will use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}/query` for the query.
-This will execute the query against a scope-level FTS index rather than a global index.
-See the description of `ScopeQueryIndexManager` in [SDK RFC 54](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0054-sdk3-management-apis.md) for more details of scope level indexes.
+This will execute the query against a scoped FTS index rather than a global index.
+See the description of `ScopeQueryIndexManager` in [SDK RFC 54](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0054-sdk3-management-apis.md) for more details of scoped indexes.
 All information from there applies here.
 
 ## SearchQuery implementations
@@ -717,7 +717,7 @@ interface SearchMetrics {
     * Added `includeLocations` to `SearchOptions`.
     * Added `MatchOperator` and added `operator` to `MatchQuery`.
 
-* March 6, 2022 (by Graham Pople)
+* March 6, 2023 (by Graham Pople)
     * Added `scope.searchQuery()`.
 
 # Signoff
