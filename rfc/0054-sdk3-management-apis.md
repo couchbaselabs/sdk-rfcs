@@ -32,6 +32,19 @@ On the bucket interface:
 [ViewIndexManager](#viewindexmanager) ViewIndexes();
 </pre></big>
 
+On the scope interface:
+
+<big><pre>
+[ScopeSearchIndexManager](#scopesearchindexmanager) SearchIndexes();
+</pre></big>
+
+
+On the collection interface:
+
+<big><pre>
+[CollectionQueryIndexManager](#collectionqueryindexmanager) QueryIndexes();
+</pre></big>
+
 # Service Not Configured
 
 If a manager is requested for a service which is not configured on the cluster then a `ServiceNotConfiguredException` must be raised. This
@@ -1508,6 +1521,63 @@ return the value containing within the analyze key.
 ### URI
 
     POST /api/index/{indexName}/analyzeDoc
+
+# ScopeSearchIndexManager
+
+Server 7.5 adds a new form of FTS scoped indexes, with a new set of endpoints.
+`ScopeSearchIndexManager` manages exclusively these, while `SearchIndexManager` (at the Cluster level) manages exclusively the original FTS indexes - now named "global indexes".
+The user needs to take care to choose the appropriate API.
+
+Querying is also done via a new endpoint, and with a new API `scope.searchQuery()`.
+This will be detailed in another RFC.
+
+References:
+
+* [SDK Proposal for Search Indexes
+  ](https://docs.google.com/document/d/1FUoR3pulZ6HNJ93xmXrwlmb-hZaYzrWKnlBeUq0lUE8/edit#)
+* [MB-55102](https://issues.couchbase.com/browse/MB-55102)
+* [Index Naming via Query Parameters for Search / FTS
+  ](https://docs.google.com/document/d/1NOaeorWp9Ap8oQySg1LLNpaTg3QXuBA56uWH1LuLDGA/edit#)
+
+## API
+
+The API for `ScopeSearchIndexManager` is identical to `SearchIndexManager` (same methods, same option blocks), so will not be repeated here.
+The existing options objects, e.g. `GetSearchIndexOptions`, should be used.
+
+`ScopeSearchIndexManager` should be marked @Stability.Volatile.
+
+`SearchIndexManager` is not deprecated, as global indexes are also not formally deprecated.
+In particular, the use-case for global aliases continues to be valid.
+
+## Index Name
+
+The internal full name for a scoped index is "bucket.scope.index".
+However, from the user's perspective - e.g. what they create and use in the SDK - the index name is simply "index".
+
+The user will use `scope.searchIndexes().getIndex("index")` and `scope.searchQuery("index")` - NOT `scope.searchIndexes().getIndex("bucket.scope.index")`.
+
+The SDK should not try to intercept a "bucket.scope.index" name and extract "index".
+
+## Implementation
+
+The implementation of `ScopeSearchIndexManager` is identical to `SearchIndexManagement`, except for the endpoints and some error handling details:
+
+* `GetIndex`, `UpsertIndex`, `DropIndex`: use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}` with GET, PUT and DELETE respectively.
+* `GetAllIndexes`: use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index` with GET.
+* For the other operations `PauseIngest` etc., the rule is: where the global index endpoint is `/api/index/{indexName}/ingestControl/pause`, the scoped index endpoint is `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}/ingestControl/pause`. 
+
+### Error handling
+If the new endpoints are used on a server prior to 7.5, a 404 error will be returned.  
+This should be mapped into a `FeatureNotAvailableException` with a message along the lines of "Scoped indexes can not be used with this server version".
+
+## Compatibility of `SearchIndexManager` with scoped indexes
+
+Due to an FTS implementation detail, the "bucket.scope.index" internal name can be passed to the Cluster-level `SearchIndexManager`, and all operations (except creating an index) will happen to work.
+
+We will regard this as an undocumented and discouraged 'backdoor' that we or the server could break in the future.
+
+For scoped indexes the user must use `ScopeSearchIndexManager`; for global indexes, `SearchIndexManager`.
+Anything else is unsupported.
 
 # AnalyticsIndexManager
 
@@ -3759,6 +3829,9 @@ interface ScopeSpec {
 * February 10, 2023 - Revision #23 (by Graham Pople)
   * Specify that trying to use `scopeName` or `collectionName` with `CollectionQueryIndexManager` should result in an `InvalidArgumentException`
 
+* March 6th, 2023 - Revision #24 (by Graham Pople)
+  * Adding `ScopeSearchIndexManager`.
+  
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |

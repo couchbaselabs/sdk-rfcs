@@ -16,10 +16,20 @@ This RFC is part of the bigger SDK 3.0 RFC and describes the FTS APIs in detail.
 
 ## API Entry Point
 
-The full text search API is located at Cluster level:
+The full text search API is located at Cluster level (for querying global FTS indexes):
 
 ```
 interface ICluster {
+    ...
+    SearchResult SearchQuery(string indexName, SearchQuery query, [SearchOptions options]);
+    ...
+}
+```
+
+and at the Scope level (for querying scope FTS indexes):
+
+```
+interface IScope {
     ...
     SearchResult SearchQuery(string indexName, SearchQuery query, [SearchOptions options]);
     ...
@@ -208,6 +218,17 @@ A `ISearchResult` object with the results of the query or error message if the q
   * `ServiceNotAvailableException` (#4)
   * `InternalServerException` (#5)
   * `AuthenticationException` (#6)
+
+## IScope::SearchQuery
+
+The API and implementation are identical to `ICluster::SearchQuery`, except it uses a different endpoint internally.
+
+The user provides `scope.searchQuery("indexName", query, [options])` (rather than `scope.searchQuery("bucket.scope.indexName", query, [options])`).
+
+The SDK will use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}/query` for the query.
+This will execute the query against a scoped FTS index rather than a global index.
+See the description of `ScopeQueryIndexManager` in [SDK RFC 54](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0054-sdk3-management-apis.md) for more details of scoped indexes.
+All information from there applies here.
 
 ## SearchQuery implementations
 
@@ -695,6 +716,9 @@ interface SearchMetrics {
 * December 7, 2021 (by Charles Dixon)
     * Added `includeLocations` to `SearchOptions`.
     * Added `MatchOperator` and added `operator` to `MatchQuery`.
+
+* March 6, 2023 (by Graham Pople)
+    * Added `scope.searchQuery()`.
 
 # Signoff
 
