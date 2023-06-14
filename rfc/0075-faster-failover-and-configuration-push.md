@@ -1,0 +1,315 @@
+# Meta
+
+| Field          | Value                                  |
+|----------------|----------------------------------------|
+| RFC Name       | Faster Failover and Configuration Push |
+| RFC ID         | 75                                     |
+| Start Date     | 2023-06-14                             |
+| Owner          | Sergey Avseyev                         |
+| Current Status | DRAFT                                  |
+| Revision       | #1                                     |
+
+# Summary
+
+TBD
+
+# Motivation
+
+TBD
+
+# Relation to Other RFCs
+
+This RFC relates to the following documents:
+
+* [RFC-0005][rfc-0005]: VBucket Retry Logic.
+
+* [RFC-0024][rfc-0024]: Fast-Failover SDK.
+
+
+# High-Level Design
+
+TBD
+
+# User-Facing API
+
+TBD
+
+# Implementation Details
+
+## Protocol Changes
+
+[https://issues.couchbase.com/browse/MB-57311]: #
+
+### Get Cluster Config with Known Version
+
+[https://review.couchbase.org/c/kv_engine/+/192301]: #
+
+The KV engine introduces a new HELLO flag called `GetClusterConfigWithKnownVersion` with a value of `0x1d`. This flag
+does not change the behavior of the server but allows determining if the node supports epoch-revision fields for the
+`GetClusterConfig` (`0xb5`) operation. If the node acknowledges `GetClusterConfigWithKnownVersion`, then the SDK can use
+the new version of the command.
+
+Epoch and revision are signed 64-bit integers encoded in network (big-endian) order.
+
+
+      Byte/     0       |       1       |       2       |       3       |
+         /              |               |               |               |
+        |0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
+        +---------------+---------------+---------------+---------------+
+       0| 0x80          | 0xb5          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+       4| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+       8| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      12| 0xde          | 0xad          | 0xbe          | 0xef          |
+        +---------------+---------------+---------------+---------------+
+      16| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      20| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      24| 0x42          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      28| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      32| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      36| 0x08          | 0x07          | 0x06          | 0x05          |
+        +---------------+---------------+---------------+---------------+
+      40| 0x04          | 0x03          | 0x02          | 0x01          |
+        +---------------+---------------+---------------+---------------+
+    GET_CLUSTER_CONFIG command
+    Field        (offset) (value)
+    Magic        (0)    : 0x80 (client request, SDK -> kv_engine)
+    Opcode       (1)    : 0xb5
+    Key length   (2,3)  : 0x0000
+    Extra length (4)    : 0x00
+    Data type    (5)    : 0x00 (RAW)
+    Vbucket      (6,7)  : 0x0000
+    Total body   (8-11) : 0x00000010 (16 bytes)
+    Opaque       (12-15): 0xdeadbeef
+    CAS          (16-23): 0x0000000000000000
+    Epoch        (24-31): 0x0000000000000042 (66 in base-10)
+    Revision     (32-39): 0x0102030405060708 (72623859790382856 in base-10)
+
+If the node has a cluster configuration newer than what is specified in the example, the response will include the new
+configuration in the body with the data type set to `JSON` (`0x01`). Otherwise, the response will have an empty body
+with the data type `RAW` (`0x00`).
+
+### Deduplicate Cluster Configuration for `NotMyVbucket` Responses
+
+[https://review.couchbase.org/c/kv_engine/+/190899]: #
+
+The KV engine introduces a new HELLO flag called `DedupeNotMyVbucketClustermap` with a value of `0x1e`. Once this flag
+is negotiated, the node might send an empty body with `NotMyVbucket` (`0x07`) status codes. The KV engine tracks the
+revision that has been sent to the SDK over the socket connection, so a response with a `NotMyVbucket` status will only
+have a body if the pushed version is older than the active configuration.
+
+The KV engine updates the pushed configuration version in the following cases:
+* Configuration sent to the SDK in response to a `GetClusterConfig` (`0xb5`) request.
+* Configuration pushed to the SDK that enabled the HELLO flag `ClustermapChangeNotification` (`0x0d`).
+
+Note, that `DedupeNotMyVbucketClustermap` affects `ClustermapChangeNotification` and `ClustermapChangeNotificationBrief`
+features, that described below. In other words, if deduplication enabled, the cluster configuration will be announce for
+the socket connection only once.
+
+### Enforcing Snappy Compression for Cluster Configuration Payloads
+
+[https://review.couchbase.org/c/kv_engine/+/192152]: #
+[https://review.couchbase.org/c/kv_engine/+/192316]: #
+
+The KV engine introduces a new HELLO flag called `SnappyEverywhere` with a value of `0x13`. Once this flag is
+negotiated, the node will always use the compressed version of the cluster configuration and data type flags will be set
+to `JSON | SNAPPY` (`0x03`).
+
+### `GetClusterConfig` and Out-of-Order Execution
+
+[https://issues.couchbase.com/browse/MB-56885]: #
+
+HELLO flag `UnorderedExecution` (`0x0e`) enables Out-of-Order (OoO) execution, so that the KV engine is being allowed to
+reorder operations. [kv\_engine/docs/UnorderedExecution.md][kv-unordered-execution] provides more details on this
+feature.
+
+The `GetClusterConfig` (`0xb5`) command is explicitly marked as compatible with OoO execution, allowing it to be served
+without waiting for the completion of in-flight operations. Specifically, `GetClusterConfig` will not wait for long
+operations such as mutations with SyncDurability requirements. All current SDKs are expected to be compatible with the
+OoO execution mode, so no changes are expected.
+
+### Cluster Configuration Notification Changes
+
+Prior to server version 7.6, the KV engine had an opt-in feature to push configuration updates to SDKs. This feature
+could be enabled using the HELLO flag `ClustermapChangeNotification` (`0x0d`), which depends on `Duplex` (`0x0c`). More
+details about `Duplex` can be found in [kv\_engine/docs/Duplex.md][kv-duplex]. When both flags are negotiated, the
+server will send unsolicited configuration updates to the SDK without expecting any acknowledgement mechanism. While
+this approach proves to have better responsiveness compared to [RFC-0024: Fast Failover][rfc-0024], it also has its own
+drawbacks, such as:
+
+1. The SDK subscribes all connections using HELLO, and during rebalance, all connections will receive all notifications.
+2. In a Lambda scenario, if failover occurs while the SDK process is paused, upon resuming, the SDK must process all
+   updates on all sockets. This process takes unnecessary time, unlike when the SDK polls every 2.5 seconds.
+
+Since version 7.6, the KV engine introduces the HELLO flag `ClustermapChangeNotificationBrief` (`0x1f`). This flag
+instructs the KV engine to exclude the cluster configuration content from the notification. In this case, the data type
+will be `RAW` (`0x00`). Below is the typical structure of the notification when the brief mode is enabled:
+
+
+      Byte/     0       |       1       |       2       |       3       |
+         /              |               |               |               |
+        |0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
+        +---------------+---------------+---------------+---------------+
+       0| 0x82          | 0x01          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+       4| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+       8| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      12| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      16| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      20| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      24| 0x42          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      28| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      32| 0x00          | 0x00          | 0x00          | 0x00          |
+        +---------------+---------------+---------------+---------------+
+      36| 0x08          | 0x07          | 0x06          | 0x05          |
+        +---------------+---------------+---------------+---------------+
+      40| 0x04          | 0x03          | 0x02          | 0x01          |
+        +---------------+---------------+---------------+---------------+
+    CLUSTERMAP_CHANGE_NOTIFICATION command
+    Field        (offset) (value)
+    Magic        (0)    : 0x82 (server request, kv_engine -> SDK)
+    Opcode       (1)    : 0x01
+    Key length   (2,3)  : 0x0000
+    Extra length (4)    : 0x10 (two int64_t fields in extras)
+    Data type    (5)    : 0x00 (RAW)
+    Vbucket      (6,7)  : 0x0000
+    Total body   (8-11) : 0x00000010 (16 bytes)
+    Opaque       (12-15): 0x00000000
+    CAS          (16-23): 0x0000000000000000
+    Epoch        (24-31): 0x0000000000000042 (66 in base-10)
+    Revision     (32-39): 0x0102030405060708 (72623859790382856 in base-10)
+
+So note that magic is `ServerRequest` (`0x82`), that is enabled by `Duplex` (`0x0c`) HELLO flag. Also note that just
+like in regular cluster configuration notification, epoch and revision fields are sent as extras.
+
+Note that the magic value for this notification is `ServerRequest` (`0x82`), which is enabled by the `Duplex` (`0x0c`)
+HELLO flag. Additionally, similar to the regular cluster configuration notification, the epoch and revision fields are
+sent as extras.
+
+Once the brief cluster configuration notification is received, it is up to the SDK to decide whether to send a
+`GetClusterConfig` (`0xb5`) request to retrieve the actual configuration body.
+
+In essence, the `ClustermapChangeNotificationBrief` feature only saves network traffic. If
+`DedupeNotMyVbucketClustermap` is not enabled, the number of notifications will be the same as before. However, this
+feature can still be used as a building block to implement a debouncing mechanism. When properly configured, it can help
+reduce the number of requests. Further details on this topic will be covered in the "Library Changes" section.
+
+## Library Changes
+
+### Configuration Push
+
+The previously mentioned `ClustermapChangeNotificationBrief` feature enables the SDK to subscribe all connections for
+configuration updates. These notifications are lightweight and can be deduplicated by the server when the
+`DedupeNotMyVbucketClustermap` option is negotiated.
+
+#### Mixed Clusters
+
+In clusters where there is a mix of nodes with older server versions, meaning that some nodes do not acknowledge
+`ClustermapChangeNotificationBrief`, the respective connection should notify the configuration monitor about its lack of
+support for configuration pushes from the server. As a result, the monitor should utilize the old polling mechanism for
+this particular node instead.
+
+### Enhancements in Handling the `NotMyVbucket` Status
+
+Combination of `DedupeNotMyVbucketClustermap` and `ClustermapChangeNotificationBrief` allows to save traffic by not
+sending configuration, if SDK already seen the same revision, and also sends only pair of `Epoch`/`Revision`. So it is
+up to SDK to initiate configuration update once the non-empty payload returned along with `NotMyVbucket` status code.
+
+Several modifications are required in the SDK:
+1. The retry orchestrator should be able to retry an operation based on configuration updates rather than the timer signal.
+2. The configuration monitor should have the ability to throttle configuration requests due to the following reasons:
+   1. During rebalance, multiple operations may return a `NotMyVbucket` status, triggering a configuration refresh.
+   2. Since `ClustermapChangeNotificationBrief` will cause all connections to subscribe to updates and receive them, it is
+      necessary to account for potential high volumes of updates.
+
+Below is a diagram that illustrates an example of the SDK workflow, where the GET request is waiting for the arrival of
+a new configuration.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    conn_1->>+kv_node_1: get("foo", vb=115)
+    kv_node_1->>-conn_1: NotMyVbucket(epoch=1, rev=11)
+    conn_1-->>+retry_orchestrator: pending(get, "foo", epoch=1, rev=11)
+    retry_orchestrator-->retry_orchestrator: put operation to wating queue
+    conn_1-->>+config_monitor: refresh configuration
+    config_monitor-->config_monitor: wait to throttle config requests
+    config_monitor->>+conn_2: get_config()
+    conn_2->>+kv_node_2: get_config()
+    kv_node_2->>-conn_2: configuration(epoch=1, rev=11)
+    conn_2->>-config_monitor: apply new configuration
+    config_monitor->>retry_orchestrator: purge waiting queue(epoch=1, rev=11)
+    retry_orchestrator->>conn_1: retry get("foo")
+    conn_1->>+kv_node_2: get("foo", vb=115)
+    kv_node_2->>-conn_1: Success()
+```
+
+# Language Specifics
+
+## Feature Checklist
+
+1. `GetClusterConfigWithKnownVersion` (`0x1d`). The SDK should always supply current configuration version if the
+   connection has acknowledged feature flag.
+
+2. `DedupeNotMyVbucketClustermap` (`0x1e`). The SDK should be ready that the KV engine will not repeat configuration
+   payload if it already been sent to the socket by any means (`NotMyVbucket` status, `ClustermapChangeNotification`,
+   `GetClusterConfig`).
+
+3. Out-of-Order Execution. `Duplex` (`0x0c`) feature should be always negotiated in HELLO.
+
+4. `ClustermapChangeNotificationBrief` (`0x1f`). The SDK should always subscribe for configuration notifications, if the
+   server supports it, and fallback to polling if it does not.
+
+5. SDK should not emit configuration refresh request if there is one already in-flight. This should be independent of
+   the source of the signal, as it might come from all the nodes during rebalance when the configuration push is
+   enabled, or from `NotMyVbucket` responses.
+
+6. [OPTIONAL] `SnappyEverywhere` (`0x13`). The SDK should be ready that KV engine might send Snappy-compressed payload with any
+   of the response types (including push notifications). Check datatype `SNAPPY` (`0x02`).
+
+# Open Questions
+
+1. Behaviour in mixed clusters. Upgrade, when new nodes can push config, while old nodes cannot. Downgrade, when new
+   nodes cannot push configuration (should we even consider downgrade?).
+
+2. TBD
+
+3. TBD
+
+# Revisions
+
+* Revision #1 (2023-XX-YY; Sergey Avseyev)
+    * Completed initial draft.
+
+# Signoff
+
+| Language    | Team Member    | Signoff Date | Revision |
+|-------------|----------------|--------------|----------|
+| .NET        | Jeffry Morris  |              |          |
+| C/C++       | Sergey Avseyev |              |          |
+| Go          | Charles Dixon  |              |          |
+| Java/Kotlin | David Nault    |              |          |
+| Node.js     | Jared Casey    |              |          |
+| PHP         | Sergey Avseyev |              |          |
+| Python      | Jared Casey    |              |          |
+| Ruby        | Sergey Avseyev |              |          |
+| Scala       | Graham Pople   |              |          |
+
+[kv-unordered-execution]: https://github.com/couchbase/kv_engine/blob/master/docs/UnorderedExecution.md
+[kv-duplex]: https://github.com/couchbase/kv_engine/blob/master/docs/Duplex.md
+[rfc-0005]: rfc/0005-vbucket-retries.md
+[rfc-0024]: rfc/0024-fast-failover.md
