@@ -103,6 +103,14 @@ QueryResult Query(string statement, [QueryOptions options]);
     * Specifies that the query engine should preserve expiration values set on any documents modified by this query.
     * Sent within the JSON Payload as `preserve_expiry` as a JSON boolean
     * Should be added at API stability level of uncommitted.
+  * useReplica(bool) = undefined
+    * Specifies that the query engine should use replica nodes for kv fetches if the active node is down.
+    * Sent within the JSON payload as `use_replica` as the JSON string `"on"` or `"off"`, only if set by the user.
+    * If the SDK does not have the ability to differentiate between not set and `false` then a different type should be used instead, suggested:
+      * `enum QueryUseReplicaLevel { ON, OFF }` 
+    * When `useReplica` is set by the user the SDK should check the `clusterCapabilities` to ensure that there is a `n1ql` field containing a `readFromReplica` entry.
+      * If this is not present then fail with a FeatureNotAvailableException.
+    * If the query service does read from a replica then it will populate an entry in the `warning` field in the response payload.
 
 
 **Returns:**
@@ -125,6 +133,7 @@ A `QueryResult` that maps the result of the N1QL query to an object.
   * QueryIndexException (#202)
   * PreparedStatementException (#203)
   * ParsingFailedException (#8)
+  * FeatureNotAvailableException (#15)
 
 ## QueryProfile
 
@@ -247,19 +256,22 @@ class QueryWarning {
   * Moved RFC to ACCEPTED state.
 * January 5, 2022
   * Added preserveExpiry to QueryOptions.
+* June 21, 2023 - Revision #6 (by Charles Dixon)
+  * Added useReplica to QueryOptions.
 
 
 # Signoff
 
-| Language   | Team Member         | Signoff Date    | Revision |
-|------------|---------------------|-----------------|----------|
-| Node.js    | Brett Lawson        | Jan 14, 2020    | #5       |
-| Go         | Charles Dixon       | April 22, 2020  | #5       |
-| Connectors | David Nault         | April 29, 2020  | #5       |
-| PHP        | Sergey Avseyev      | April 22, 2020  | #5       |
-| Python     | Ellis Breen         | April 29, 2020  | #5       |
-| Scala      | Graham Pople        | Oct 18, 2019    | #5       |
-| .NET       | Jeffry Morris       | April 22, 2020  | #5       |
-| Java       | Michael Nitschinger | Jan 3, 2020     | #5       |
-| C          | Sergey Avseyev      | April 22, 2020  | #5       |
-| Ruby       | Sergey Avseyev      | April 22, 2020  | #5       |
+| Language   | Team Member    | Signoff Date  | Revision |
+|------------|----------------|---------------|----------|
+| Node.js    | Jared Casey    | July 19, 2023 | #6       |
+| Go         | Charles Dixon  | July 6, 2023  | #6       |
+| Connectors | David Nault    | July 6, 2023  | #6       |
+| PHP        | Sergey Avseyev | July 6, 2023  | #6       |
+| Python     | Jared Casey    | July 19, 2023 | #6       |
+| Scala      | Graham Pople   | July 6, 2023  | #6       |
+| .NET       | Jeffry Morris  | July 21, 2023 | #6       |
+| Java       | David Nault    | July 6, 2023  | #6       |
+| Kotlin     | David Nault    | July 6, 2023  | #6       |
+| C          | Sergey Avseyev | July 6, 2023  | #6       |
+| Ruby       | Sergey Avseyev | July 6, 2023  | #6       |
