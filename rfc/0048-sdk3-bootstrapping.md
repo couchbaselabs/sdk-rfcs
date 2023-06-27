@@ -6,11 +6,11 @@
 - Owner: Brett Lawson \<brett@couchbase.com\>
 - Current Status: ACCEPTED
 - Relates To
-  - SDK-RFC#7 (Cluster Level Authentication)
-  - SDK-RFC#16 (RBAC)
-  - SDK-RFC#24 (Fast-Failover)
-  - SDK-RFC#35 (Client Connection IDs)
-  - SDK-RFC#47 (Unified User Agent)
+  - [SDK-RFC#7 (Cluster Level Authentication)][sdk-rfc-0007]
+  - [SDK-RFC#16 (RBAC)][sdk-rfc-0016]
+  - [SDK-RFC#24 (Fast-Failover)][sdk-rfc-0024]
+  - [SDK-RFC#35 (Client Connection IDs)][sdk-rfc-0035]
+  - [SDK-RFC#47 (Unified User Agent)][sdk-rfc-0047]
 - [Original Google Drive Doc](https://docs.google.com/document/d/1SUSBM9XoTnpaeew0bq4ABmgISc76fjzrY2vapZ10XD4)
 
 # Motivation
@@ -32,7 +32,7 @@ Individual memcached connections are described as being 'connected' only once th
 All memcached connections should first establish an appropriate network connection to the target node via TCP.  Once the connection is established, the client must perform a sequence of commands to initialize the connection.  This sequence must be performed in the order given in order to allow correct behaviour.  This sequence MUST be dispatched in a single batch (except in the case of SASL_CONTINUE) without waiting for responses.  The entire batch of initialization commands will be handled in sequence upon receiving responses, as described further below in this section.
 
 - **HELLO**
-  A HELLO operation must be dispatched to the node with a list of requested features along with a client identifier and connection UUID as per SDK-RFC#35[Client Connection IDs] and SDK-RFC#47[Unified User Agent].
+  A HELLO operation must be dispatched to the node with a list of requested features along with a client identifier and connection UUID as per [SDK-RFC#35 Client Connection IDs][sdk-rfc-0035] and [SDK-RFC#47 Unified User Agent][sdk-rfc-0047].
 
 - **GET_ERROR_MAP**
   A GET_ERROR_MAP operation must be sent.  This error map must be used by the client to decode errors received from this particular connection. (note that error maps do not cross between connections, and each connection must fetch their own error map).
@@ -65,7 +65,7 @@ Once the above batch of commands has been dispatched to the server to initialize
 - **GET_ERROR_MAP**
 
   - On success, update the connections internal error mapping and proceed with further initialization response processing.
-  - On any error, the error map can be assumed to be blank, and all existing client defaults apply (SDK default error handling is discussed in SDK-RFC#13[KV Error Map]).  Proceed with further initialization response processing.
+  - On any error, the error map can be assumed to be blank, and all existing client defaults apply (SDK default error handling is discussed in [SDK-RFC#13 KV Error Map][sdk-rfc-0013]).  Proceed with further initialization response processing.
 
 - **SASL_LIST_MECHS**
 
@@ -96,7 +96,7 @@ Once the above batch of commands has been dispatched to the server to initialize
 
 ### Cluster Connection (Bootstrapping) Sequence
 
-Upon receiving a request from an application to establish a cluster connection, the client must parse the bootstrap list provided by the user according to SDK-RFC#11[Connection Strings].  This will produce a list of possible nodes to contact as a pair of hostname/port lists (the first being the memcached hostname/port's, the second being the http hostname/port's).  Once a list of hosts to contact has been established, the client must iterate through the list of memcached addresses from beginning until end, attempting to connect and fetch a configuration from each node until the entire list is iterated, or a node which explicitly does not support cluster-level configurations is encountered.  The SDK MUST perform these connections sequentially and not in parallel, and SHOULD perform this in a consistently random order (the SDK should pre-shuffle the list, and then use the pre-shuffled order consistently).  Depending on the results of this initial connection attempt, the client behaviour should branch based on the following:
+Upon receiving a request from an application to establish a cluster connection, the client must parse the bootstrap list provided by the user according to [SDK-RFC#11 Connection Strings][sdk-rfc-0011].  This will produce a list of possible nodes to contact as a pair of hostname/port lists (the first being the memcached hostname/port's, the second being the http hostname/port's).  Once a list of hosts to contact has been established, the client must iterate through the list of memcached addresses from beginning until end, attempting to connect and fetch a configuration from each node until the entire list is iterated, or a node which explicitly does not support cluster-level configurations is encountered.  The SDK MUST perform these connections sequentially and not in parallel, and SHOULD perform this in a consistently random order (the SDK should pre-shuffle the list, and then use the pre-shuffled order consistently).  Depending on the results of this initial connection attempt, the client behaviour should branch based on the following:
 
 - At least one node successfully connected and retrieved a cluster level configuration:
 
@@ -111,7 +111,7 @@ Upon receiving a request from an application to establish a cluster connection, 
 
 Once a cluster-level configuration has been successfully retrieved from the cluster, the configuration should be stored to allow the client to perform cluster-level queries and management operations.  The configuration should also be used to establish connections to the remaining nodes from the cluster (such that there is exactly 1 established connection to each node in the cluster).
 
-In addition to establishing further connections to the cluster, the client should begin refreshing the configuration periodically (typically 2.5s) from the cluster in round-robin fashion using any connected memcached connections as per SDK-RFC#24[Fast Failover] until the cluster is closed or a bucket is opened (cluster configuration switches to being derived from bucket configurations at that point, as described in the section named 'Bucket Connection Sequence' in this document).
+In addition to establishing further connections to the cluster, the client should begin refreshing the configuration periodically (typically 2.5s) from the cluster in round-robin fashion using any connected memcached connections as per [SDK-RFC#24 Fast Failover][sdk-rfc-0024] until the cluster is closed or a bucket is opened (cluster configuration switches to being derived from bucket configurations at that point, as described in the section named 'Bucket Connection Sequence' in this document).
 
 ### HTTP Fallback
 
@@ -236,3 +236,10 @@ class PasswordAuthenticator {
 | Java       | Michael Nitschinger | 2020-04-16   | 3        |
 | C          | Sergey Avseyev      | 2020-04-22   | 3        |
 | Ruby       | Sergey Avseyev      | 2020-04-22   | 3        |
+
+[sdk-rfc-0007]: /rfc/0007-cluster_level_auth.md
+[sdk-rfc-0011]: /rfc/0011-connection-string.md
+[sdk-rfc-0016]: /rfc/0016-rbac.md
+[sdk-rfc-0024]: /rfc/0024-fast-failover.md
+[sdk-rfc-0035]: /rfc/0035-rto.md
+[sdk-rfc-0047]: https://docs.google.com/document/d/1B4QM9UO6kz2yjLrBqLjSgArUeM1DvzKnakC_e8KfrmY/edit
