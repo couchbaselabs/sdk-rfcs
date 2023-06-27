@@ -289,9 +289,9 @@ sequenceDiagram
 4. `ClustermapChangeNotificationBrief` (`0x1f`). The SDK should always subscribe for configuration notifications, if the
    server supports it, and fallback to polling if it does not.
 
-5. SDK should not emit configuration refresh request if there is one already in-flight. This should be independent of
-   the source of the signal, as it might come from all the nodes during rebalance when the configuration push is
-   enabled, or from `NotMyVbucket` responses.
+5. SDK should track which revision was used when last `GET_CLUSTER_CONFIG` was sent. So that if new request comes with
+   the same revision or older, it should be ignored. This should be independent of the source of the signal, as it might
+   come from all the nodes during rebalance when the configuration push is enabled, or from `NotMyVbucket` responses.
 
 6. [OPTIONAL] `SnappyEverywhere` (`0x13`). The SDK should be ready that KV engine might send Snappy-compressed payload with any
    of the response types (including push notifications). Check datatype `SNAPPY` (`0x02`).
