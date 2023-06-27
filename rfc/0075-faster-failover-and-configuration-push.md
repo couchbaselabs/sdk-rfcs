@@ -257,20 +257,20 @@ a new configuration.
 ```mermaid
 sequenceDiagram
     autonumber
-    conn_1->>+kv_node_1: get("foo", vb=115)
-    kv_node_1->>-conn_1: NotMyVbucket(epoch=1, rev=11)
-    conn_1-->>+retry_orchestrator: pending(get, "foo", epoch=1, rev=11)
-    retry_orchestrator-->retry_orchestrator: put operation to wating queue
-    conn_1-->>+config_monitor: refresh configuration
-    config_monitor-->config_monitor: wait to throttle config requests
-    config_monitor->>+conn_2: get_config()
-    conn_2->>+kv_node_2: get_config()
-    kv_node_2->>-conn_2: configuration(epoch=1, rev=11)
-    conn_2->>-config_monitor: apply new configuration
-    config_monitor->>retry_orchestrator: purge waiting queue(epoch=1, rev=11)
-    retry_orchestrator->>conn_1: retry get("foo")
-    conn_1->>+kv_node_2: get("foo", vb=115)
-    kv_node_2->>-conn_1: Success()
+                conn_1   ->>+  kv_node_1:           get("foo", vb=115)
+             kv_node_1   ->>-  conn_1:              NotMyVbucket(epoch=1, rev=11)
+                conn_1  -->>+  retry_orchestrator:  pending(get, "foo", epoch=1, rev=11)
+    retry_orchestrator  -->    retry_orchestrator:  put operation to wating queue
+                conn_1  -->>+  config_monitor:      refresh configuration
+        config_monitor  -->    config_monitor:      wait to throttle config requests
+        config_monitor   ->>+  conn_2:              get_config()
+                conn_2   ->>+  kv_node_2:           get_config()
+             kv_node_2   ->>-  conn_2:              configuration(epoch=1, rev=11)
+                conn_2   ->>-  config_monitor:      apply new configuration
+        config_monitor   ->>   retry_orchestrator:  purge waiting queue(epoch=1, rev=11)
+    retry_orchestrator   ->>   conn_1:              retry get("foo")
+                conn_1   ->>+  kv_node_2:           get("foo", vb=115)
+             kv_node_2   ->>-  conn_1:              Success()
 ```
 
 # Language Specifics
@@ -289,8 +289,9 @@ sequenceDiagram
 4. `ClustermapChangeNotificationBrief` (`0x1f`). The SDK should always subscribe for configuration notifications, if the
    server supports it, and fallback to polling if it does not.
 
-5. SDK should track which revision was used when last `GET_CLUSTER_CONFIG` was sent. So that if new request comes with
-   the same revision or older, it should be ignored. This should be independent of the source of the signal, as it might
+5. SDK-side deduplication.
+   SDK should track which revision was used when last `GET_CLUSTER_CONFIG` was sent. So that if new request comes with
+   the same revision or older, it should be **ignored**. This should be independent of the source of the signal, as it might
    come from all the nodes during rebalance when the configuration push is enabled, or from `NotMyVbucket` responses.
 
 6. [OPTIONAL] `SnappyEverywhere` (`0x13`). The SDK should be ready that KV engine might send Snappy-compressed payload with any
