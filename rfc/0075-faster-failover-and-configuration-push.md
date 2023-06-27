@@ -109,9 +109,14 @@ The KV engine updates the pushed configuration version in the following cases:
 * Configuration sent to the SDK in response to a `GetClusterConfig` (`0xb5`) request.
 * Configuration pushed to the SDK that enabled the HELLO flag `ClustermapChangeNotification` (`0x0d`).
 
-Note, that `DedupeNotMyVbucketClustermap` affects `ClustermapChangeNotification` and `ClustermapChangeNotificationBrief`
+NOTE: `DedupeNotMyVbucketClustermap` affects `ClustermapChangeNotification` and `ClustermapChangeNotificationBrief`
 features, that described below. In other words, if deduplication enabled, the cluster configuration will be announce for
 the socket connection only once.
+
+NOTE: KV engine does not inspect the body of the configuration, it only looks at `epoch`/`revision` pair to detect
+duplicates (decide if the SDK seen the update). It means, that SDK still might receive updates that do not change
+VBucket map or topology (number, order or names of the nodes). It is up to the SDK to decide if the configuration
+affects the sockets or pipeline configuration, which must be already implemented for older generation of the servers.
 
 ### Enforcing Snappy Compression for Cluster Configuration Payloads
 
