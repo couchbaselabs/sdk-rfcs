@@ -225,9 +225,16 @@ reduce the number of requests. Further details on this topic will be covered in 
 
 The previously mentioned `ClustermapChangeNotificationBrief` feature enables the SDK to subscribe all connections for
 configuration updates. These notifications are lightweight and can be deduplicated by the server when the
-`DedupeNotMyVbucketClustermap` option is negotiated. When the SDK connection receives `CLUSTERMAP_CHANGE_NOTIFICATION`
-(`0x01`) packet, the SDK must send `GET_CLUSTER_CONFIG` (`0xb5`) to the same socket to retrieve the actual
-configuration.
+`DedupeNotMyVbucketClustermap` option is negotiated.
+
+It is not guaranteed that the configuration will be immediately available on the all nodes of the cluster once one of
+the node sends `CLUSTERMAP_CHANGE_NOTIFICATION` request to SDK. To workaround this issue, the SDK should remeber
+`epoch`/`revision` pair from notification payload as "recently announced" version, and ensure that the configuration
+monitor will continue attempts to fetch configuration until the received body will have version that is not older than
+"recently announced".
+
+As an optional optimization, the SDK might perform attempts to retrieve configuration starting from the node that
+pushed configuration notification. Although it might not be possible to do easily in all SDKs.
 
 #### Mixed Clusters
 
@@ -235,6 +242,10 @@ In clusters where there is a mix of nodes with older server versions, meaning th
 `ClustermapChangeNotificationBrief`, the respective connection should notify the configuration monitor about its lack of
 support for configuration pushes from the server. As a result, the monitor should utilize the old polling mechanism for
 this particular node instead.
+
+In other words, the configuration monitor should continue polling only if there are nodes, that do not support
+`ClustermapChangeNotificationBrief`, otherwise configuration monitor issue `GET_CLUSTER_CONFIG` request only when
+notification arrives.
 
 ### Bootstrap Changes
 
@@ -325,12 +336,7 @@ sequenceDiagram
 
 # Open Questions
 
-1. Behaviour in mixed clusters. Upgrade, when new nodes can push config, while old nodes cannot. Downgrade, when new
-   nodes cannot push configuration (should we even consider downgrade?).
-
-2. TBD
-
-3. TBD
+1. TBD
 
 # Revisions
 
