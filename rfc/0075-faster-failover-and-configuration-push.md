@@ -122,6 +122,9 @@ The KV engine introduces a new HELLO flag called `SnappyEverywhere` with a value
 negotiated, the node will always use the compressed version of the cluster configuration and data type flags will be set
 to `JSON | SNAPPY` (`0x03`).
 
+Note, that the meaning of the flag `SnappyEverywhere` is that SDK expects and properly handles compression for **ANY**
+operation during communication with the KV engine, this is why the flag called "SnappyEverywhere", and "SnappyConfig".
+
 ### `GetClusterConfig` and Out-of-Order Execution
 
 [https://issues.couchbase.com/browse/MB-56885]: #
@@ -214,7 +217,9 @@ reduce the number of requests. Further details on this topic will be covered in 
 
 The previously mentioned `ClustermapChangeNotificationBrief` feature enables the SDK to subscribe all connections for
 configuration updates. These notifications are lightweight and can be deduplicated by the server when the
-`DedupeNotMyVbucketClustermap` option is negotiated.
+`DedupeNotMyVbucketClustermap` option is negotiated. When the SDK connection receives `CLUSTERMAP_CHANGE_NOTIFICATION`
+(`0x01`) packet, the SDK must send `GET_CLUSTER_CONFIG` (`0xb5`) to the same socket to retrieve the actual
+configuration.
 
 #### Mixed Clusters
 
@@ -222,6 +227,13 @@ In clusters where there is a mix of nodes with older server versions, meaning th
 `ClustermapChangeNotificationBrief`, the respective connection should notify the configuration monitor about its lack of
 support for configuration pushes from the server. As a result, the monitor should utilize the old polling mechanism for
 this particular node instead.
+
+### Bootstrap Changes
+
+[RFC-0048][rfc-0048] describes bootstrap process for the SDK and the KV connections in particular. With Faster Failover
+mechanism implemented, the SDK should not start polling for the nodes, where the KV engine has acknowledged
+`ClustermapChangeNotificationBrief` feature. Such connections are expected to be notified by the KV engine when the
+configuration will be received.t
 
 ### Enhancements in Handling the `NotMyVbucket` Status
 
@@ -311,5 +323,6 @@ sequenceDiagram
 
 [kv-unordered-execution]: https://github.com/couchbase/kv_engine/blob/master/docs/UnorderedExecution.md
 [kv-duplex]: https://github.com/couchbase/kv_engine/blob/master/docs/Duplex.md
-[rfc-0005]: rfc/0005-vbucket-retries.md
-[rfc-0024]: rfc/0024-fast-failover.md
+[rfc-0005]: /rfc/0005-vbucket-retries.md
+[rfc-0024]: /rfc/0024-fast-failover.md
+[rfc-0048]: /rfc/0048-sdk3-bootstrapping.md
