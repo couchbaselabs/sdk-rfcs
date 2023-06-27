@@ -128,7 +128,7 @@ negotiated, the node will always use the compressed version of the cluster confi
 to `JSON | SNAPPY` (`0x03`).
 
 Note, that the meaning of the flag `SnappyEverywhere` is that SDK expects and properly handles compression for **ANY**
-operation during communication with the KV engine, this is why the flag called "SnappyEverywhere", and "SnappyConfig".
+operation during communication with the KV engine, this is why the flag called "SnappyEverywhere", and not "SnappyConfig".
 
 ### `GetClusterConfig` and Out-of-Order Execution
 
@@ -157,7 +157,7 @@ drawbacks, such as:
    updates on all sockets. This process takes unnecessary time, unlike when the SDK polls every 2.5 seconds.
 
 The SDK is not supposed to negotiate `ClustermapChangeNotification` (`0x0d`), and must use polling mechanism if brief
-version is not available.
+version is not available. `ClustermapChangeNotification` still available in post-7.6 versions.
 
 Since version 7.6, the KV engine introduces the HELLO flag `ClustermapChangeNotificationBrief` (`0x1f`). This flag
 instructs the KV engine to exclude the cluster configuration content from the notification. In this case, the data type
@@ -245,37 +245,59 @@ configuration will be received.t
 
 ### Enhancements in Handling the `NotMyVbucket` Status
 
-Combination of `DedupeNotMyVbucketClustermap` and `ClustermapChangeNotificationBrief` allows to save traffic by not
-sending configuration, if SDK already seen the same revision, and also sends only pair of `Epoch`/`Revision`. So it is
-up to SDK to initiate configuration update once the non-empty payload returned along with `NotMyVbucket` status code.
+`DedupeNotMyVbucketClustermap` feature allows to save traffic by not sending configuration, if SDK already seen the same
+revision. 
 
 Several modifications are required in the SDK:
-1. The retry orchestrator should be able to retry an operation based on configuration updates rather than the timer signal.
-2. The configuration monitor should have the ability to throttle configuration requests due to the following reasons:
-   1. During rebalance, multiple operations may return a `NotMyVbucket` status, triggering a configuration refresh.
-   2. Since `ClustermapChangeNotificationBrief` will cause all connections to subscribe to updates and receive them, it is
-      necessary to account for potential high volumes of updates.
+1. Response handler should tolerate empty response with `NotMyVbucket` status, as the KV engine assumes that the SDK
+   already seen configuration, and there is no newer configuration available. In this case SDK should just retry the
+   operation.
 
-Below is a diagram that illustrates an example of the SDK workflow, where the GET request is waiting for the arrival of
-a new configuration.
+2. If the reponse payload contains body, it contains current configuration, which should be sent to configuration
+   monitor (manager). The SDK should either synchronously apply configuration, create waiting queue for given
+   `epoch`/`revision` pair.
+   Once configuration applied, the SDK must check if new configuration routes the operation to new endpoint or new
+   vbucket on the old endpoint, and *immediately* dispatch operation to new endpoint (or same endpoint in case vbucketID
+   has changed). In any other case, the SDK should send operation to retry orchestrator.
+   ```mermaid
+   flowchart 
+       A(NotMyVbucket) --> B{Empty Body?}
+       B -->|No|C(Apply Configuration)
+       C --> D{Route Operation}
+       D -->|Endpoint Changed| E[Dispatch To<br>New Endpoint]
+       D -->|VBucketID Changed| F[Update VBucketID]
+       F --> G[Dispatch To<br>Same Endpoint]
+       D -->|Everything Else| H[Send To Retry<br>Orchestrator]
+       B -->|Yes|H[Send To Retry<br>Orchestrator]
+   ```
+
+
+Below is a diagram that illustrates an example of the SDK workflow
 
 ```mermaid
 sequenceDiagram
     autonumber
-                conn_1   ->>+  kv_node_1:           get("foo", vb=115)
-             kv_node_1   ->>-  conn_1:              NotMyVbucket(epoch=1, rev=11)
-                conn_1  -->>+  retry_orchestrator:  pending(get, "foo", epoch=1, rev=11)
-    retry_orchestrator  -->    retry_orchestrator:  put operation to wating queue
-                conn_1  -->>+  config_monitor:      refresh configuration
-        config_monitor  -->    config_monitor:      wait to throttle config requests
-        config_monitor   ->>+  conn_2:              get_config()
-                conn_2   ->>+  kv_node_2:           get_config()
-             kv_node_2   ->>-  conn_2:              configuration(epoch=1, rev=11)
-                conn_2   ->>-  config_monitor:      apply new configuration
-        config_monitor   ->>   retry_orchestrator:  purge waiting queue(epoch=1, rev=11)
-    retry_orchestrator   ->>   conn_1:              retry get("foo")
-                conn_1   ->>+  kv_node_2:           get("foo", vb=115)
-             kv_node_2   ->>-  conn_1:              Success()
+
+    participant conn_1
+    participant kv_node_1
+    participant retry_orchestrator
+    participant config_monitor
+
+            conn_1    ->>+  kv_node_1:       get("foo", vb=115)
+            kv_node_1 ->>-  conn_1:          NotMyVbucket(config={epoch=1, rev=11, ...})
+
+            conn_1   -->>+  config_monitor: propose confg={epoch=1, rev=11}
+
+
+    critical Check if config route operation to different node of vbucket
+
+        option "foo" still maps to kv_node_1
+            conn_1  -->>+  retry_orchestrator:  retry(get, "foo", reason=NotMyVbucket, epoch=1, rev=11)
+
+        option "foo" does not map to kv_node_1, or vbucket has changed 
+            conn_1    -->+  kv_node_1:       get("foo", vb=new_vbucket)
+            kv_node_1 ->>-  conn_1:          Success()
+    end
 ```
 
 # Language Specifics
@@ -294,10 +316,9 @@ sequenceDiagram
 4. `ClustermapChangeNotificationBrief` (`0x1f`). The SDK should always subscribe for configuration notifications, if the
    server supports it, and fallback to polling if it does not.
 
-5. SDK-side deduplication.
-   SDK should track which revision was used when last `GET_CLUSTER_CONFIG` was sent. So that if new request comes with
-   the same revision or older, it should be **ignored**. This should be independent of the source of the signal, as it might
-   come from all the nodes during rebalance when the configuration push is enabled, or from `NotMyVbucket` responses.
+5. SDK-side deduplication of push notifications. SDK should track which revision was used when last `GET_CLUSTER_CONFIG`
+   was sent. So that if new notification comes with the same revision or older, it should be **ignored**. It should also
+   ignore notifications which `epoch`/`revision` are not newer than effective configuration that is used by the SDK.
 
 6. [OPTIONAL] `SnappyEverywhere` (`0x13`). The SDK should be ready that KV engine might send Snappy-compressed payload with any
    of the response types (including push notifications). Check datatype `SNAPPY` (`0x02`).
