@@ -151,6 +151,9 @@ drawbacks, such as:
 2. In a Lambda scenario, if failover occurs while the SDK process is paused, upon resuming, the SDK must process all
    updates on all sockets. This process takes unnecessary time, unlike when the SDK polls every 2.5 seconds.
 
+The SDK is not supposed to negotiate `ClustermapChangeNotification` (`0x0d`), and must use polling mechanism if brief
+version is not available.
+
 Since version 7.6, the KV engine introduces the HELLO flag `ClustermapChangeNotificationBrief` (`0x1f`). This flag
 instructs the KV engine to exclude the cluster configuration content from the notification. In this case, the data type
 will be `RAW` (`0x00`). Below is the typical structure of the notification when the brief mode is enabled:
