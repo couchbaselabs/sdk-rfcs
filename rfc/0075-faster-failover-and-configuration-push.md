@@ -334,6 +334,11 @@ sequenceDiagram
 6. [OPTIONAL] `SnappyEverywhere` (`0x13`). The SDK should be ready that KV engine might send Snappy-compressed payload with any
    of the response types (including push notifications). Check datatype `SNAPPY` (`0x02`).
 
+7. SDK should be able to handle errors from HELLO. It is not critical right now, but in theory it might be happening in
+   future. For example, Sending `ClustermapChangeNotificationBrief` (`0x1f`) without `Duplex` (`0x0c`) will trigger
+   response with the status code `Einval` (`0x04`) and body `{"error":{"context":"ClustermapChangeNotificationBrief needs Duplex"}}`.
+   See [hello\_packet\_executor.cc][kv-engine-hello-error] for more details.
+
 # Open Questions
 
 1. TBD
@@ -362,3 +367,4 @@ sequenceDiagram
 [rfc-0005]: /rfc/0005-vbucket-retries.md
 [rfc-0024]: /rfc/0024-fast-failover.md
 [rfc-0048]: /rfc/0048-sdk3-bootstrapping.md
+[kv-engine-hello-error]: https://github.com/couchbase/kv_engine/blob/fc4e8f7a71609687302f3f54d2f5052f86105400/daemon/protocol/mcbp/hello_packet_executor.cc#L147-L152
