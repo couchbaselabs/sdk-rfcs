@@ -257,7 +257,8 @@ configuration will be received.t
 ### Enhancements in Handling the `NotMyVbucket` Status
 
 `DedupeNotMyVbucketClustermap` feature allows to save traffic by not sending configuration, if SDK already seen the same
-revision. 
+revision. The KV engine guarantees that Out-of-Order does not affect deduplication process, so the SDK always receives
+configuration attached if necessary, regardless the order of the operations.
 
 Several modifications are required in the SDK:
 1. Response handler should tolerate empty response with `NotMyVbucket` status, as the KV engine assumes that the SDK
