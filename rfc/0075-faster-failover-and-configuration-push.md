@@ -49,7 +49,7 @@ does not change the behavior of the server but allows determining if the node su
 `GetClusterConfig` (`0xb5`) operation. If the node acknowledges `GetClusterConfigWithKnownVersion`, then the SDK can use
 the new version of the command.
 
-Epoch and revision are signed 64-bit integers encoded in network (big-endian) order.
+Epoch and revision are signed 64-bit integers encoded in network (big-endian) order and should be encoded as extras.
 
 
       Byte/     0       |       1       |       2       |       3       |
@@ -83,7 +83,7 @@ Epoch and revision are signed 64-bit integers encoded in network (big-endian) or
     Magic        (0)    : 0x80 (client request, SDK -> kv_engine)
     Opcode       (1)    : 0xb5
     Key length   (2,3)  : 0x0000
-    Extra length (4)    : 0x00
+    Extra length (4)    : 0x10 (16 bytes, two int64_t fields in extras)
     Data type    (5)    : 0x00 (RAW)
     Vbucket      (6,7)  : 0x0000
     Total body   (8-11) : 0x00000010 (16 bytes)
@@ -195,7 +195,7 @@ will be `RAW` (`0x00`). Below is the typical structure of the notification when 
     Magic        (0)    : 0x82 (server request, kv_engine -> SDK)
     Opcode       (1)    : 0x01
     Key length   (2,3)  : 0x0000
-    Extra length (4)    : 0x10 (two int64_t fields in extras)
+    Extra length (4)    : 0x10 (16 bytes, two int64_t fields in extras)
     Data type    (5)    : 0x00 (RAW)
     Vbucket      (6,7)  : 0x0000
     Total body   (8-11) : 0x00000010 (16 bytes)
