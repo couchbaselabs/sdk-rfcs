@@ -323,7 +323,8 @@ sequenceDiagram
    payload if it already been sent to the socket by any means (`NotMyVbucket` status, `ClustermapChangeNotification`,
    `GetClusterConfig`).
 
-3. Out-of-Order Execution. `Duplex` (`0x0c`) feature should be always negotiated in HELLO.
+3. Bi-directional communication. `Duplex` (`0x0c`) feature should be always negotiated in HELLO. It is required for
+   `ClustermapChangeNotificationBrief`.
 
 4. `ClustermapChangeNotificationBrief` (`0x1f`). The SDK should always subscribe for configuration notifications, if the
    server supports it, and fallback to polling if it does not.
