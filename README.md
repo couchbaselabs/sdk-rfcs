@@ -43,6 +43,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 61    | [SDK3 Diagnostics](rfc/0061-sdk3-diagnostics.md)                       | Michael N.   | ACCEPTED |
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
+| 75    | [Faster Failover and Configuration Push](rfc/0075-faster-failover-and-configuration-push.md) | Sergey | ACCEPTED |
 
 ### Draft & Review RFCs
 
@@ -65,7 +66,6 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 72    | Queues And Topics [\[doc\]](https://docs.google.com/document/d/1x-wn--F1Qg6y342pBerLLfpWnAGud2HQRA0YpEVMkqU)  | Michael N. | DRAFT 
 | 73    | KV Range Scan [\[doc\]](https://docs.google.com/document/d/1ir4E9XRvVOncReuR_QgohyompgoIvnZ0De1ik0WkrYs) | David N. & Michael N. | DRAFT
 | 74    | Configuration Profiles [\[doc\]](https://docs.google.com/document/d/1LNCYgV2Eqymp3pGmA8WKPQOLSpcRyv0P7NpMYHVcUM0/) | Mike R. | DRAFT
-| 75    | [Faster Failover and Configuration Push](https://github.com/couchbaselabs/sdk-rfcs/pull/123) | Sergey | DRAFT |
 
 ### Identified RFCs
 

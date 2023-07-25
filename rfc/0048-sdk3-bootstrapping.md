@@ -113,6 +113,12 @@ Once a cluster-level configuration has been successfully retrieved from the clus
 
 In addition to establishing further connections to the cluster, the client should begin refreshing the configuration periodically (typically 2.5s) from the cluster in round-robin fashion using any connected memcached connections as per [SDK-RFC#24 Fast Failover][sdk-rfc-0024] until the cluster is closed or a bucket is opened (cluster configuration switches to being derived from bucket configurations at that point, as described in the section named 'Bucket Connection Sequence' in this document).
 
+[SDK-RFC#75 Faster Failover and Configuration Push][sdk-rfc-0075] describes new method of configuration delivery, when
+the KV engine announces updates using `CLUSTERMAP_CHANGE_NOTIFICATION` (`0x01`) operation. This method should be
+preferred if the HELLO feature `ClustermapChangeNotificationBrief` (`0x1f`) is acknowledged by the server. Such nodes
+should not be used for configuration polling. Although the SDK still might use polling mechanism for older nodes, that
+do not support push mechanism.
+
 ### HTTP Fallback
 
 During the CCCP phase of connecting, it is possible for the client to fall back to HTTP bootstrapping if the server or bucket type does not support CCCP.  In this case, the client should open a streaming bucket configuration connection to the server at `/pools/default/bs/$BUCKET_NAME`.  This will provide the client with a normal bucket configuration that can be used to perform bucket operations as well as infer the cluster configuration, as is done with a CCCP configuration.  In the case of a memcached bucket, the CCCP operation will fail and an HTTP fallback is expected to occur.  The client must destroy and refresh the HTTP streaming connection periodically in accordance with the configuration option, this is to ensure that dead connections are identified as soon as reasonable.
@@ -243,3 +249,4 @@ class PasswordAuthenticator {
 [sdk-rfc-0024]: /rfc/0024-fast-failover.md
 [sdk-rfc-0035]: /rfc/0035-rto.md
 [sdk-rfc-0047]: https://docs.google.com/document/d/1B4QM9UO6kz2yjLrBqLjSgArUeM1DvzKnakC_e8KfrmY/edit
+[sdk-rfc-0075]: /rfc/0075-faster-failover-and-configuration-push.md
