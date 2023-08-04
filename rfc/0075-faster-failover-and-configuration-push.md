@@ -58,9 +58,9 @@ Epoch and revision are signed 64-bit integers encoded in network (big-endian) or
         +---------------+---------------+---------------+---------------+
        0| 0x80          | 0xb5          | 0x00          | 0x00          |
         +---------------+---------------+---------------+---------------+
-       4| 0x00          | 0x00          | 0x00          | 0x00          |
+       4| 0x00          | 0x10          | 0x00          | 0x00          |
         +---------------+---------------+---------------+---------------+
-       8| 0x00          | 0x00          | 0x00          | 0x00          |
+       8| 0x00          | 0x00          | 0x00          | 0x10          |
         +---------------+---------------+---------------+---------------+
       12| 0xde          | 0xad          | 0xbe          | 0xef          |
         +---------------+---------------+---------------+---------------+
@@ -72,14 +72,12 @@ Epoch and revision are signed 64-bit integers encoded in network (big-endian) or
         +---------------+---------------+---------------+---------------+
       28| 0x00          | 0x00          | 0x00          | 0x00          |
         +---------------+---------------+---------------+---------------+
-      32| 0x00          | 0x00          | 0x00          | 0x00          |
+      32| 0x08          | 0x07          | 0x06          | 0x05          |
         +---------------+---------------+---------------+---------------+
-      36| 0x08          | 0x07          | 0x06          | 0x05          |
-        +---------------+---------------+---------------+---------------+
-      40| 0x04          | 0x03          | 0x02          | 0x01          |
+      36| 0x04          | 0x03          | 0x02          | 0x01          |
         +---------------+---------------+---------------+---------------+
     GET_CLUSTER_CONFIG command
-    Field        (offset) (value)
+    Field        (offset) (value, bytes swapped to host order)
     Magic        (0)    : 0x80 (client request, SDK -> kv_engine)
     Opcode       (1)    : 0xb5
     Key length   (2,3)  : 0x0000
@@ -170,9 +168,9 @@ will be `RAW` (`0x00`). Below is the typical structure of the notification when 
         +---------------+---------------+---------------+---------------+
        0| 0x82          | 0x01          | 0x00          | 0x00          |
         +---------------+---------------+---------------+---------------+
-       4| 0x00          | 0x00          | 0x00          | 0x00          |
+       4| 0x00          | 0x10          | 0x00          | 0x00          |
         +---------------+---------------+---------------+---------------+
-       8| 0x00          | 0x00          | 0x00          | 0x00          |
+       8| 0x00          | 0x00          | 0x00          | 0x10          |
         +---------------+---------------+---------------+---------------+
       12| 0x00          | 0x00          | 0x00          | 0x00          |
         +---------------+---------------+---------------+---------------+
@@ -184,14 +182,12 @@ will be `RAW` (`0x00`). Below is the typical structure of the notification when 
         +---------------+---------------+---------------+---------------+
       28| 0x00          | 0x00          | 0x00          | 0x00          |
         +---------------+---------------+---------------+---------------+
-      32| 0x00          | 0x00          | 0x00          | 0x00          |
+      32| 0x08          | 0x07          | 0x06          | 0x05          |
         +---------------+---------------+---------------+---------------+
-      36| 0x08          | 0x07          | 0x06          | 0x05          |
-        +---------------+---------------+---------------+---------------+
-      40| 0x04          | 0x03          | 0x02          | 0x01          |
+      36| 0x04          | 0x03          | 0x02          | 0x01          |
         +---------------+---------------+---------------+---------------+
     CLUSTERMAP_CHANGE_NOTIFICATION command
-    Field        (offset) (value)
+    Field        (offset) (value, bytes swapped to host order)
     Magic        (0)    : 0x82 (server request, kv_engine -> SDK)
     Opcode       (1)    : 0x01
     Key length   (2,3)  : 0x0000
@@ -265,14 +261,14 @@ Several modifications are required in the SDK:
    already seen configuration, and there is no newer configuration available. In this case SDK should just retry the
    operation.
 
-2. If the reponse payload contains body, it contains current configuration, which should be sent to configuration
+2. If the reponse payload has body, it contains current configuration, which should be sent to configuration
    monitor (manager). The SDK should either synchronously apply configuration, create waiting queue for given
    `epoch`/`revision` pair.
    Once configuration applied, the SDK must check if new configuration routes the operation to new endpoint or new
    vbucket on the old endpoint, and *immediately* dispatch operation to new endpoint (or same endpoint in case vbucketID
    has changed). In any other case, the SDK should send operation to retry orchestrator.
    ```mermaid
-   flowchart 
+   flowchart
        A(NotMyVbucket) --> B{Empty Body?}
        B -->|No|C(Apply Configuration)
        C --> D{Route Operation}
@@ -306,7 +302,7 @@ sequenceDiagram
         option "foo" still maps to kv_node_1
             conn_1  -->>+  retry_orchestrator:  retry(get, "foo", reason=NotMyVbucket, epoch=1, rev=11)
 
-        option "foo" does not map to kv_node_1, or vbucket has changed 
+        option "foo" does not map to kv_node_1, or vbucket has changed
             conn_1    -->+  kv_node_1:       get("foo", vb=new_vbucket)
             kv_node_1 ->>-  conn_1:          Success()
     end
@@ -340,7 +336,7 @@ sequenceDiagram
    details if it is possible. For example, Sending `ClustermapChangeNotificationBrief` (`0x1f`) without `Duplex`
    (`0x0c`) will trigger response with the status code `Einval` (`0x04`) and body
    `{"error":{"context":"ClustermapChangeNotificationBrief needs Duplex"}}`.
-   See [hello\_packet\_executor.cc][kv-engine-hello-error] for more details. 
+   See [hello\_packet\_executor.cc][kv-engine-hello-error] for more details.
 
 # Open Questions
 
