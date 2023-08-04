@@ -91,7 +91,7 @@ Epoch and revision are signed 64-bit integers encoded in network (big-endian) or
     Revision     (32-39): 0x0102030405060708 (72623859790382856 in base-10)
 
 If the node has a cluster configuration newer than what is specified in the example, the response will include the new
-configuration in the body with the data type set to `JSON` (`0x01`). Otherwise, the response will have an empty body
+configuration in the body with the `JSON` (`0x01`) bit set in the data type. Otherwise, the response will have an empty body
 with the data type `RAW` (`0x00`).
 
 ### Deduplicate Cluster Configuration for `NotMyVbucket` Responses
