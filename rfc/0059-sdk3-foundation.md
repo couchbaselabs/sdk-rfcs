@@ -722,7 +722,7 @@ The period of time an HTTP connection can be idle before it is forcefully discon
 - Type: `Duration`
 - Default: `1s`
 
-> Any time above 5s should log an INFO level warning indicating that the SDK may produce trivial warnings due to the time being set above the idle timeout of various services.
+> Any time above 4.5s should log an INFO level warning indicating that the SDK may produce trivial warnings due to the time being set above the idle timeout of various services.
 
 ## Logging and Error Handling
 
