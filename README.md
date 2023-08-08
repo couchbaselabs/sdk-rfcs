@@ -43,7 +43,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 61    | [SDK3 Diagnostics](rfc/0061-sdk3-diagnostics.md)                       | Michael N.   | ACCEPTED |
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
-| 76    | [KV Subdoc Replica Reads](rfc/0076-subdoc-replica-reads)               | Charles D.   | ACCEPTED |
+| 76    | [KV Subdoc Replica Reads](rfc/0076-subdoc-replica-reads.md)            | Charles D.   | ACCEPTED |
 
 ### Draft & Review RFCs
 
