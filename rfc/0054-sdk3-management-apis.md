@@ -2992,6 +2992,8 @@ public interface ICollectionManager{
 
     void CreateCollection(CollectionSpec collection, CreateCollectionOptions options);
 
+    void UpdateCollection(CollectionSpec collection, UpdateCollectionOptions options);
+
     void DropCollection(CollectionSpec collection, DropCollectionOptions options);
 
     void CreateScope(string scopeName, CreateScopeOptions options);
@@ -3068,7 +3070,47 @@ Nothing
 
 ### URI
 
-    POST http://localhost:8091/pools/default/buckets/<bucket>/collections/<scope_name> -d name=<collection_name> -d maxTTL=<maxExpiry>
+    POST http://localhost:8091/pools/default/buckets/<bucket>/collections/<scope_name> -d name=<collection_name> -d maxTTL=<maxExpiry> -d history=<history>
+
+## UpdateCollection
+
+Updates an existing collection.
+
+### Signature
+
+```
+void UpdateCollection(CollectionSpec collection, [options])
+```
+
+### Parameters
+
+* Required:
+
+  * `collection`: [`CollectionSpec`](#collectionspec) - specification of the collection.
+
+* Optional:
+
+  * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
+
+  * `maxExpiry` (`duration`) - Value for the max expiry of new documents created without an expiry. Also affects documents mutated with an expiry, by ensuring the document expiry is no farther in the future than the collection maxTTL.
+
+### Returns
+
+Nothing
+
+### Throws
+
+* `InvalidArgumentsException`
+
+* `CollectionNotFoundException`
+
+* `ScopeNotFoundException`
+
+* Any exceptions raised by the underlying platform
+
+### URI
+
+    PATCH http://localhost:8091/pools/default/buckets/<bucket>/collections/<scope_name>/<collection_name> -d maxTTL=<maxExpiry> -d history=<history>
 
 ## DropCollection
 
@@ -3569,6 +3611,18 @@ enum StorageBackend {
 
 * `StorageBackend` ([`StorageBackend`](#storagebackend)) - The storage type to use (note: Magma is EE only).
 
+* `HistoryRetentionCollectionDefault` (`bool`) - Whether to enable history retention on collections by default.
+  * URL query field: `historyRetentionCollectionDefault`
+  * If the SDK does not have the ability to differentiate between not set and `false` then a different type should be used instead, suggested:
+    * `enum HistoryRetentionCollectionDefaultSettings { ON, OFF }`
+
+* `HistoryRetentionBytes` (`int`) - The maximum size, in bytes, of the change history that is written to disk for all collections in this bucket.
+  * URL query field: `historyRetentionBytes`
+
+* `HistoryRetentionDuration` (`duration`) - The maximum number of seconds to be covered by the change history that is written to disk for all collections in this bucket.
+  * URL query field: `historyRetentionSeconds` sent as an int seconds value
+
+**Note**: History retention settings are **only** supported for Magma buckets, the server will ignore retention settings for other storage modes.
 ## ConflictResolutionType
 
 ```
@@ -3599,10 +3653,17 @@ interface CollectionSpec {
     String ScopeName();
 
     Duration MaxExpiry();
+    
+    Bool History();
 }
 ```
 
 `MaxExpiry` is the time in seconds for the TTL for new documents in the collection. Omit if not set.
+
+`History` is whether history retention override is enabled on this collection. Omit if not set - not set will default to bucket level setting.
+* On Create/Update this setting should be guarded by the bucket capability of `nonDedupedHistory`
+* If the bucket capability is not supported then a `FeatureNotAvailableException` must be raised.
+  * Suggested supplementary text: "history is unsupported by the server, magma storage engine must be used"
 
 
 ## ScopeSpec
@@ -3831,14 +3892,21 @@ interface ScopeSpec {
 
 * March 6th, 2023 - Revision #24 (by Graham Pople)
   * Adding `ScopeSearchIndexManager`.
+
+* August 9th, 2023 - Revision #25 (by Charles Dixon)
+  * Adding support for history retention settings added as a part of change data capture changes.
+    * See https://docs.google.com/document/d/141RekmGDP_KlkeFREBH9upW4zSqV0eSSgo5gSCb3jJA/edit#heading=h.8h0xyjtcgbiz for more information.
+  * Adding `History` to `CollectionSpec.
+  * Adding `HistoryRetentionCollectionDefault`, `HistoryRetentionBytes`, `HistoryRetentionSeconds` to `BucketSettings`.
+  * Adding `UpdateCollection` function.
   
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |
 |------------|---------------------|----------------|----------|
 | Node.js    | Brett Lawson        | April 16, 2020 | #9       |
-| Go         | Charles Dixon       | April 29, 2021 | #19      |
-| Connectors | David Nault         | April 29, 2020 | #9       |
+| Go         | Charles Dixon       | April 29, 2021 | #25      |
+| Connectors | David Nault         | 2023-08-21     | #25      |
 | PHP        | Sergey Avseyev      | April 22, 2020 | #9       |
 | Python     | Ellis Breen         | April 29, 2020 | #9       |
 | Scala      | Graham Pople        | April 30, 2020 | #9       |
