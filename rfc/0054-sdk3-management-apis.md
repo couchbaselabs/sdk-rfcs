@@ -444,7 +444,7 @@ No collection set:
 "CREATE INDEX `indexName` ON `bucketName`"
 ```
 
-Collection set: 
+Collection set:
 ```
 "CREATE INDEX `indexName` ON `bucketName`.`scopeName`.`collectionName`"
 ```
@@ -497,7 +497,7 @@ void CreatePrimaryIndex(string bucketName, [options])
   * `CollectionName` - the name of the collection to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
   * `ScopeName` - the name of the scope to restrict indexes to.  Now marked deprecated, as `collection.queryIndexes` should be used instead.
     * If either `CollectionName` or `ScopeName` are set then both *must* be set.
-    
+
 ### N1QL
 
 No collection set:
@@ -1564,7 +1564,7 @@ The implementation of `ScopeSearchIndexManager` is identical to `SearchIndexMana
 
 * `GetIndex`, `UpsertIndex`, `DropIndex`: use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}` with GET, PUT and DELETE respectively.
 * `GetAllIndexes`: use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index` with GET.
-* For the other operations `PauseIngest` etc., the rule is: where the global index endpoint is `/api/index/{indexName}/ingestControl/pause`, the scoped index endpoint is `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}/ingestControl/pause`. 
+* For the other operations `PauseIngest` etc., the rule is: where the global index endpoint is `/api/index/{indexName}/ingestControl/pause`, the scoped index endpoint is `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}/ingestControl/pause`.
 
 ### Error handling
 If the new endpoints are used on a server prior to 7.5, a 404 error will be returned.  
@@ -2198,7 +2198,7 @@ None
   * `Dataverse` (string) - the name of the dataverse to restrict links to.
   * `Name` (string) - the name of the link to fetch.
   * `LinkType` (AnalyticsLinkType) - the type of links to restrict returned links to.
-  
+
 Note: If `Name` is set then `Dataverse` must be set, otherwise an `InvalidArgumentsException` must be thrown.
 
 ### Returns
@@ -2219,10 +2219,10 @@ If `dataverse` is not set then:
 
 * If `dataverse` is set and contains a `/` then the name is url encoded to escape any `/` within the name and URI is:
   *  If `dataverse` is set and `name` is not:
-    * `GET http://localhost:8095/analytics/link/<dataverse>?type=<linktype>`
+  * `GET http://localhost:8095/analytics/link/<dataverse>?type=<linktype>`
   *  If `dataverse` is and `name` are both set:
-    * `GET http://localhost:8095/analytics/link/<dataverse>/<linkname>?type=<linktype>`
-  
+  * `GET http://localhost:8095/analytics/link/<dataverse>/<linkname>?type=<linktype>`
+
 * If `dataverse` does not contain a `/` then the `dataverse` and `name` are included within the querystring of the request (as `dataverse` and `name`)
   *  Only include `name` if `name` is set.
   * Uri is:
@@ -2725,7 +2725,7 @@ For backwards compatibility with Couchbase Server 6.0 and earlier, the "groups" 
 empty. Couchbase Server 6.5 treats the absent parameter the same as an explicit parameter with no value (removes any existing group
 associations, which is what we want in this case).
 
-For backwards compatibility with Couchbase Server 6.5 and earlier if a `Role` `Scope()` or `Collection()` properties are 
+For backwards compatibility with Couchbase Server 6.5 and earlier if a `Role` `Scope()` or `Collection()` properties are
 set to `"*"` then they should reset to an empty string.
 
 ## DropUser
@@ -2934,7 +2934,7 @@ Nothing
 
 Changes password for the currently authenticated user.
 
-API docs *must* state that ssage of this function will effectively invalidate the SDK instance and further requests 
+API docs *must* state that ssage of this function will effectively invalidate the SDK instance and further requests
 will fail due to authentication errors.
 After using this function the SDK must be reinitialized.
 
@@ -2986,15 +2986,13 @@ It is recommended to try to parse the first form and fallback to the second so t
 
 ```
 public interface ICollectionManager{
-    ScopeSpec GetScope(string scopeName, GetScopeOptions options);
-
     Iterable<ScopeSpec> GetAllScopes(GetAllScopesOptions options);
 
-    void CreateCollection(CollectionSpec collection, CreateCollectionOptions options);
+    void CreateCollection(String scopeName, String collectionName, CreateCollectionSettings settings, CreateCollectionOptions options);
 
-    void UpdateCollection(CollectionSpec collection, UpdateCollectionOptions options);
+    void UpdateCollection(String scopeName, String collectionName, UpdateCollectionSettings settings, UpdateCollectionOptions options);
 
-    void DropCollection(CollectionSpec collection, DropCollectionOptions options);
+    void DropCollection(String scopeName, String collectionName, DropCollectionOptions options);
 
     void CreateScope(string scopeName, CreateScopeOptions options);
 
@@ -3030,7 +3028,7 @@ Iterable collection of [`ScopeSpec`](#scopespec).
 
 ### URI
 
-    GET /pools/default/buckets/<bucket>/collections
+    GET /pools/default/buckets/<bucket>/scopes
 
 ## CreateCollection
 
@@ -3039,20 +3037,25 @@ Creates a new collection.
 ### Signature
 
 ```
-void CreateCollection(CollectionSpec collection, [options])
+void CreateCollection(string scopeName, string collectionName, CreateCollectionSettings settings, [options])
 ```
 
 ### Parameters
 
 * Required:
 
-  * `collection`: [`CollectionSpec`](#collectionspec) - specification of the collection.
+  * `scopeName`: (`string`) - name of the scope.
+
+  * `collectionName`: (`string`) - name of the collection.
+
+* Optional Param:
+
+  * `settings`: (`CreateCollectionSettings`) - settings to apply for the collection.
 
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
 
-  * `maxExpiry` (`duration`) - Value for the max expiry of new documents created without an expiry.
 
 ### Returns
 
@@ -3070,7 +3073,7 @@ Nothing
 
 ### URI
 
-    POST http://localhost:8091/pools/default/buckets/<bucket>/collections/<scope_name> -d name=<collection_name> -d maxTTL=<maxExpiry> -d history=<history>
+    POST http://localhost:8091/pools/default/buckets/<bucket>/scopes/<scope_name>/collections -d name=<collection_name> -d maxTTL=<maxExpiry> -d history=<history>
 
 ## UpdateCollection
 
@@ -3079,20 +3082,22 @@ Updates an existing collection.
 ### Signature
 
 ```
-void UpdateCollection(CollectionSpec collection, [options])
+void UpdateCollection(string scopeName, string collectionName, UpdateCollectionSettings settings, [options])
 ```
 
 ### Parameters
 
 * Required:
 
-  * `collection`: [`CollectionSpec`](#collectionspec) - specification of the collection.
+  * `scopeName`: (`string`) - name of the scope.
+
+  * `collectionName`: (`string`) - name of the collection.
+
+  * `settings`: (`UpdateCollectionSettings`) - settings to apply for the collection.
 
 * Optional:
 
   * `Timeout` or `timeoutMillis` (`int`/`duration`) - the time allowed for the operation to be terminated. This is controlled by the client.
-
-  * `maxExpiry` (`duration`) - Value for the max expiry of new documents created without an expiry. Also affects documents mutated with an expiry, by ensuring the document expiry is no farther in the future than the collection maxTTL.
 
 ### Returns
 
@@ -3110,7 +3115,7 @@ Nothing
 
 ### URI
 
-    PATCH http://localhost:8091/pools/default/buckets/<bucket>/collections/<scope_name>/<collection_name> -d maxTTL=<maxExpiry> -d history=<history>
+    PATCH http://localhost:8091/pools/default/buckets/<bucket>/scopes/<scope_name>/collections/<collection_name> -d maxTTL=<maxExpiry> -d history=<history>
 
 ## DropCollection
 
@@ -3119,14 +3124,16 @@ Removes a collection.
 ### Signature
 
 ```
-void DropCollection(CollectionSpec collection, [options])
+void dropCollection(string scopeName, string collectionName, [options])
 ```
 
 ### Parameters
 
 * Required:
 
-  * `collection`: [`CollectionSpec`](#collectionspec) - specification of the collection.
+  * `scopeName`: (`string`) - name of the scope.
+
+  * `collectionName`: (`string`) - name of the collection.
 
 * Optional:
 
@@ -3144,7 +3151,7 @@ Nothing
 
 ### URI
 
-    DELETE http://localhost:8091/pools/default/buckets/<bucket>/collections/<scope_name>/<collection_name>
+    DELETE http://localhost:8091/pools/default/buckets/<bucket>/scopes/<scope_name>/collections/<collection_name>
 
 ## CreateScope
 
@@ -3178,7 +3185,7 @@ Nothing
 
 ### URI
 
-    POST http://localhost:8091/pools/default/buckets/<bucket>/collections -d name=<scope_name>
+    POST http://localhost:8091/pools/default/buckets/<bucket>/scopes -d name=<scope_name>
 
 ## DropScope
 
@@ -3212,7 +3219,7 @@ Nothing
 
 ### URI
 
-DELETE http://localhost:8091/pools/default/buckets/<bucket>/collections/<scope_name>
+DELETE http://localhost:8091/pools/default/buckets/<bucket>/scopes/<scope_name>
 
 # Types
 
@@ -3422,10 +3429,10 @@ The `Validate()` implementation must verify that:
 The `LinkType()` implementation must return a value that corresponds to `"couchbase"`.
 
 On fetching a `CouchbaseRemoteAnalyticsLink`:
-  * The `hostname` property is present as `activeHostname`.
-  * The `password` property must be blanked out/left unset.
-  * The `clientKey` property must be blanked out/left unset.
-  * The `dataverse` property must be set by first checking the `dataverse` field in the response body and if empty falling back to the `scope` field.
+* The `hostname` property is present as `activeHostname`.
+* The `password` property must be blanked out/left unset.
+* The `clientKey` property must be blanked out/left unset.
+* The `dataverse` property must be set by first checking the `dataverse` field in the response body and if empty falling back to the `scope` field.
 
 ### CouchbaseAnalyticsEncryptionSettings
 
@@ -3616,13 +3623,15 @@ enum StorageBackend {
   * If the SDK does not have the ability to differentiate between not set and `false` then a different type should be used instead, suggested:
     * `enum HistoryRetentionCollectionDefaultSettings { ON, OFF }`
 
-* `HistoryRetentionBytes` (`int`) - The maximum size, in bytes, of the change history that is written to disk for all collections in this bucket.
+* `HistoryRetentionBytes` (`uint64`) - The maximum size, in bytes, of the change history that is written to disk for all collections in this bucket.
   * URL query field: `historyRetentionBytes`
+  * The type used for this value must support a maximum value of 18446744073709551615 (1.8Pib).
 
 * `HistoryRetentionDuration` (`duration`) - The maximum number of seconds to be covered by the change history that is written to disk for all collections in this bucket.
   * URL query field: `historyRetentionSeconds` sent as an int seconds value
 
 **Note**: History retention settings are **only** supported for Magma buckets, the server will ignore retention settings for other storage modes.
+
 ## ConflictResolutionType
 
 ```
@@ -3651,11 +3660,41 @@ interface CollectionSpec {
     String Name();
 
     String ScopeName();
-
+    
     Duration MaxExpiry();
     
     Bool History();
 }
+```
+
+`MaxExpiry` is the time in seconds for the TTL for new documents in the collection.
+
+`History` is whether history retention override is enabled on this collection.
+
+## CreateCollectionSettings
+
+```
+interface CreateCollectionSettings {
+    Duration MaxExpiry();
+    
+    Bool History();
+```
+
+`MaxExpiry` is the time in seconds for the TTL for new documents in the collection. Omit if not set.
+
+`History` is whether history retention override is enabled on this collection. Omit if not set - not set will default to bucket level setting.
+* Sent as value of "true" or "false".
+* On Create/Update this setting should be guarded by the bucket capability of `nonDedupedHistory`
+* If the bucket capability is not supported then a `FeatureNotAvailableException` must be raised.
+  * Suggested supplementary text: "History retention is not supported - note that both server 7.2+ and Magma storage engine must be used"
+
+## UpdateCollectionSettings
+
+```
+interface UpdateCollectionSettings {
+    Duration MaxExpiry();
+    
+    Bool History();
 ```
 
 `MaxExpiry` is the time in seconds for the TTL for new documents in the collection. Omit if not set.
@@ -3663,8 +3702,7 @@ interface CollectionSpec {
 `History` is whether history retention override is enabled on this collection. Omit if not set - not set will default to bucket level setting.
 * On Create/Update this setting should be guarded by the bucket capability of `nonDedupedHistory`
 * If the bucket capability is not supported then a `FeatureNotAvailableException` must be raised.
-  * Suggested supplementary text: "history is unsupported by the server, magma storage engine must be used"
-
+  * Suggested supplementary text: "History retention is not supported - note that both server 7.2+ and Magma storage engine must be used"
 
 ## ScopeSpec
 
@@ -3771,33 +3809,33 @@ interface ScopeSpec {
 
   * Collection Manager:
 
-     * Removed "scopeExists" and "collectionExists" methods.
+    * Removed "scopeExists" and "collectionExists" methods.
 
   * User Manager:
 
-     * RoleAndOrigins and RoleAndDescription MAY extend Role, at implementor's discretion.
+    * RoleAndOrigins and RoleAndDescription MAY extend Role, at implementor's discretion.
 
-     * Removed the version of UserAndMetadata.effectiveRoles() that returned Set<Role>.
+    * Removed the version of UserAndMetadata.effectiveRoles() that returned Set<Role>.
 
-     * Renamed UserAndMetadata.effectiveRolesAndOrigins() to just effectiveRoles().
+    * Renamed UserAndMetadata.effectiveRolesAndOrigins() to just effectiveRoles().
 
 * Mar 10, 2020 - Revision #7 (by Charles Dixon)
 
   * Collection Manager:
 
-     * Added "MaxTTL" to the CollectionSpec.
+    * Added "MaxTTL" to the CollectionSpec.
 
-     * Added how to send "MaxTTL" to the CreateCollection uri.
+    * Added how to send "MaxTTL" to the CreateCollection uri.
 
 * Mar 26, 2020 - Revision #8 (by Charles Dixon)
 
   * Collection Manager:
 
-     * Change "maxTTL" to "maxExpiry"
+    * Change "maxTTL" to "maxExpiry"
 
   * Bucket Manager:
 
-     * Deprecate maxTTL (int) and add maxExpiry (duration)
+    * Deprecate maxTTL (int) and add maxExpiry (duration)
 
 * Apr 16, 2020 - Revision #9 (by Brett Lawson)
 
@@ -3827,7 +3865,7 @@ interface ScopeSpec {
 * September 16, 2020 - Revision #11 (by Charles Dixon)
 
   * Changed the return value of Analytics `GetPendingMutations` from `map[string]int` to `map[string]map[string]int`.
-  
+
 * September 22, 2020 - Revision #12 (by Charles Dixon)
 
   * Add `Collection` and `Scope` to `Role`.
@@ -3851,9 +3889,9 @@ interface ScopeSpec {
     * Removed `Dataverse` links functions and from links objects.
     * Removed `GetLink` functions all together.
     * Added `name` to `GetAllLinksOptions`.
-  
+
 * May 17, 2021 - Revision #17 (by Charles Dixon)
-  
+
   * Rework Analytics Link management to once again support server 6.6
     * Updated all link and method parameters to refer to `dataverse` only.
     * Clarified behaviour to follow on parsing link response bodies.
@@ -3871,12 +3909,12 @@ interface ScopeSpec {
   * Rename `GetAllLinksOptions` to `GetLinksOptions`.
   * Add `Name` and `DataverseName` to `AnalyticsLink` interface.
   * Remove `linkName` option from `CreateDataset`.
-  
+
 * January 10, 2022 - Revision #20 (by Charles Dixon)
   * Add support for collections to query index management.
     * Add `CollectionName` and `ScopeName` to all query index management functions.
     * Add `CollectionName` and `ScopeName` to `QueryIndex`
-  
+
 * January 19, 2022 - Revision #21 (by Charles Dixon)
   * Reworked query for `GetAllIndexes` when only a bucket name is supplied.
   * Reworked `BuildDeferredIndexes` to use only a single query rather than first performing a `GetAllIndexes` internally.
@@ -3898,22 +3936,23 @@ interface ScopeSpec {
     * See https://docs.google.com/document/d/141RekmGDP_KlkeFREBH9upW4zSqV0eSSgo5gSCb3jJA/edit#heading=h.8h0xyjtcgbiz for more information.
   * Adding `History` to `CollectionSpec.
   * Adding `HistoryRetentionCollectionDefault`, `HistoryRetentionBytes`, `HistoryRetentionSeconds` to `BucketSettings`.
-  * Adding `UpdateCollection` function.
-  
+  * Adding `UpdateCollection` function and update `CollectionManager` interface.
+  * Adding `CreateCollectionSettings` and `UpdateCollectionSettings`.
+
 # Signoff
 
-| Language   | Team Member         | Signoff Date   | Revision |
-|------------|---------------------|----------------|----------|
-| Node.js    | Brett Lawson        | April 16, 2020 | #9       |
-| Go         | Charles Dixon       | April 29, 2021 | #25      |
-| Connectors | David Nault         | 2023-08-21     | #25      |
-| PHP        | Sergey Avseyev      | April 22, 2020 | #9       |
-| Python     | Ellis Breen         | April 29, 2020 | #9       |
-| Scala      | Graham Pople        | April 30, 2020 | #9       |
-| .NET       | Jeffry Morris       | April 22, 2020 | #9       |
-| Java       | Michael Nitschinger | April 16, 2020 | #9       |
-| C          | Sergey Avseyev      | April 22, 2020 | #9       |
-| Ruby       | Sergey Avseyev      | April 22, 2020 | #9       |
+| Language   | Team Member    | Signoff Date | Revision |
+|------------|----------------|--------------|----------|
+| Node.js    | Jared Casey    | 2023-08-31   | #25      |
+| Go         | Charles Dixon  | 2023-08-21   | #25      |
+| Connectors | David Nault    | 2023-08-21   | #25      |
+| PHP        | Sergey Avseyev | 2023-09-05   | #25      |
+| Python     | Jared Casey    | 2023-08-31   | #25      |
+| Scala      | Graham Pople   | 2023-08-21   | #25      |
+| .NET       | Jeffry Morris  | 2023-09-19   | #25      |
+| Java       | David Nault    | 2023-08-21   | #25      |
+| C          | Sergey Avseyev | 2023-09-05   | #25      |
+| Ruby       | Sergey Avseyev | 2023-09-05   | #25      |
 
 
 
