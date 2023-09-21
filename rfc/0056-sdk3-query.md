@@ -194,7 +194,7 @@ struct QueryMetaData {
     QueryStatus Status();
     Optional<JsonObject> Signature();
     List<QueryWarning> Warnings();
-    Optional<QueryMetrics> Metrics();
+    QueryMetrics Metrics();
     Optional<JsonObject> Profile();
 }
 ```
