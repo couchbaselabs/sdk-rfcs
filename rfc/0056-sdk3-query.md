@@ -192,12 +192,14 @@ struct QueryMetaData {
     String RequestId();
     String ClientContextId();
     QueryStatus Status();
-    Optional<JsonObject> Signature();
+    Optional<JsonValue> Signature();
     List<QueryWarning> Warnings();
     QueryMetrics Metrics();
     Optional<JsonObject> Profile();
 }
 ```
+
+NOTE: If present, the signature value returned by the server is usually a JSON Object or a JSON String, but the server may return any JSON type (Object, Array, String, Number, Boolean).
 
 Everything but the signature and the profile should always be present. Even when the Metrics are disabled in the options, a default implementation should be provided. The reasoning behind this is that it will be enabled 99% of the time and more and having every user to check for non-existence is more error prone.
 
@@ -258,6 +260,8 @@ class QueryWarning {
   * Added preserveExpiry to QueryOptions.
 * June 21, 2023 - Revision #6 (by Charles Dixon)
   * Added useReplica to QueryOptions.
+* Dec 11, 2023 - Revision #7 (by David Nault)
+  * Change type of QueryMetadata.signature() from JsonObject to JsonValue.
 
 
 # Signoff
