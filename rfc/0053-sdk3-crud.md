@@ -519,6 +519,7 @@ Throws
 
   - DocumentNotFoundException (#105)
   - DocumentExistsException (#101)
+  - CasMismatchException (#9)
   - RequestTimeoutException (#1)
   - SubdocException (#126)
   - CouchbaseException (#0)
