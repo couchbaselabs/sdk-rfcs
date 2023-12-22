@@ -657,14 +657,16 @@ Such a fundamental conceptual change necessitates a similarly fundamental change
 Let us name the concepts we are working with:
 
 * The top-level JSON request.  This is currently an unnamed concept in the SDKs - let us term it a `SearchRequest`.
-* The top-level "query" field, which is already named `SearchQuery` in the SDKs.
+* The top-level "query" field - the traditional FTS query - which is already named `SearchQuery` in the SDKs.
+Includes the query itself and any options that apply only to the FTS query.
 * The new top-level "knn" array, which we can call a `VectorSearch`.
 * Each member of the "knn" array, which we can call a `VectorQuery`.
-* Any options applicable to all forms of query (both the `SearchQuery` and the `VectorSearch`), which are in `SearchOptions`.
-* Any options applicable only to the `VectorSearch`, which will be `VectorOptions`.
+This can contain options applicable just to that vector query.
+* Any options applicable to all forms of query (both the `SearchQuery` and the `VectorSearch`), which are in `SearchOptions` (skip, limit, explain, highlight, fields, etc.).
+* Any options applicable only to the `VectorSearch`, which we can call `VectorSearchOptions`.
 
 So the user is performing a `SearchRequest` containing a `SearchQuery` and/or a `VectorSearch` and/or a `FutureSearchType`, optionally with some `SearchOptions` applying to all of those.  
-A `VectorSearch` comprises 1+ `VectorQuery`s and optionally some `VectorOptions`.
+A `VectorSearch` comprises 1+ `VectorQuery`s and optionally some `VectorSearchOptions`.
 
 Neither `VectorSearch` nor `VectorQuery` will extend the `SearchQuery` interface, which we will reserve for traditional FTS queries.
 
@@ -728,7 +730,7 @@ SearchRequest request = SearchRequest
         .vectorSearch(VectorSearch.create(List.of(
                 VectorQuery.create("vector_field", aVector).k(2).boost(0.3),
                 VectorQuery.create("vector_field", anotherVector).k(1).boost(0.7)),
-            VectorOptions.vectorOptions().knnOperator(KnnOperator.AND));
+            vectorSearchOptions().knnOperator(KnnOperator.AND));
 
 cluster.search("search_index_name", request);
 ```
@@ -736,14 +738,14 @@ cluster.search("search_index_name", request);
 ### VectorSearch
 `VectorSearch` creation is platform-idiomatic but should look something like this:
 
-`VectorSearch.create(List<VectorQuery> vectorQueries, [VectorOptions options])`
+`VectorSearch.create(List<VectorQuery> vectorQueries, [VectorSearchOptions options])`
 
 The first parameter needs to be mandatory.
 
-`VectorSearch.create(VectorQuery vectorQuery, [VectorOptions options])` can be added to make it easier to send a single `VectorQuery`.
+`VectorSearch.create(VectorQuery vectorQuery, [VectorSearchOptions options])` can be added to make it easier to send a single `VectorQuery`.
 This is left optional to better support SDKs without overloads.
 
-`VectorOptions` will currently support just one option:
+`VectorSearchOptions` will currently support just one option:
 
 * `knnOperator` (`KnnOperator`).  Will be sent in the top-level JSON payload as `knn_operator` (string) as either `"and"` or `"or"`.  If not set by the user, no value is sent.
 
