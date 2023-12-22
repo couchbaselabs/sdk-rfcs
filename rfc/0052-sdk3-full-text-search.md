@@ -569,6 +569,8 @@ JSON paths:
 ## Vector search
 This is a feature being added to Couchbase Server 7.6 in the FTS service.
 
+The feature will initially be released in a Private Preview, and all SDK additions related to it should be annotated with the platform equivalent of @Stability.Volatile as changes may well be required following user feedback. 
+
 References:
 * [Server design spec](https://docs.google.com/document/d/1Vx4PPcl2byy2F-lM6wRIUPLAsAFsVDusMj5nvrKA13g/edit#heading=h.9f1ja3elibc0) (the first page provides a good overview of the feature)
 * [PRD](https://docs.google.com/document/d/1zrNtgqLDNOFVYoyO5SOAD5Jtpkm43SMIKDc3yN1UbsM/edit#heading=h.f5uv7ep78x87)
@@ -584,7 +586,7 @@ An example of the query payload we need to be able to produce:
     "field": "city",
     "boost": 1.0
   },
-  "//": "The `knn` field is new and contains the vector search(es).",
+  "//": "The `knn` field is new and contains the vector search(es).  In this example two queries are being sent.",
   "knn": [
     {
       "//": "The `vector`, `field` and `k` fields are all mandatory.  In practice the `vector` field is very long.",
@@ -626,80 +628,124 @@ An example of the query payload we need to be able to produce:
 
 Important SDK considerations:
 
-* It continues to be mandatory to provide a `query` field containing a 'normal' FTS query.  E.g. it is not possible to perform a vector-only search, one with just a `knn` field and no `query`.
-  * (We believe: FTS PM to confirm.)
+* There is some uncertainty on whether it is mandatory to provide a `query` field containing a 'normal' FTS query.  This is being followed up with the FTS team.  As it makes sense to be able to perform solely a vector search, we will assume for now that will be the case.
 * The `knn` field can contain multiple vector queries.  It must always contain at least 1.
   * How they are combined is handled with a top-level `knn_operator` parameter.
 * Inside an individual vector query:
+  * It contains a single vector.  FAISS allows multiple vectors to be sent in one query and we are following up with FTS team if that may need to be exposed later.
   * The `field` parameter is essentially mandatory.  While FTS will not reject a query that does not contain it, it prevents that vector search from having any effect. 
   * The `k` parameter is mandatory.  The FTS team suggest 3 is a sensible default to send from the SDKs.
-* There are new FTS index definition fields for defining the vector index, but they are inside the `plan` top-level field.  So there is nothing extra required from the SDKs to support these, as we already simply turn the untyped `plan` parameters into JSON.
-* The SDK (and Couchbase), at least in this first phase, have nothing to do with generating the vectors - both those stored in the documents, and those used for queries.  The user will be responsible for generating these, for example using the OpenAI Embeddings API.
-* The feature works unchanged with both global and scoped FTS indexes.
+* There are new FTS index definition fields for defining the vector index, but they are inside the `plan` top-level field.  
+So there is nothing extra required from the SDKs to support these, as we already simply turn the untyped `plan` parameters into JSON.
+* The SDK (and Couchbase in general), at least in this first phase, have nothing to do with generating the vectors - both those stored in the documents, and those used for queries.
+The user will be responsible for generating these, for example using the OpenAI Embeddings API.
+* The feature works with both global and scoped FTS indexes.
 
-Taking the above into account:
+We believe the most common vector search use-cases will be, in this order:
 
-We will call an individual member of the `knn` array a `VectorSearch`.
-This will not extend the `SearchQuery` SDK interface as it is not possible to send this in isolation.
+* Performing a vector search in isolation (without a traditional FTS query).
+* "Hybrid query", where a SQL++ statement is used to also perform a vector search.
+* A vector search combined with a traditional FTS query.
 
-We will name the top-level object - that wraps both the mandatory `SearchQuery` along with at-least-one `VectorQuery` - the `VectorQueries` object.
-This will extend `SearchQuery`.
+## API
 
-While it's necessary to precisely name and distinguish the different concepts of `VectorQuery` and `VectorQueries` to allow the general case of performing multiple `VectorQuery`s, it does risk complicating what will perhaps be the typical case of running a single `VectorQuery`.
+The FTS JSON request has fundamentally changed, as it now allows traditional FTS queries and/or vector queries.
+In addition, we need to consider that it may allow other query types in the future.
 
-To this end we will add some additional sugar (see the API examples below).
+Such a fundamental conceptual change necessitates a similarly fundamental change at the SDK level.
+
+Let us name the concepts we are working with:
+
+* The top-level JSON request.  This is currently an unnamed concept in the SDKs - let us term it a `SearchRequest`.
+* The top-level "query" field, which is already named `SearchQuery` in the SDKs.
+* The new top-level "knn" array, which we can call a `VectorSearch`.
+* Each member of the "knn" array, which we can call a `VectorQuery`.
+* Any options applicable to all forms of query (both the `SearchQuery` and the `VectorSearch`), which are in `SearchOptions`.
+* Any options applicable only to the `VectorSearch`, which will be `VectorOptions`.
+
+So the user is performing a `SearchRequest` containing a `SearchQuery` and/or a `VectorSearch` and/or a `FutureSearchType`, optionally with some `SearchOptions` applying to all of those.  
+A `VectorSearch` comprises 1+ `VectorQuery`s and optionally some `VectorOptions`.
+
+Neither `VectorSearch` nor `VectorQuery` will extend the `SearchQuery` interface, which we will reserve for traditional FTS queries.
+
+Hence, none of this is compatible with the existing search interface `cluster.searchQuery(SearchQuery, SearchOptions)`.
+
+This takes us to a new API, `cluster.search(SearchRequest, SearchOptions)`, which has the flexibility to be able to perform traditional FTS and/or vector queries, and/or any future top-level queries.
+
+The current `cluster.searchQuery()` API will not be deprecated at this time, given the volatility of this new feature.
+The SDK can optionally forward its implementation to the new API's, to reduce maintenance.
 
 ### API Examples
-This leads us to the following SDK API:
+A traditional FTS query without vector search.  With the existing API:
 
 ```java
-float[] vector = OpenAI.createVectorFor("some query");
-
-VectorQueries query = SearchQuery.vectorQueries(SearchQuery.matchAll(), new VectorQuery("vector_field", vector));
+SearchQuery query = SearchQuery.matchAll();
 
 cluster.searchQuery("search_index_name", query);
 scope.searchQuery("search_index_name", query);
 ```
 
-With a 'sugared' version to make it easy to construct a `VectorQueries` object containing a single `VectorQuery` (which is likely the typical case):
+and with the new API:
+
+```java
+SearchRequest request = SearchRequest
+        .searchQuery(SearchQuery.matchAll());
+
+cluster.search("search_index_name", request);
+scope.search("search_index_name", request);
+```
+
+A vector search with a single vector query and no traditional FTS query:
 
 ```java
 float[] vector = OpenAI.createVectorFor("some query");
 
-SearchQuery query = SearchQuery.vectorQuery(SearchQuery.matchAll(), "vector_field", vector);
+SearchRequest request = SearchRequest
+        .vectorSearch(VectorSearch.create(List.of(VectorQuery.create("vector_field", vector))));
 
-cluster.searchQuery("search_index_name", query);
+cluster.search("search_index_name", request);
+scope.search("search_index_name", request);
 ```
 
+A combined search with both vector search and a traditional FTS query:
 
-A more complex example showing multiple vector queries and all parameters:
+```java
+float[] vector = OpenAI.createVectorFor("some query");
+
+SearchRequest request = SearchRequest
+        .searchQuery(SearchQuery.matchAll())
+        .vectorSearch(VectorSearch.create(List.of(VectorQuery.create("vector_field", vector))));
+
+cluster.search("search_index_name", request);
+scope.search("search_index_name", request);
+```
+
+A more complex example showing a vector search containing multiple vector queries, setting all parameters:
 
 ```java
 // Sending multiple `VectorQuery`s, and setting all possible parameters.
-VectorQueries query = SearchQuery.vectorQueries(SearchQuery.matchAll(),
-        new VectorQuery("vector_field", vectorQuery).k(2).boost(0.3),
-        new VectorQuery("vector_field", anotherVectorQuery).k(1).boost(0.7));
+SearchRequest request = SearchRequest
+        .vectorSearch(VectorSearch.create(List.of(
+                VectorQuery.create("vector_field", aVector).k(2).boost(0.3),
+                VectorQuery.create("vector_field", anotherVector).k(1).boost(0.7)),
+            VectorOptions.vectorOptions().knnOperator(KnnOperator.AND));
 
-// They get combined with AND or OR. 
-query.knnOperator(KnnOperator.AND);
-
-cluster.searchQuery("search_index_name", query);
+cluster.search("search_index_name", request);
 ```
 
-### VectorQueries
-A `VectorQueries` object must enforce, in a platform-idiomatic way but most preferably at compile-time, that the user must provide a `SearchQuery` and at least one (but possibly multiple) `VectorQuery` to construct it.
-In languages that have a class constructor, this could look like `VectorQueries(SearchQuery query, VectorQuery... vectorQuery)` or `VectorQueries(SearchQuery query, List<VectorQuery> vectorQuery)`.
+### VectorSearch
+`VectorSearch` creation is platform-idiomatic but should look something like this:
 
-`VectorQueries` extends `SearchQuery`, as above.
-It should be constructable in a similar fashion to existing FTS queries.
-For example, if the standard way to create a "match all" query is `SearchQueries.matchAll()`, there should be a `SearchQueries.vectorQueries(SearchQuery query, VectorQuery... vectorQuery)`.
+`VectorSearch.create(List<VectorQuery> vectorQueries, [VectorOptions options])`
 
-In addition, there should be 'sugar' to allow a single `VectorQuery` to be easily sent.  
-Following the pattern above this could look like `SearchQueries.vectorQuery(SearchQuery query, String vectorFieldName, float[] vector)`.
+The first parameter needs to be mandatory.
 
-`VectorQueries` will also support these:
+`VectorSearch.create(VectorQuery vectorQuery, [VectorOptions options])` can be added to make it easier to send a single `VectorQuery`.
+This is left optional to better support SDKs without overloads.
 
-* `knnOperator` (`KnnOperator`).  Will be sent in the top-level JSON payload as `knn_operator` as either `"and"` or `"or"`.  If not set by the user, no value is sent.
+`VectorOptions` will currently support just one option:
+
+* `knnOperator` (`KnnOperator`).  Will be sent in the top-level JSON payload as `knn_operator` (string) as either `"and"` or `"or"`.  If not set by the user, no value is sent.
 
 ```
 enum KnnOperator {
@@ -709,16 +755,26 @@ enum KnnOperator {
 ```
 
 ### VectorQuery
-A `VectorQuery` object must enforce, in a platform-idiomatic way but most preferably at compile-time, that the user must provide a `String field` and a vector (an array of unsigned float32s) to construct it.
-In languages that have a class constructor, this could look like `VectorQuery(String field, float32[] vector)`.
+`VectorQuery` creation is platform-idiomatic but should look something like this:
 
-`VectorQuery` does not extend `SearchQuery`.
-It must be sent via a `VectorQueries` object.
+`VectorQuery.create(String vectorFieldName, float[] vector)`
 
-It will support these parameters, exposed in the same way as any FTS query parameter (e.g. usually as an SDK3-style fluent method):
+Both parameters need to be mandatory.  They are sent in the JSON as "field" (string) and "vector" (number array) fields respectively. 
 
-* `int32 k`.  Sent as a `k` field in the JSON.  If not set by the user, FTS PM requests that the SDK send a default value of 3.
-* `double boost`.  Sent as a `boost` field in the JSON.  If not set, the field is not sent.
+It will also support the following parameters, exposed in the same way as the SDK exposes traditional FTS query parameters.
+In some SDKs this is as fluent-style methods on `VectorQuery` itself, but a `VectorQueryOptions` block as an optional parameter on `Vector.create()` would be more SDK3-idiomatic.
+The SDK should follow its existing convention for FTS parameters.
+
+* `int32 k`.  Sent as a `k` number field in the JSON.  If not set by the user, FTS PM requests that the SDK send a default value of 3.
+* `float boost`.  Sent as a `boost` number field in the JSON.  If not set, the field is not sent.
+
+#### showrequest
+The SDK will now send `"showrequest": false` in the top-level JSON, for all queries (vector or not).
+This prevents the server from returning the original request in the response - a request that can be substantial when large vectors are used.
+The SDK does not expose this returned request.
+Older server versions will silently ignore this parameter.
+
+Note: this `showrequest` approach is being debated by the FTS team and may go through further revision.
 
 ## Return Types
 
