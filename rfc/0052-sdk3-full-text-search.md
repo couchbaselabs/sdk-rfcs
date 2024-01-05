@@ -576,32 +576,50 @@ References:
 * [PRD](https://docs.google.com/document/d/1zrNtgqLDNOFVYoyO5SOAD5Jtpkm43SMIKDc3yN1UbsM/edit#heading=h.f5uv7ep78x87)
 * [PRD appendices](https://docs.google.com/document/d/1Ht6V74xRPSTSGlttz9ORAZTcozGCCJpXAaopG-pal3g/edit#heading=h.wxy3ni7kqtfp)
 
+Given a sample KV document:
+
+```
+{
+  "cityName": "Tokyo",
+  "cityDesc": "<A long travel guide description of Tokyo, mentioning its nightlife>,
+  // A vector field encoding what's in the "city" field
+  "cityVector": [0.0023234, -0.0465719, 0.0213213, ...],
+  
+  "otherDocumentFields": "..."
+}
+```
+
 An example of the query payload we need to be able to produce:
 
 ```
 {
-  "//": "The `query` field contains any regular FTS query, and will be combined with the vector search(es).",
+  "//": "The `query` field contains any regular FTS query, and will be combined with the vector search(es).  Here we just want cities starting with 'S'.",
   "query": {
     "prefix": "S",
-    "field": "city",
+    "field": "cityName",
     "boost": 1.0
   },
   "//": "The `knn` field is new, optional, and contains the vector search(es).  In this example two queries are being sent.",
   "knn": [
     {
-      "//": "The `vector`, `field` and `k` fields are all mandatory.  In practice the `vector` field is very long.",
+      "//": "The `vector`, `field` and `k` fields are all mandatory.",
+      "//": "Here the 'cityVector' field in the user's documents contains a vector.  It could vectorise a long travel-guide description of the city.",
       "field": "cityVector",
+      "//": "This field is a query such as 'city with great nightlife' converted into a vector.  In practice the `vector` field is much longer.",
       "vector": [
         -0.00810323283,
         0.0727998167,
         0.0211895034,
         -0.0254271757
       ],
+      "//": "Find the 3 nearest neighbours (cities) to 'city with great nightlife'.",
       "k": 3,
+      "//": "This is a more important consideration than the other vector query, so give it a higher score boost.",
       "boost": 0.7
     },
     {
       "field": "cityVector",
+      "//": "This is another query such as 'city with good museums'.",
       "vector": [
         -0.005610323283,
         0.023427998167,
@@ -616,8 +634,8 @@ An example of the query payload we need to be able to produce:
   "knn_operator": "or",
   "//": "The `fields`, `sort` and `limit` fields come from `SearchOptions`, as usual.",
   "fields": [
-    "name",
-    "city"
+    "citName",
+    "cityDesc"
   ],
   "sort": [
     "-_score"
@@ -631,7 +649,7 @@ Important SDK considerations:
 * There is some uncertainty on whether it is mandatory to provide a `query` field containing a 'normal' FTS query.  This is being followed up with the FTS team.  As it makes sense to be able to perform solely a vector search, we will assume for now that will be the case.
 * The `knn` field can contain multiple vector queries.  It must always contain at least 1.
   * How they are combined is handled with a top-level `knn_operator` parameter.
-* There may be other vector search types in future, such as Approximate Nearest Neighbour (ANN).
+* There may be other vector search types in future, such as Approximate Nearest Neighbour (ANN).  So we may want to aim for a level of abstraction and avoid explicitly mentioning `knn` and perhaps `k`.
 * Inside an individual vector query:
   * It contains a single vector.  FAISS allows multiple vectors to be sent in one query and the FTS team say that may want to be exposed later.
   * The `field` parameter is essentially mandatory.  While FTS will not reject a query that does not contain it, it prevents that vector search from having any effect. 
@@ -662,7 +680,7 @@ Let us name the concepts we are working with:
 * The traditional FTS query, which is already named `SearchQuery` in the SDKs.
 Includes the query itself and any options that apply only to the FTS query such as "boost".
 It's mapped to the top-level `query` JSON field.
-* An individual vector, which we can call a `VectorQuery`.  Each member of the new top-level `knn` array will map to one of these.
+* An individual vector query, which we can call a `VectorQuery`.  These map to the members of the new top-level `knn` array.
 It can contain options applicable just to that vector query such as "boost" and "k".
 * A way to perform multiple `VectorQuery`s, which we can call a `VectorSearch`.
 Maps to the top-level `knn` array.
@@ -734,9 +752,9 @@ scope.search("search_index_name", request);
 // Sending multiple `VectorQuery`s, and setting all possible parameters.
 SearchRequest request = SearchRequest
         .vectorSearch(VectorSearch.create(List.of(
-                VectorQuery.create("vector_field", aVector).k(2).boost(0.3),
-                VectorQuery.create("vector_field", anotherVector).k(1).boost(0.7)),
-            vectorSearchOptions().knnOperator(KnnOperator.AND));
+                VectorQuery.create("vector_field", aVector).numCandidates(2).boost(0.3),
+                VectorQuery.create("vector_field", anotherVector).numCandidates(1).boost(0.7)),
+            vectorSearchOptions().vectorQueryCombination(VectorQueryCombination.AND));
 
 cluster.search("search_index_name", request);
 ```
@@ -753,7 +771,7 @@ This is left optional to better support SDKs without overloads.
 
 `VectorSearchOptions` will currently support just one option:
 
-* `vectorQueryCombination` (`VectorQueryCombination`).  Will be sent in the top-level JSON payload as `knn_operator` (string) as either `"and"` or `"or"`.  If not set by the user, no value is sent.  It controls how elements in the `knn` array are combined.
+* `vectorQueryCombination` (`VectorQueryCombination`).  Will be sent in the top-level JSON payload as `knn_operator` (string) as either `"and"` or `"or"`.  We name the field differently in the SDK to a) improve readability and b) be able to better support possible future forms of vector search such as ANN.  If not set by the user, no value is sent.  It controls how elements in the `knn` array are combined.
 
 ```
 enum VectorQueryCombination {
@@ -778,7 +796,7 @@ It will also support the following parameters, exposed in the same way as the SD
 In some SDKs this is as fluent-style methods on `VectorQuery` itself, but a `VectorQueryOptions` block as an optional parameter on `Vector.create()` would be more SDK3-idiomatic.
 The SDK should follow its existing convention for FTS parameters.
 
-* `uint32 numCandidates`.  Sent as a `k` number field in the JSON.  If not set by the user, FTS PM requests that the SDK send a default value of 3.  It controls how many results are returned and must be >= 1.  If < 1 the SDK will raise `InvalidArgument`.
+* `uint32 numCandidates`.  Sent as a `k` number field in the JSON.  We name the field differently in the SDK for the same reason as `knn_operator`.  If not set by the user, FTS PM requests that the SDK send a default value of 3.  It controls how many results are returned and must be >= 1.  If < 1 the SDK will raise `InvalidArgument`.
 * `float boost`.  Sent as a `boost` number field in the JSON.  If not set, the field is not sent.
 
 `VectorQuery` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
@@ -791,7 +809,7 @@ This prevents the server from returning the original request in the response - a
 
 Note: this `showrequest` approach is being debated by the FTS team and may go through further revision.
 
-## Return Types
+## Return Types 
 
 ### SearchResult
 
