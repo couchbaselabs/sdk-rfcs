@@ -658,7 +658,7 @@ Important SDK considerations:
 So there is nothing extra required from the SDKs to support these, as we already simply turn the untyped `plan` parameters into JSON.
 * The SDK (and Couchbase in general), at least in this first phase, have nothing to do with generating the vectors - both those stored in the documents, and those used for queries.
 The user will be responsible for generating these, for example using the OpenAI Embeddings API.
-* The feature works with both global and scoped FTS indexes.
+* The feature works with both global and scoped FTS indexes.  As this is a 7.6+ feature, we will make scoped indexes the primary target for documentation, examples, etc.
 
 SDK PM advises that the most common vector search use-cases are likely to be, in this order:
 
@@ -707,8 +707,8 @@ All examples will use the reference Java SDK implementation.
 ```java
 SearchQuery query = SearchQuery.matchAll();
 
-cluster.searchQuery("search_index_name", query);
 scope.searchQuery("search_index_name", query);
+cluster.searchQuery("search_index_name", query);
 ```
 
 and with the new API:
@@ -729,8 +729,8 @@ float[] vector = OpenAI.createVectorFor("some query");
 SearchRequest request = SearchRequest
         .vectorSearch(VectorSearch.create(VectorQuery.create("vector_field", vector)));
 
-cluster.search("search_index_name", request);
 scope.search("search_index_name", request);
+cluster.search("search_index_name", request);
 ```
 
 3. A combined search with both vector search and a traditional FTS query:
@@ -742,8 +742,8 @@ SearchRequest request = SearchRequest
         .searchQuery(SearchQuery.matchAll())
         .vectorSearch(VectorSearch.create(VectorQuery.create("vector_field", vector)));
 
-cluster.search("search_index_name", request);
 scope.search("search_index_name", request);
+cluster.search("search_index_name", request);
 ```
 
 4. A more complex example showing a vector search containing multiple vector queries, setting all parameters:
@@ -756,6 +756,7 @@ SearchRequest request = SearchRequest
                 VectorQuery.create("vector_field", anotherVector).numCandidates(1).boost(0.7)),
             vectorSearchOptions().vectorQueryCombination(VectorQueryCombination.AND));
 
+scope.search("search_index_name", request);
 cluster.search("search_index_name", request);
 ```
 
@@ -800,6 +801,30 @@ The SDK should follow its existing convention for FTS parameters.
 * `float boost`.  Sent as a `boost` number field in the JSON.  If not set, the field is not sent.
 
 `VectorQuery` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
+
+### SearchRequest
+`SearchRequest` creation is platform-idiomatic.  There need to be two contruction options, allowing it to be created from either a `VectorSearch` or a `SearchQuery`.
+
+```
+SearchRequest.vectorSearch(VectorSearch vectorSearch, [SearchOptions searchOptions])
+SearchRequest.searchQuery(SearchQuery searchQuery, [SearchOptions searchOptions])
+```
+
+It will also support the following fluent-style methods, allowing one (and only one) `SearchQuery` or `VectorSearch` to be added:
+
+* `searchQuery(SearchQuery searchQuery)`.  Note that this intentionally does not take a SearchOptions - that can only be specified during construction.  If the user has already specified a `SearchQuery`, either at construction time or via another call to `SearchRequest.searchQuery()`, the SDK needs to raise an `InvalidArgumentException`.
+* `vectorSearch(VectorSearch vectorSearch)`.  Note that this intentionally does not take a SearchOptions - that can only be specified during construction.  If the user has already specified a `VectorSearch`, either at construction time or via another call to `SearchRequest.vectorSearch()`, the SDK needs to raise an `InvalidArgumentException`.
+
+These fluent-style methods are proposed because, at least in some SDKs, FTS follows a fluent style.
+If this is completely unidiomatic to an SDK, this alternative single constructor can be considered:
+
+```
+SearchRequest.searchRequest([SearchQuery searchQuery], [VectorSearch vectorSearch], [SearchOptions searchOptions])
+```
+
+In this case, at least one of `SearchQuery` and `VectorSearch` must be provided and the SDK must raise `InvalidArgumentException` if not.
+
+`SearchRequest` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
 
 ### showrequest
 The SDK will now send `"showrequest": false` in the top-level JSON, for all queries (vector or not).
@@ -956,14 +981,14 @@ interface SearchMetrics {
 * August 27, 2020
     * Converted to Markdown.
 
-* December 7, 2021 (by Charles Dixon)
+* December 7, 2021 - Revision #8 (by Charles Dixon)
     * Added `includeLocations` to `SearchOptions`.
     * Added `MatchOperator` and added `operator` to `MatchQuery`.
 
-* March 6, 2023 (by Graham Pople)
+* March 6, 2023 - Revision #9 (by Graham Pople)
     * Added `scope.searchQuery()`.
 
-* December 18, 2023 (by Graham Pople)
+* December 18, 2023 - Revision #10 (by Graham Pople)
     * Added vector search.
 
 # Signoff
