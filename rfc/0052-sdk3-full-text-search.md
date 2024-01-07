@@ -694,7 +694,7 @@ Neither `VectorSearch` nor `VectorQuery` will extend the `SearchQuery` interface
 
 Hence, none of this is compatible with the existing search interface `cluster.searchQuery(SearchQuery, SearchOptions)`.
 
-This takes us to a new API, `cluster.search(SearchRequest, SearchOptions)`, which has the flexibility to be able to perform traditional FTS and/or vector queries, and/or any future top-level queries.
+This takes us to a new API, `cluster.search(String indexName, SearchRequest, SearchOptions)`, which has the flexibility to be able to perform traditional FTS and/or vector queries, and/or any future top-level queries.
 
 The current `cluster.searchQuery()` API will not be deprecated at this time, given the volatility of this new feature.
 But the intent is that the new `cluster.search()` will ultimately be how new users perform any sort of FTS service query, including just a standard FTS `SearchQuery` without vector search.
@@ -767,8 +767,10 @@ cluster.search("search_index_name", request);
 
 The first parameter needs to be mandatory.
 
-`VectorSearch.create(VectorQuery vectorQuery, [VectorSearchOptions options])` can be added to make it easier to send a single `VectorQuery`.
+`VectorSearch.create(VectorQuery vectorQuery)` can be added to make it easier to send a single `VectorQuery`.
 This is left optional to better support SDKs without overloads.
+The SDK is free to have this overload not take a `VectorSearchOptions`, since the only field currently in there applies to multiple vector queries.
+It is left platform-idiomatic as different platforms have different abilities regarding adding overloads later.
 
 `VectorSearchOptions` will currently support just one option:
 
@@ -806,8 +808,8 @@ The SDK should follow its existing convention for FTS parameters.
 `SearchRequest` creation is platform-idiomatic.  There need to be two contruction options, allowing it to be created from either a `VectorSearch` or a `SearchQuery`.
 
 ```
-SearchRequest.vectorSearch(VectorSearch vectorSearch, [SearchOptions searchOptions])
-SearchRequest.searchQuery(SearchQuery searchQuery, [SearchOptions searchOptions])
+SearchRequest.vectorSearch(VectorSearch vectorSearch)
+SearchRequest.searchQuery(SearchQuery searchQuery)
 ```
 
 It will also support the following fluent-style methods, allowing one (and only one) `SearchQuery` or `VectorSearch` to be added:
@@ -823,11 +825,13 @@ SearchRequest.searchRequest([SearchQuery searchQuery], [VectorSearch vectorSearc
 ```
 
 In this case, at least one of `SearchQuery` and `VectorSearch` must be provided and the SDK must raise `InvalidArgumentException` if not.
+Note that this alternative syntax is not hugely desirable, as it does not well support future search features.
 
 `SearchRequest` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
 
 ### showrequest
-The SDK will now send `"showrequest": false` in the top-level JSON, for all queries (vector or not).
+The SDK will now send `"showrequest": false` in the top-level JSON, for all queries (vector or not) sent via the new `cluster/scope.search()` interface.
+Queries sent from the original `cluster/scope.searchQuery()` interface are unaffected.
 Older server versions will silently ignore this parameter.
 
 This prevents the server from returning the original request in the response - a request that can be substantial when large vectors are used, and that is not exposed in the SDK.
