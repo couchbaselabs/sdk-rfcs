@@ -788,7 +788,7 @@ enum VectorQueryCombination {
 ### VectorQuery
 `VectorQuery` creation is platform-idiomatic:
 
-`VectorQuery.create(String vectorFieldName, float[] vector)`
+`VectorQuery.create(String vectorFieldName, float[] vectorQuery)`
 
 Both parameters need to be mandatory.  They are sent in the JSON as "field" (string) and "vector" (number array) fields respectively. 
 
@@ -814,20 +814,27 @@ SearchRequest.searchQuery(SearchQuery searchQuery)
 
 It will also support the following fluent-style methods, allowing one (and only one) `SearchQuery` or `VectorSearch` to be added:
 
-* `searchQuery(SearchQuery searchQuery)`.  Note that this intentionally does not take a SearchOptions - that can only be specified during construction.  If the user has already specified a `SearchQuery`, either at construction time or via another call to `SearchRequest.searchQuery()`, the SDK needs to raise an `InvalidArgumentException`.
-* `vectorSearch(VectorSearch vectorSearch)`.  Note that this intentionally does not take a SearchOptions - that can only be specified during construction.  If the user has already specified a `VectorSearch`, either at construction time or via another call to `SearchRequest.vectorSearch()`, the SDK needs to raise an `InvalidArgumentException`.
+* `searchQuery(SearchQuery searchQuery)`.  If the user has already specified a `SearchQuery`, either at construction time or via another call to `SearchRequest.searchQuery()`, the SDK needs to raise an `InvalidArgumentException`.
+* `vectorSearch(VectorSearch vectorSearch)`.  If the user has already specified a `VectorSearch`, either at construction time or via another call to `SearchRequest.vectorSearch()`, the SDK needs to raise an `InvalidArgumentException`.
 
 These fluent-style methods are proposed because, at least in some SDKs, FTS follows a fluent style.
 If this is completely unidiomatic to an SDK, this alternative single constructor can be considered:
 
 ```
-SearchRequest.searchRequest([SearchQuery searchQuery], [VectorSearch vectorSearch], [SearchOptions searchOptions])
+SearchRequest.searchRequest([SearchQuery searchQuery], [VectorSearch vectorSearch])
 ```
 
 In this case, at least one of `SearchQuery` and `VectorSearch` must be provided and the SDK must raise `InvalidArgumentException` if not.
 Note that this alternative syntax is not hugely desirable, as it does not well support future search features.
 
 `SearchRequest` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
+
+### cluster/scope.search()
+Per the SDK3 error-handling model we will document a manageable number of exceptions that can be usefully caught.
+For this operation, these are just:
+
+* TimeoutException.
+* CouchbaseException.
 
 ### showrequest
 The SDK will now send `"showrequest": false` in the top-level JSON, for all queries (vector or not) sent via the new `cluster/scope.search()` interface.
