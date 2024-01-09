@@ -56,7 +56,7 @@ Parameters
   - Timeout or timeoutMillis (int/duration) - the time allowed for the operation to be terminated. This is controlled by the client.
   - WithExpiry(boolean) - if set, transparently switches to subdoc and fetches the expiry as well
   - Project (string[]) - a list or array of fields to project - if called will switch to subdoc and only fetch the fields requested.\
-    If the number of fields is > 16, then it will perform a full-doc lookup instead. ([Discussion link](https://couchbase.slack.com/archives/CCX40TL9F/p1544705305558800))
+    If the number of fields is > 16, then it will perform a full-doc lookup and extract the requested fields instead. ([Discussion link](https://couchbase.slack.com/archives/CCX40TL9F/p1544705305558800))
   - Transcoder - a custom transcoder for converting the memcached packet to a native type.
 
 - Throws:
@@ -1233,7 +1233,7 @@ public interface ICounterResult : IMutationResult {
 
 # Projections using Get
 
-A new feature of Get is to allow "projections" of document fragments for a given path. Based on Sub-Doc API, the maximum number of fields that can be projected is 16. Once the 16 field limit is reached, the entire document will be fetched using the standard Get command.
+A new feature of Get is to allow "projections" of document fragments for a given path. Based on Sub-Doc API, the maximum number of fields that can be projected is 16. Once the 16 field limit is reached, the entire document will be fetched using the standard Get command and the requested fields will be extracted.
 
 Given a JSON document with the following structure, the table below it shows the expected inputs/outputs of the API and how an SDK should handle a given path:
 
