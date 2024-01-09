@@ -805,7 +805,7 @@ The SDK should follow its existing convention for FTS parameters.
 `VectorQuery` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
 
 ### SearchRequest
-`SearchRequest` creation is platform-idiomatic.  There need to be two contruction options, allowing it to be created from either a `VectorSearch` or a `SearchQuery`.
+`SearchRequest` creation is platform-idiomatic.  There need to be two construction options, allowing it to be created from either a `VectorSearch` or a `SearchQuery`.
 
 ```
 SearchRequest.vectorSearch(VectorSearch vectorSearch)
@@ -817,8 +817,9 @@ It will also support the following fluent-style methods, allowing one (and only 
 * `searchQuery(SearchQuery searchQuery)`.  If the user has already specified a `SearchQuery`, either at construction time or via another call to `SearchRequest.searchQuery()`, the SDK needs to raise an `InvalidArgumentException`.
 * `vectorSearch(VectorSearch vectorSearch)`.  If the user has already specified a `VectorSearch`, either at construction time or via another call to `SearchRequest.vectorSearch()`, the SDK needs to raise an `InvalidArgumentException`.
 
-These fluent-style methods are proposed because, at least in some SDKs, FTS follows a fluent style.
-If this is completely un-idiomatic to an SDK, this alternative single constructor can be considered:
+These fluent-style methods are proposed because, although we do not generally use fluent-style in SDK3 (outside of FTS in some SDKs, and sub-document), this is a good fit for a concept new to the SDKs: having two (or more, in future) major top-level features that are and/or in the same request.
+
+If this is completely un-idiomatic to an SDK, this alternative single constructor can be considered by that SDK:
 
 ```
 SearchRequest.searchRequest([SearchQuery searchQuery], [VectorSearch vectorSearch])
