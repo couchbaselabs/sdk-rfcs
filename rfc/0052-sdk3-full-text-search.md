@@ -646,7 +646,7 @@ An example of the query payload we need to be able to produce:
 
 Important SDK considerations:
 
-* There is some uncertainty on whether it is mandatory to provide a `query` field containing a 'normal' FTS query.  This is being followed up with the FTS team.  As it makes sense to be able to perform solely a vector search, we will assume for now that will be the case.
+* Per MB-60312, to send a standalone vector query without an FTS query (a desired use-case), it's necessary to provide a MatchNone FTS query.  We will default to this if the user has not specified an FTS query.
 * The `knn` field can contain multiple vector queries.  It must always contain at least 1.
   * How they are combined is handled with a top-level `knn_operator` parameter.
 * There may be other vector search types in future, such as Approximate Nearest Neighbour (ANN).  So we may want to aim for a level of abstraction and avoid explicitly mentioning `knn` and perhaps `k`.
@@ -790,7 +790,7 @@ enum VectorQueryCombination {
 
 `VectorQuery.create(String vectorFieldName, float[] vectorQuery)`
 
-Both parameters need to be mandatory.  They are sent in the JSON as "field" (string) and "vector" (number array) fields respectively. 
+Both parameters need to be mandatory.  They are sent in the JSON as "field" (string) and "vector" (number array) fields respectively.  Floats are float32.
 
 The current size limit for the vector is 2048 elements, but this will not be enforced on the SDK side.
 The vector must be non-empty though, and if not the SDK will raise `InvalidArgument`. 
@@ -818,7 +818,7 @@ It will also support the following fluent-style methods, allowing one (and only 
 * `vectorSearch(VectorSearch vectorSearch)`.  If the user has already specified a `VectorSearch`, either at construction time or via another call to `SearchRequest.vectorSearch()`, the SDK needs to raise an `InvalidArgumentException`.
 
 These fluent-style methods are proposed because, at least in some SDKs, FTS follows a fluent style.
-If this is completely unidiomatic to an SDK, this alternative single constructor can be considered:
+If this is completely un-idiomatic to an SDK, this alternative single constructor can be considered:
 
 ```
 SearchRequest.searchRequest([SearchQuery searchQuery], [VectorSearch vectorSearch])
@@ -826,6 +826,8 @@ SearchRequest.searchRequest([SearchQuery searchQuery], [VectorSearch vectorSearc
 
 In this case, at least one of `SearchQuery` and `VectorSearch` must be provided and the SDK must raise `InvalidArgumentException` if not.
 Note that this alternative syntax is not hugely desirable, as it does not well support future search features.
+
+If the user does not specify a `SearchQuery`, default it to a MatchNone query, per MB-60312.
 
 `SearchRequest` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
 
@@ -844,6 +846,12 @@ Older server versions will silently ignore this parameter.
 This prevents the server from returning the original request in the response - a request that can be substantial when large vectors are used, and that is not exposed in the SDK.
 
 Note: this `showrequest` approach is being debated by the FTS team and may go through further revision.
+
+### couchbase2
+Vector search is not implemented in couchbase2 at this time.
+If the user has specified a vector search, the SDK should raise a `FeatureNotAvailableException`.
+
+If not, the SDK needs to allow the operation.  The `SearchQuery` inside the `SearchRequest` can easily be forwarded to the existing couchbase2 implementation for `cluster/scope.searchQuery()`. 
 
 ## Return Types 
 
