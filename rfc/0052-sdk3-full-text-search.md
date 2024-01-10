@@ -714,7 +714,7 @@ cluster.searchQuery("search_index_name", query);
 and with the new API:
 
 ```java
-SearchRequest request = SearchRequest.searchQuery(SearchQuery.matchAll());
+SearchRequest request = SearchRequest.create(SearchQuery.matchAll());
 
 cluster.search("search_index_name", request);
 scope.search("search_index_name", request);
@@ -727,7 +727,7 @@ scope.search("search_index_name", request);
 float[] vector = OpenAI.createVectorFor("some query");
 
 SearchRequest request = SearchRequest
-        .vectorSearch(VectorSearch.create(VectorQuery.create("vector_field", vector)));
+        .create(VectorSearch.create(VectorQuery.create("vector_field", vector)));
 
 scope.search("search_index_name", request);
 cluster.search("search_index_name", request);
@@ -738,8 +738,7 @@ cluster.search("search_index_name", request);
 ```java
 float[] vector = OpenAI.createVectorFor("some query");
 
-SearchRequest request = SearchRequest
-        .searchQuery(SearchQuery.matchAll())
+SearchRequest request = SearchRequest.create(SearchQuery.matchAll())
         .vectorSearch(VectorSearch.create(VectorQuery.create("vector_field", vector)));
 
 scope.search("search_index_name", request);
@@ -751,7 +750,7 @@ cluster.search("search_index_name", request);
 ```java
 // Sending multiple `VectorQuery`s, and setting all possible parameters.
 SearchRequest request = SearchRequest
-        .vectorSearch(VectorSearch.create(List.of(
+        .create(VectorSearch.create(List.of(
                 VectorQuery.create("vector_field", aVector).numCandidates(2).boost(0.3),
                 VectorQuery.create("vector_field", anotherVector).numCandidates(1).boost(0.7)),
             vectorSearchOptions().vectorQueryCombination(VectorQueryCombination.AND));
@@ -808,8 +807,8 @@ The SDK should follow its existing convention for FTS parameters.
 `SearchRequest` creation is platform-idiomatic.  There need to be two construction options, allowing it to be created from either a `VectorSearch` or a `SearchQuery`.
 
 ```
-SearchRequest.vectorSearch(VectorSearch vectorSearch)
-SearchRequest.searchQuery(SearchQuery searchQuery)
+SearchRequest.create(VectorSearch vectorSearch)
+SearchRequest.create(SearchQuery searchQuery)
 ```
 
 It will also support the following fluent-style methods, allowing one (and only one) `SearchQuery` or `VectorSearch` to be added:
