@@ -28,10 +28,10 @@ interface ICluster {
 ```
 
 The new `Search` API was added in revision 10.
-The original `SearchQuery` API is not yet deprecated, but new SDKs should not implement it.
+The original `SearchQuery` API is not yet deprecated - but new SDKs should not implement it, and the intent is that eventually all users will be using the new API.
 
 
-and at the Scope level (for querying scope FTS indexes):
+And at the Scope level (for querying scope FTS indexes):
 
 ```
 interface IScope {
@@ -41,7 +41,7 @@ interface IScope {
 }
 ```
 
-Only the new `Search` API is available at the Scope level - not the original `SearchQuery` API.
+Note that at the Scope level only the new `Search` API is available - not the original `SearchQuery` API.
 
 ## ICluster::SearchQuery
 
@@ -226,9 +226,9 @@ A `ISearchResult` object with the results of the query or error message if the q
   * `InternalServerException` (#5)
   * `AuthenticationException` (#6)
 
-## IScope::SearchQuery
+## IScope::Search
 
-The API and implementation are identical to the `ICluster::Search` added in revision 10, except it uses a different endpoint internally and there is some additional error handling.
+The API and implementation are identical to `ICluster::Search`, except it uses a different endpoint internally and there is some additional error handling.
 
 The user provides `scope.search("indexName", request, [options])` (rather than `scope.search("bucket.scope.indexName", request, [options])`).
 
@@ -1020,8 +1020,6 @@ interface SearchMetrics {
 
 * December 18, 2023 - Revision #10 (by Graham Pople)
     * Added vector search and the `cluster.search()` and `scope.search()` APIs.
-
-* January 23, 2024 - Revision #11 (by Graham Pople)
     * Modified scoped search index support to use only the `scope.search()` interface added alongside vector search.
     * Clarified scoped search index error handling.
 
