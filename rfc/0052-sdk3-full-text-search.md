@@ -22,19 +22,26 @@ The full text search API is located at Cluster level (for querying global FTS in
 interface ICluster {
     ...
     SearchResult SearchQuery(string indexName, SearchQuery query, [SearchOptions options]);
+    SearchResult Search(string indexName, SearchRequest request, [SearchOptions options]);
     ...
 }
 ```
+
+The new `Search` API was added in revision 10.
+The original `SearchQuery` API is not yet deprecated, but new SDKs should not implement it.
+
 
 and at the Scope level (for querying scope FTS indexes):
 
 ```
 interface IScope {
     ...
-    SearchResult SearchQuery(string indexName, SearchQuery query, [SearchOptions options]);
+    SearchResult Search(string indexName, SearchRequest request, [SearchOptions options]);
     ...
 }
 ```
+
+Only the new `Search` API is available at the Scope level - not the original `SearchQuery` API.
 
 ## ICluster::SearchQuery
 
@@ -221,14 +228,18 @@ A `ISearchResult` object with the results of the query or error message if the q
 
 ## IScope::SearchQuery
 
-The API and implementation are identical to `ICluster::SearchQuery`, except it uses a different endpoint internally.
+The API and implementation are identical to the `ICluster::Search` added in revision 10, except it uses a different endpoint internally and there is some additional error handling.
 
-The user provides `scope.searchQuery("indexName", query, [options])` (rather than `scope.searchQuery("bucket.scope.indexName", query, [options])`).
+The user provides `scope.search("indexName", request, [options])` (rather than `scope.search("bucket.scope.indexName", request, [options])`).
 
 The SDK will use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}/query` for the query.
 This will execute the query against a scoped FTS index rather than a global index.
 See the description of `ScopeQueryIndexManager` in [SDK RFC 54](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0054-sdk3-management-apis.md) for more details of scoped indexes.
 All information from there applies here.
+
+### Error handling
+If the new endpoints are used on a server prior to 7.5, a 404 error will be returned.  
+This should be mapped into a `FeatureNotAvailableException` with a message along the lines of "Scoped indexes can not be used with this server version".
 
 ## SearchQuery implementations
 
@@ -1008,7 +1019,11 @@ interface SearchMetrics {
     * Added `scope.searchQuery()`.
 
 * December 18, 2023 - Revision #10 (by Graham Pople)
-    * Added vector search.
+    * Added vector search and the `cluster.search()` and `scope.search()` APIs.
+
+* January 23, 2024 - Revision #11 (by Graham Pople)
+    * Modified scoped search index support to use only the `scope.search()` interface added alongside vector search.
+    * Clarified scoped search index error handling.
 
 # Signoff
 

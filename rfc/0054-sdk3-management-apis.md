@@ -1528,7 +1528,7 @@ Server 7.5 adds a new form of FTS scoped indexes, with a new set of endpoints.
 `ScopeSearchIndexManager` manages exclusively these, while `SearchIndexManager` (at the Cluster level) manages exclusively the original FTS indexes - now named "global indexes".
 The user needs to take care to choose the appropriate API.
 
-Querying is also done via a new endpoint, and with a new API `scope.searchQuery()`.
+Querying is also done via a new endpoint, and with a new API `scope.search()`.
 This will be detailed in another RFC.
 
 References:
@@ -1554,7 +1554,7 @@ In particular, the use-case for global aliases continues to be valid.
 The internal full name for a scoped index is "bucket.scope.index".
 However, from the user's perspective - e.g. what they create and use in the SDK - the index name is simply "index".
 
-The user will use `scope.searchIndexes().getIndex("index")` and `scope.searchQuery("index")` - NOT `scope.searchIndexes().getIndex("bucket.scope.index")`.
+The user will use `scope.searchIndexes().getIndex("index")` and `scope.search("index", request)` - NOT `scope.searchIndexes().getIndex("bucket.scope.index")`.
 
 The SDK should not try to intercept a "bucket.scope.index" name and extract "index".
 
