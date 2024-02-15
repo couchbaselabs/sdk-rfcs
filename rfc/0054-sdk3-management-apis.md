@@ -1566,9 +1566,64 @@ The implementation of `ScopeSearchIndexManager` is identical to `SearchIndexMana
 * `GetAllIndexes`: use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index` with GET.
 * For the other operations `PauseIngest` etc., the rule is: where the global index endpoint is `/api/index/{indexName}/ingestControl/pause`, the scoped index endpoint is `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}/ingestControl/pause`.
 
-### Error handling
-If the new endpoints are used on a server prior to 7.5, a 404 error will be returned.  
-This should be mapped into a `FeatureNotAvailableException` with a message along the lines of "Scoped indexes can not be used with this server version".
+### FeatureNotAvailable handling
+
+#### Scoped indexes
+Before trying any `ScopeSearchIndexManager` operation, the SDK will check for the presence of this cluster capability which will only be returned by clusters that are fully upgraded to 7.6.0 or above:
+```
+  "clusterCapabilities": {
+   "search": ["scopedSearchIndex"]
+  }
+```
+If it is not present the SDK will raise `FeatureNotAvailableException` with a message along the lines of "This API is for use with scoped indexes, which require Couchbase Server 7.6.0 or above".
+
+The SDK will check for this capability in the most recent config it received.
+If it does not currently have one (in which case one should already be in the process of being asynchronously fetched), the SDK will wait for it to be available.
+This may lead the operation to timeout if the config does not arrive in time.
+The SDK will wait for at least the GCCCP config.  To simplify implementations, and because GCCCP has long been available, it may choose to not use bucket configs.
+
+#### Vector indexes
+Only on the `scope.searchIndexes().upsertIndex()` call, and before sending anything to the server, the SDK will check if the index has any vector mappings.
+It will do this by looking for these fields:
+
+`params.mapping.types.ANY_FIELD_NAME.properties.ANY_FIELD_NAME.fields[*].type == "vector"`
+
+In more detail, the SDK should look in the vector JSON definition object for a field named `params` containing a field named `mapping`, and so on.
+For ANY_FIELD_NAME, the SDK should loop over all objects inside the `types` / `properties` object.
+for `fields[*]` the SDK should look at all members of the `fields` array.
+The SDK must check each assuption (that `params` is an object, that `fields` is an array, etc.), and assume that it is not a vector index if any of these assumptions are not met.
+
+An example index with a single vector mapping will help make this clearer:
+
+```
+ "params": {
+  "mapping": {
+   "types": {
+    "scope_e57593.coll_e57593": {
+     "properties": {
+      "some_user_vector_field": {
+       "enabled": true,
+       "dynamic": false,
+       "fields": [
+        {
+         "name": "some_user_vector_field",
+         "type": "vector",
+         ... 
+        }
+```
+
+Iff this is a vector index, the SDK will check for the presence of this cluster capability which will only be returned by clusters that are fully upgraded to 7.6.0 or above:
+```
+  "clusterCapabilities": {
+   "search": ["vectorSearch"]
+  }
+```
+If it is not present the SDK will raise `FeatureNotAvailableException` with a message along the lines of "Vector queries are available from Couchbase Server 7.6.0 and above".
+
+The SDK will check for this capability in the most recent config it received.
+If it does not currently have one (in which case one should already be in the process of being asynchronously fetched), the SDK will wait for it to be available.
+This may lead the operation to timeout if the config does not arrive in time.
+The SDK will wait for at least the GCCCP config.  To simplify implementations, and because GCCCP has long been available, it may choose to not use bucket configs.
 
 ## Compatibility of `SearchIndexManager` with scoped indexes
 
@@ -3938,6 +3993,10 @@ interface ScopeSpec {
   * Adding `HistoryRetentionCollectionDefault`, `HistoryRetentionBytes`, `HistoryRetentionSeconds` to `BucketSettings`.
   * Adding `UpdateCollection` function and update `CollectionManager` interface.
   * Adding `CreateCollectionSettings` and `UpdateCollectionSettings`.
+
+* February 14th, 2024 - Revision #25 (by Graham Pople)
+  * Specified that scoped index and vector search operations should raise `FeatureNotAvailableException` against clusters that do not support them.
+
 
 # Signoff
 

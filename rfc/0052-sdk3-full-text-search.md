@@ -237,9 +237,19 @@ This will execute the query against a scoped FTS index rather than a global inde
 See the description of `ScopeQueryIndexManager` in [SDK RFC 54](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0054-sdk3-management-apis.md) for more details of scoped indexes.
 All information from there applies here.
 
-### Error handling
-If the new endpoints are used on a server prior to 7.5, a 404 error will be returned.  
-This should be mapped into a `FeatureNotAvailableException` with a message along the lines of "Scoped indexes can not be used with this server version".
+### FeatureNotAvailable handling
+On a `scope.search()`, before sending anything to the server, the SDK will check for the presence of this cluster capability which will only be returned by clusters that are fully upgraded to 7.6.0 or above:
+```
+  "clusterCapabilities": {
+   "search": ["scopedSearchIndex"]
+  }
+```
+If it is not present the SDK will raise `FeatureNotAvailableException` with a message along the lines of "This API is for use with scoped indexes, which require Couchbase Server 7.6.0 or above".
+
+The SDK will check for this capability in the most recent config it received.
+If it does not currently have one (in which case one should already be in the process of being asynchronously fetched), the SDK will wait for it to be available.
+This may lead the operation to timeout if the config does not arrive in time.
+The SDK will wait for at least the GCCCP config.  To simplify implementations, and because GCCCP has long been available, it may choose to not use bucket configs.
 
 ## SearchQuery implementations
 
@@ -864,6 +874,21 @@ If the user has specified a vector search, the SDK should raise a `FeatureNotAva
 
 If not, the SDK needs to allow the operation.  The `SearchQuery` inside the `SearchRequest` can easily be forwarded to the existing couchbase2 implementation for `cluster/scope.searchQuery()`. 
 
+### FeatureNotAvailable handling
+
+Iff a `VectorSearch` is included, before sending anything to the server, the SDK will check for the presence of this cluster capability which will only be returned by clusters that are fully upgraded to 7.6.0 or above:
+```
+  "clusterCapabilities": {
+   "search": ["vectorSearch"]
+  }
+```
+If it is not present the SDK will raise `FeatureNotAvailableException` with a message along the lines of "Vector queries are available from Couchbase Server 7.6.0 and above".
+
+The SDK will check for this capability in the most recent config it received.
+If it does not currently have one (in which case one should already be in the process of being asynchronously fetched), the SDK will wait for it to be available.
+This may lead the operation to timeout if the config does not arrive in time.
+The SDK will wait for at least the GCCCP config.  To simplify implementations, and because GCCCP has long been available, it may choose to not use bucket configs.
+
 ## Return Types 
 
 ### SearchResult
@@ -1022,6 +1047,9 @@ interface SearchMetrics {
     * Added vector search and the `cluster.search()` and `scope.search()` APIs.
     * Modified scoped search index support to use only the `scope.search()` interface added alongside vector search.
     * Clarified scoped search index error handling.
+
+* February 14th, 2024 - Revision #11 (by Graham Pople)
+    * Specified that scoped index and vector search operations should raise `FeatureNotAvailableException` against clusters that do not support them.
 
 # Signoff
 
