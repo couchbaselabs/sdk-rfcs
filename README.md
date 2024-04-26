@@ -44,6 +44,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
 | 76    | [KV Subdoc Replica Reads](rfc/0076-subdoc-replica-reads.md)            | Charles D.   | ACCEPTED |
+| 77    | [Zone-Aware Replica Reads](rfc/0077-zone-aware-replica-reads.md)       | Sergey       | ACCEPTED |
 
 ### Draft & Review RFCs
 
@@ -68,7 +69,6 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 74    | Configuration Profiles [\[doc\]](https://docs.google.com/document/d/1LNCYgV2Eqymp3pGmA8WKPQOLSpcRyv0P7NpMYHVcUM0/)                                                         | Mike R.               | DRAFT  |
 | 75    | [Faster Failover and Configuration Push](https://github.com/couchbaselabs/sdk-rfcs/pull/123)                                                                               | Sergey                | DRAFT  |
 | 77    | couchbase2 support [\[gdoc\]](https://docs.google.com/document/d/1BZe7m6cT5SqUO86W4si9gdNqBOGusYAOW0JLXoe47qU/edit)                                                        | Graham P.             | DRAFT  |
-| 78    | [Zone-Aware Replica Reads](https://github.com/couchbaselabs/sdk-rfcs/pull/136)                                                                                             | Sergey                | DRAFT  |
 
 ### Identified RFCs
 
