@@ -44,7 +44,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
 | 76    | [KV Subdoc Replica Reads](rfc/0076-subdoc-replica-reads.md)            | Charles D.   | ACCEPTED |
-| 77    | [Zone-Aware Replica Reads](rfc/0077-zone-aware-replica-reads.md)       | Sergey       | ACCEPTED |
+| 78    | [Zone-Aware Replica Reads](rfc/0077-zone-aware-replica-reads.md)       | Sergey       | ACCEPTED |
 
 ### Draft & Review RFCs
 
