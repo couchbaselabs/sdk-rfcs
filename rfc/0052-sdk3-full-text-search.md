@@ -636,17 +636,153 @@ interface SearchRowLocation {
 
 ### SearchFacetResult
 
-An individual facet result has both metadata and details, as each facet can define ranges into which results are categorized.
+The `facets` part of the result, a sibling to `hits`, contains information relative to the facets the user asked for. If no `facets` section was provided in the query, this section is omitted.
+
+Note that the whole `facets` section **is a single JSON object**. The `name` of each facet, which is defined at query time by the user, is represented in the attribute names.
+
+An individual facet result has both metadata and details, as each facet can define ranges into which results are categorized. The JSON representation of a single facet's results looks like this:
+
+```
+SearchFacetResult {
+    "field": string
+    "total": long
+    "missing": long
+    "other": long
+    "terms": [ {TermRange}, ... ] <1>
+    "numeric_ranges": [ {NumericRange}, ...] <1>
+    "date_ranges": [ {DateRange}, ... ] <1>
+}
+```
+(1) all mutually exclusive (`terms`, `numeric_ranges` and `date_ranges` cannot be combined).
+
+See the following JSON example:
+
+```
+"facets": {
+    "category": { <1>
+      "field": "style",
+          ...
+      "terms": [ ... ]
+    },
+    "strength": { <2>
+      "field": "abv",
+          ...
+      "numeric_ranges": [ ... ]
+    },
+    "updateRange": { <3>
+      "field": "updated",
+          ...
+      "date_ranges": [ ... ]
+    }
+  }
+```
+We omitted part of the section, but this shows that we have 3 facets: a _term_ facet **(1)** named "category", a _numeric_ facet **(2)** named "strength" and a _date_ facet **(3)** named "updateRange".
+
+The section could be represented by a `Map` (or equivalent, eg. associative array).
+
+```
+Map<String, SearchFacetResult> facets();
+```
+
+It could also be represented by any other adequate `Facets` class or structure, as long as the following operations are possible:
+
+ - iteration of all the facets
+ - retrieval of a facet by name
+
+In code, individual facet results could be represented by an interface and three concrete implementations, one for each facet type:
 
 ```
 interface SearchFacetResult {
-    String Name();
-    String Field();
-    uint64 Total();
-    uint64 Missing();
-    uint64 Other();
+    String name();
+    String field();
+    long total();
+    long missing();
+    long other();
 }
 ```
+Note the `name` is made part of the `FacetResult`, so that it can be used in isolation.
+
+The results could also be implemented by a single concrete implementation:
+
+```
+class SearchFacetResult {
+    String name();  // deprecated
+    String field();
+    long total();
+    long missing();
+    long other();
+    List<TermFacetResult> terms();
+    List<NumericRangeFacetResult> numericRanges();
+    List<DateRangeFacetResult> dateRanges();
+}
+```
+
+Note that the `name()` is deprecated in this implementation, `name` is not required in this implemenatation due to it belonging the `SearchFacetResult` classes themselves.
+
+##### Term Search Facet Results
+```
+class TermSearchFacetResult implements SearchFacetResult {
+	//... all from FacetResult, plus:
+	List<SearchTermRange> terms();
+}
+```
+
+The JSON structure of each **term range** is:
+
+```
+TermFacet {
+	"term": string //the "category" or term
+	"count": long //how many times this term was seen
+}
+```
+This can be directly mapped to a `SearchTermRange` class or the appropriate structure in the target language.
+
+When requesting a term facet, the user provides a `size` and a `field`. Each term in this field will be considered as a unique range (a "bucket"), and the `TermSearchFacetResult` will contain the first _size_ terms, ordered by occurrence count. So in a `SearchTermRange`, the `term` is the "category" or term and the `count` is the number of times this term was seen.
+
+##### Numeric Range Search Facet Results
+```
+class NumericRangeSearchFacetResult implements SearchFacetResult {
+	//... all from FacetResult, plus:
+	List<SearchNumericRange> numericRanges();
+}
+```
+
+The JSON structure of each **numeric range** is:
+
+```
+NumericRange {
+    "name": string //the name given to the range in facet query
+    "min": double //the minimum value considered in the range (inclusive)
+    "max": double //the maximum value considered in the range (exclusive)
+    "count": long //how many terms were included in this range?
+}
+```
+This can be directly mapped to a `SearchNumericRange` class or the appropriate structure in the target language.
+
+When requesting a numeric facet, the user defines ranges (also called buckets) and gives them names. Note that lower bound is inclusive and upper bound is exclusive, but ranges can overlap so a document can be categorized into several buckets.
+
+##### Date Range Search Facet Results
+```
+class DateRangeSearchFacetResult implements SearchFacetResult {
+	//... all from FacetResult, plus:
+	List<SearchDateRange> dateRanges();
+}
+```
+
+The JSON structure of each **date range** is:
+
+```
+DateRange {
+    "name": string //the name given to the range in facet query
+    "start": string //the minimum date ("YYYY-MM-DD HH:MM:SS") in range (inclusive)
+    "end": string //the maximum date in range (exclusive)
+    "count": long //how many terms were included in this range?
+}
+```
+This can be directly mapped to a `SearchDateRange` class or the appropriate structure in the target language.
+
+When requesting a date facet, the user defines ranges (also called buckets) and gives them names. Note that lower bound is inclusive and upper bound is exclusive, but ranges can overlap so a document can be categorized into several buckets.
+
 
 ### SearchMetaData
 
@@ -713,6 +849,9 @@ interface SearchMetrics {
 * August 27, 2020
     * Converted to Markdown.
 
+* October 14, 2020 - Revision #8 (by Charles Dixon)
+    * Expanded `SearchFacetResult` providing further implementation details.
+
 * December 7, 2021 (by Charles Dixon)
     * Added `includeLocations` to `SearchOptions`.
     * Added `MatchOperator` and added `operator` to `MatchQuery`.
@@ -722,15 +861,15 @@ interface SearchMetrics {
 
 # Signoff
 
-| Language   | Team Member         | Signoff Date   | Revision |
-|------------|---------------------|----------------|----------|
-| Node.js    | Brett Lawson        | April 16, 2020 | #7       |
-| Go         | Charles Dixon       | April 22, 2020 | #7       |
-| Connectors | David Nault         | April 29, 2020 | #7       |
-| PHP        | Sergey Avseyev      | April 22, 2020 | #7       |
-| Python     | Ellis Breen         | April 29, 2020 | #7       |
-| Scala      | Graham Pople        | April 30, 2020 | #7       |
-| .NET       | Jeffry Morris       | April 22, 2020 | #7       |
-| Java       | Michael Nitschinger | April 16, 2020 | #7       |
-| C          | Sergey Avseyev      | April 22, 2020 | #7       |
-| Ruby       | Sergey Avseyev      | April 22, 2020 | #7       |
+| Language   | Team Member         | Signoff Date      | Revision |
+|------------|---------------------|-------------------|----------|
+| Node.js    | Brett Lawson        | April 16, 2020    | #7       |
+| Go         | Charles Dixon       | October 14, 2020  | #8       |
+| Connectors | David Nault         | April 29, 2020    | #7       |
+| PHP        | Sergey Avseyev      | December 06, 2020 | #8       |
+| Python     | Ellis Breen         | April 29, 2020    | #7       |
+| Scala      | Graham Pople        | April 30, 2020    | #7       |
+| .NET       | Jeffry Morris       | April 22, 2020    | #7       |
+| Java       | Michael Nitschinger | April 16, 2020    | #7       |
+| C          | Sergey Avseyev      | December 06, 2020 | #8       |
+| Ruby       | Sergey Avseyev      | December 06, 2020 | #8       |
