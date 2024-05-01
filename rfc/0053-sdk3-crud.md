@@ -1269,6 +1269,8 @@ Given a JSON document with the following structure, the table below it shows the
 }
 ```
 
+Paths that return errors should be silently omitted, in the same way that a standard subdocument lookup operation would behave.
+
 ### Examples
 
 #### `"name"`
@@ -1287,6 +1289,12 @@ Given a JSON document with the following structure, the table below it shows the
 
 ```json
 { "animals": ["cat", "dog", "parrot"] }
+```
+
+#### `"name","age","idontexist"`
+
+```json
+{ "name": "Emmy-lou Dickerson", "age": 26 }
 ```
 
 #### "animals[0]"
