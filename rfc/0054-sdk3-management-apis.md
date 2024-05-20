@@ -1563,6 +1563,7 @@ The SDK should not try to intercept a "bucket.scope.index" name and extract "ind
 The implementation of `ScopeSearchIndexManager` is identical to `SearchIndexManagement`, except for the endpoints and some error handling details:
 
 * `GetIndex`, `UpsertIndex`, `DropIndex`: use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}` with GET, PUT and DELETE respectively.
+* `AnalyzeDocument`: use endpoint `/api/index/{bucketName}.{scopeName}.{indexName}/analyzeDoc` with POST, there is no scoped endpoint for analyze document.
 * `GetAllIndexes`: use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index` with GET.
 * For the other operations `PauseIngest` etc., the rule is: where the global index endpoint is `/api/index/{indexName}/ingestControl/pause`, the scoped index endpoint is `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}/ingestControl/pause`.
 
