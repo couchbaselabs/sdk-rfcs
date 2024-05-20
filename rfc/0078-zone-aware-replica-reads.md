@@ -58,7 +58,77 @@ case.
 
 # Changes
 
-New enumeration should be defined for expressing different strategies:
+## Updates in Configuration Parser
+
+Each node in `nodesExt` array of cluster configuration will have new property
+`serverGroup`, which contains name of the group as it seen in Admin UI. For
+example:
+
+```jsonc
+{
+    // ...
+    "vBucketServerMap": {
+        "vBucketMap": [
+            [ 0, 1 ]
+            // ... other vBuckets
+        ]
+    },
+    // ...
+    "nodesExt": [
+        {
+            // ...
+            "hostname": "172.17.0.2",
+            "serverGroup": "group_1"
+        },
+        {
+            // ...
+            "hostname": "172.17.0.3",
+            "serverGroup": "group_2"
+        },
+        {
+            // ...
+            "hostname": "172.17.0.4",
+            "serverGroup": "group_2"
+        },
+        {
+            // ...
+            "hostname": "172.17.0.5",
+            "serverGroup": "group_1"
+        }
+    ]
+    // ...
+}
+```
+
+Having this information, the SDK will be able to filter list of the node
+indexes in `vBucketMap` to get local server group members.
+
+For example, lets say the configured SDK to use `"group_1"` as its local server
+group. Then if some key is mapped to vBucket `0`, the SDK can filter vector if
+indexes `[0, 1]` to only `[0, -1]` (using `-1` here for illustration), because
+server with index `1` belongs to `"group_2"`. In the result, the SDK only need
+to send `GET` request to retrieve active copy of the document.
+
+## Selecting Server Group for Connection
+
+To allow user to select preferred server groups, new setter/property for
+`ClusterOptions` must be introduced:
+
+```
+class ClusterOptions {
+    // ...
+    ClusterOptions preferredServerGroup(String serverGroupName);
+    // ...
+}
+```
+
+Where `serverGroupName` matches name of the group as it seen in Admin UI of the
+server and in cluster configuration JSON.
+
+## Selecting Read Preference for Operations
+
+New enumeration should be defined for expressing different strategies for the
+read replica APIs:
 
 ```
 enum ReadPreference {
