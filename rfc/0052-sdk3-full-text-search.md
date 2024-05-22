@@ -809,11 +809,27 @@ enum VectorQueryCombination {
 `VectorQuery` creation is platform-idiomatic:
 
 `VectorQuery.create(String vectorFieldName, float[] vectorQuery)`
+`VectorQuery.create(String vectorFieldName, string base64VectorQuery)`
 
-Both parameters need to be mandatory.  They are sent in the JSON as "field" (string) and "vector" (number array) fields respectively.  Floats are float32.
+Both parameters in either signature need to be mandatory.
+
+Base64 vector queries are only supported from server version 7.6.2, however there is no mechanism to check if the feature is supported.
+Usage on a version (after 7.6.0 and) prior to 7.6.2 will yield a 400 status code from the search service containing error text like:
+```
+rest_index: Query, indexName: global_vector_index_989008, err: bleve: QueryBleve parsing searchRequest, err: k must be greater than 0 and vector must be non-empty
+```
+For this a CouchbaseException will be raised as usual.
+
+Converting the base64 encoding to float[] on the client-side was considered and rejected due to the partial intention of base64 encoding being to reduce network usage.
+
+Encoding to JSON:
+* `vectorFieldName` is encoded to "field" (string).
+* `vectorQuery` is encoded to "vector" (number array). Floats are float32.
+* `base64VectorQuery` is encoded to `vector_base64` (string).
+* Only one of `vector` and `vector_base64` can be encoded in the JSON.
 
 The current size limit for the vector is 2048 elements, but this will not be enforced on the SDK side.
-The vector must be non-empty though, and if not the SDK will raise `InvalidArgument`. 
+Either vector or vector_base64 must be non-empty though, and if not the SDK will raise `InvalidArgument`. 
 
 It will also support the following parameters, exposed in the same way as the SDK exposes traditional FTS query parameters.
 In some SDKs this is as fluent-style methods on `VectorQuery` itself, but a `VectorQueryOptions` block as an optional parameter on `Vector.create()` would be more SDK3-idiomatic.
@@ -1051,12 +1067,15 @@ interface SearchMetrics {
 * February 14th, 2024 - Revision #11 (by Graham Pople)
     * Specified that scoped index and vector search operations should raise `FeatureNotAvailableException` against clusters that do not support them.
 
+* May 22nd, 2024 - Revision #12 (by Charles Dixon)
+    * Added base64 vector search.
+
 # Signoff
 
 | Language   | Team Member         | Signoff Date   | Revision |
 |------------|---------------------|----------------|----------|
 | Node.js    | Brett Lawson        | April 16, 2020 | #7       |
-| Go         | Charles Dixon       | April 22, 2020 | #7       |
+| Go         | Charles Dixon       | May 22, 2024   | #12      |
 | Connectors | David Nault         | April 29, 2020 | #7       |
 | PHP        | Sergey Avseyev      | April 22, 2020 | #7       |
 | Python     | Ellis Breen         | April 29, 2020 | #7       |

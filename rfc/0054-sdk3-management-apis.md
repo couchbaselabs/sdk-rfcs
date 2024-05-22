@@ -1588,6 +1588,11 @@ It will do this by looking for these fields:
 
 `params.mapping.types.ANY_FIELD_NAME.properties.ANY_FIELD_NAME.fields[*].type == "vector"`
 
+or
+
+`params.mapping.types.ANY_FIELD_NAME.properties.ANY_FIELD_NAME.fields[*].type == "vector_base64"`
+
+
 In more detail, the SDK should look in the vector JSON definition object for a field named `params` containing a field named `mapping`, and so on.
 For ANY_FIELD_NAME, the SDK should loop over all objects inside the `types` / `properties` object.
 for `fields[*]` the SDK should look at all members of the `fields` array.
@@ -3997,13 +4002,16 @@ interface ScopeSpec {
 * February 14th, 2024 - Revision #25 (by Graham Pople)
   * Specified that scoped index and vector search operations should raise `FeatureNotAvailableException` against clusters that do not support them.
 
+* May 22nd, 2024 - Revision #26 (by Charles Dixon)
+  * Specified that base64 vector search operations should raise `FeatureNotAvailableException` against clusters that do not support them.
+
 
 # Signoff
 
 | Language   | Team Member    | Signoff Date | Revision |
 |------------|----------------|--------------|----------|
 | Node.js    | Jared Casey    | 2023-08-31   | #25      |
-| Go         | Charles Dixon  | 2023-08-21   | #25      |
+| Go         | Charles Dixon  | 2024-05-22   | #26      |
 | Connectors | David Nault    | 2023-08-21   | #25      |
 | PHP        | Sergey Avseyev | 2023-09-05   | #25      |
 | Python     | Jared Casey    | 2023-08-31   | #25      |
