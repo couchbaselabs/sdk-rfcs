@@ -22,19 +22,26 @@ The full text search API is located at Cluster level (for querying global FTS in
 interface ICluster {
     ...
     SearchResult SearchQuery(string indexName, SearchQuery query, [SearchOptions options]);
+    SearchResult Search(string indexName, SearchRequest request, [SearchOptions options]);
     ...
 }
 ```
 
-and at the Scope level (for querying scope FTS indexes):
+The new `Search` API was added in revision 10.
+The original `SearchQuery` API is not yet deprecated - but new SDKs should not implement it, and the intent is that eventually all users will be using the new API.
+
+
+And at the Scope level (for querying scope FTS indexes):
 
 ```
 interface IScope {
     ...
-    SearchResult SearchQuery(string indexName, SearchQuery query, [SearchOptions options]);
+    SearchResult Search(string indexName, SearchRequest request, [SearchOptions options]);
     ...
 }
 ```
+
+Note that at the Scope level only the new `Search` API is available - not the original `SearchQuery` API.
 
 ## ICluster::SearchQuery
 
@@ -219,16 +226,30 @@ A `ISearchResult` object with the results of the query or error message if the q
   * `InternalServerException` (#5)
   * `AuthenticationException` (#6)
 
-## IScope::SearchQuery
+## IScope::Search
 
-The API and implementation are identical to `ICluster::SearchQuery`, except it uses a different endpoint internally.
+The API and implementation are identical to `ICluster::Search`, except it uses a different endpoint internally and there is some additional error handling.
 
-The user provides `scope.searchQuery("indexName", query, [options])` (rather than `scope.searchQuery("bucket.scope.indexName", query, [options])`).
+The user provides `scope.search("indexName", request, [options])` (rather than `scope.search("bucket.scope.indexName", request, [options])`).
 
 The SDK will use endpoint `/api/bucket/{bucketName}/scope/{scopeName}/index/{indexName}/query` for the query.
 This will execute the query against a scoped FTS index rather than a global index.
 See the description of `ScopeQueryIndexManager` in [SDK RFC 54](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0054-sdk3-management-apis.md) for more details of scoped indexes.
 All information from there applies here.
+
+### FeatureNotAvailable handling
+On a `scope.search()`, before sending anything to the server, the SDK will check for the presence of this cluster capability which will only be returned by clusters that are fully upgraded to 7.6.0 or above:
+```
+  "clusterCapabilities": {
+   "search": ["scopedSearchIndex"]
+  }
+```
+If it is not present the SDK will raise `FeatureNotAvailableException` with a message along the lines of "This API is for use with scoped indexes, which require Couchbase Server 7.6.0 or above".
+
+The SDK will check for this capability in the most recent config it received.
+If it does not currently have one (in which case one should already be in the process of being asynchronously fetched), the SDK will wait for it to be available.
+This may lead the operation to timeout if the config does not arrive in time.
+The SDK will wait for at least the GCCCP config.  To simplify implementations, and because GCCCP has long been available, it may choose to not use bucket configs.
 
 ## SearchQuery implementations
 
@@ -566,7 +587,309 @@ A query that matches nothing.
 JSON paths:
 * `match_none` = `null`: The JSON representation of a `MatchNoneQuery` is simply a `"match_none": null` entry in the query JSON Object.
 
-## Return Types
+## Vector search
+This is a feature being added to Couchbase Server 7.6 in the FTS service.
+
+The feature will initially be released in a Private Preview, and all SDK additions related to it should be annotated with the platform equivalent of @Stability.Volatile as changes may well be required following user feedback. 
+
+References:
+* [Server design spec](https://docs.google.com/document/d/1Vx4PPcl2byy2F-lM6wRIUPLAsAFsVDusMj5nvrKA13g/edit#heading=h.9f1ja3elibc0) (the first page provides a good overview of the feature)
+* [PRD](https://docs.google.com/document/d/1zrNtgqLDNOFVYoyO5SOAD5Jtpkm43SMIKDc3yN1UbsM/edit#heading=h.f5uv7ep78x87)
+* [PRD appendices](https://docs.google.com/document/d/1Ht6V74xRPSTSGlttz9ORAZTcozGCCJpXAaopG-pal3g/edit#heading=h.wxy3ni7kqtfp)
+
+Given a sample KV document:
+
+```
+{
+  "cityName": "Tokyo",
+  "cityDesc": "<A long travel guide description of Tokyo, mentioning its nightlife>,
+  // A vector field encoding what's in the "city" field
+  "cityVector": [0.0023234, -0.0465719, 0.0213213, ...],
+  
+  "otherDocumentFields": "..."
+}
+```
+
+An example of the query payload we need to be able to produce:
+
+```
+{
+  "//": "The `query` field contains any regular FTS query, and will be combined with the vector search(es).  Here we just want cities starting with 'S'.",
+  "query": {
+    "prefix": "S",
+    "field": "cityName",
+    "boost": 1.0
+  },
+  "//": "The `knn` field is new, optional, and contains the vector search(es).  In this example two queries are being sent.",
+  "knn": [
+    {
+      "//": "The `vector`, `field` and `k` fields are all mandatory.",
+      "//": "Here the 'cityVector' field in the user's documents contains a vector.  It could vectorise a long travel-guide description of the city.",
+      "field": "cityVector",
+      "//": "This field is a query such as 'city with great nightlife' converted into a vector.  In practice the `vector` field is much longer.",
+      "vector": [
+        -0.00810323283,
+        0.0727998167,
+        0.0211895034,
+        -0.0254271757
+      ],
+      "//": "Find the 3 nearest neighbours (cities) to 'city with great nightlife'.",
+      "k": 3,
+      "//": "This is a more important consideration than the other vector query, so give it a higher score boost.",
+      "boost": 0.7
+    },
+    {
+      "field": "cityVector",
+      "//": "This is another query such as 'city with good museums'.",
+      "vector": [
+        -0.005610323283,
+        0.023427998167,
+        0.0132511895034,
+        0.03466271757
+      ],
+      "k": 2,
+      "boost": 0.3
+    }
+  ],
+  "//": "The `knn_operator` field is new and determines how multiple vector searches are combined.",
+  "knn_operator": "or",
+  "//": "The `fields`, `sort` and `limit` fields come from `SearchOptions`, as usual.",
+  "fields": [
+    "citName",
+    "cityDesc"
+  ],
+  "sort": [
+    "-_score"
+  ],
+  "limit": 5
+}
+```
+
+Important SDK considerations:
+
+* Per MB-60312, to send a standalone vector query without an FTS query (a desired use-case), it's necessary to provide a MatchNone FTS query.  We will default to this if the user has not specified an FTS query.
+* The `knn` field can contain multiple vector queries.  It must always contain at least 1.
+  * How they are combined is handled with a top-level `knn_operator` parameter.
+* There may be other vector search types in future, such as Approximate Nearest Neighbour (ANN).  So we may want to aim for a level of abstraction and avoid explicitly mentioning `knn` and perhaps `k`.
+* Inside an individual vector query:
+  * It contains a single vector.  FAISS allows multiple vectors to be sent in one query and the FTS team say that may want to be exposed later.
+  * The `field` parameter is essentially mandatory.  While FTS will not reject a query that does not contain it, it prevents that vector search from having any effect. 
+  * The `k` parameter is mandatory.  The FTS team suggest 3 is a sensible default to send from the SDKs.
+* There are new FTS index definition fields for defining the vector index, but they are inside the `plan` top-level field.  
+So there is nothing extra required from the SDKs to support these, as we already simply turn the untyped `plan` parameters into JSON.
+* The SDK (and Couchbase in general), at least in this first phase, have nothing to do with generating the vectors - both those stored in the documents, and those used for queries.
+The user will be responsible for generating these, for example using the OpenAI Embeddings API.
+* The feature works with both global and scoped FTS indexes.  As this is a 7.6+ feature, we will make scoped indexes the primary target for documentation, examples, etc.
+
+SDK PM advises that the most common vector search use-cases are likely to be, in this order:
+
+* Performing a vector search in isolation (without a traditional FTS query).
+* A SQL++ statement is used to also perform a vector search.
+  * This is just passed in the string statement and is expected to return the same query results JSON as at present, so from the SDK POV it's just a passthrough with no SDK modifications needed.
+* A vector search combined with a traditional FTS query.
+
+## API
+
+The FTS JSON request has fundamentally changed, as it now allows traditional FTS queries and/or vector queries.
+In addition, we need to consider that it may allow other query types in the future.
+
+Such a fundamental conceptual change necessitates a similarly fundamental change at the SDK level.
+
+Let us name the concepts we are working with:
+
+* The top-level search request.  This is currently an unnamed concept in the SDKs - let us term it a `SearchRequest`.
+* The traditional FTS query, which is already named `SearchQuery` in the SDKs.
+Includes the query itself and any options that apply only to the FTS query such as "boost".
+It's mapped to the top-level `query` JSON field.
+* An individual vector query, which we can call a `VectorQuery`.  These map to the members of the new top-level `knn` array.
+It can contain options applicable just to that vector query such as "boost" and "k".
+* A way to perform multiple `VectorQuery`s, which we can call a `VectorSearch`.
+Maps to the top-level `knn` array.
+* Any options applicable to all forms of query (both the `SearchQuery` and the `VectorSearch`), which are in `SearchOptions` (skip, limit, explain, highlight, fields, etc.)  We can continue to use the existing `SearchOptions` object for this.
+* Any options applicable only to the `VectorSearch`, which we can call `VectorSearchOptions`.
+
+So the user will be performing a `SearchRequest` containing a `SearchQuery` and/or a `VectorSearch` and/or a `FutureSearchType`, optionally with some `SearchOptions` applying to all of those.  
+A `VectorSearch` comprises 1+ `VectorQuery`s and optionally some `VectorSearchOptions`.
+
+Neither `VectorSearch` nor `VectorQuery` will extend the `SearchQuery` interface, which we will reserve for traditional FTS queries.
+
+Hence, none of this is compatible with the existing search interface `cluster.searchQuery(SearchQuery, SearchOptions)`.
+
+This takes us to a new API, `cluster.search(String indexName, SearchRequest, SearchOptions)`, which has the flexibility to be able to perform traditional FTS and/or vector queries, and/or any future top-level queries.
+
+The current `cluster.searchQuery()` API will not be deprecated at this time, given the volatility of this new feature.
+But the intent is that the new `cluster.search()` will ultimately be how new users perform any sort of FTS service query, including just a standard FTS `SearchQuery` without vector search.
+
+### API Examples
+All examples will use the reference Java SDK implementation.
+
+1. A traditional FTS query without vector search.  With the existing API:
+
+```java
+SearchQuery query = SearchQuery.matchAll();
+
+scope.searchQuery("search_index_name", query);
+cluster.searchQuery("search_index_name", query);
+```
+
+and with the new API:
+
+```java
+SearchRequest request = SearchRequest.create(SearchQuery.matchAll());
+
+cluster.search("search_index_name", request);
+scope.search("search_index_name", request);
+```
+
+2. A vector search with a single vector query and no traditional FTS query:
+
+```java
+// Using an imaginary API provided by OpenAI to generate the vector.
+float[] vector = OpenAI.createVectorFor("some query");
+
+SearchRequest request = SearchRequest
+        .create(VectorSearch.create(VectorQuery.create("vector_field", vector)));
+
+scope.search("search_index_name", request);
+cluster.search("search_index_name", request);
+```
+
+3. A combined search with both vector search and a traditional FTS query:
+
+```java
+float[] vector = OpenAI.createVectorFor("some query");
+
+SearchRequest request = SearchRequest.create(SearchQuery.matchAll())
+        .vectorSearch(VectorSearch.create(VectorQuery.create("vector_field", vector)));
+
+scope.search("search_index_name", request);
+cluster.search("search_index_name", request);
+```
+
+4. A more complex example showing a vector search containing multiple vector queries, setting all parameters:
+
+```java
+// Sending multiple `VectorQuery`s, and setting all possible parameters.
+SearchRequest request = SearchRequest
+        .create(VectorSearch.create(List.of(
+                VectorQuery.create("vector_field", aVector).numCandidates(2).boost(0.3),
+                VectorQuery.create("vector_field", anotherVector).numCandidates(1).boost(0.7)),
+            vectorSearchOptions().vectorQueryCombination(VectorQueryCombination.AND));
+
+scope.search("search_index_name", request);
+cluster.search("search_index_name", request);
+```
+
+### VectorSearch
+`VectorSearch` construction is platform-idiomatic:
+
+`VectorSearch.create(List<VectorQuery> vectorQueries, [VectorSearchOptions options])`
+
+The first parameter needs to be mandatory.
+
+`VectorSearch.create(VectorQuery vectorQuery)` can be added to make it easier to send a single `VectorQuery`.
+This is left optional to better support SDKs without overloads.
+The SDK is free to have this overload not take a `VectorSearchOptions`, since the only field currently in there applies to multiple vector queries.
+It is left platform-idiomatic as different platforms have different abilities regarding adding overloads later.
+
+`VectorSearchOptions` will currently support just one option:
+
+* `vectorQueryCombination` (`VectorQueryCombination`).  Will be sent in the top-level JSON payload as `knn_operator` (string) as either `"and"` or `"or"`.  We name the field differently in the SDK to a) improve readability and b) be able to better support possible future forms of vector search such as ANN.  If not set by the user, no value is sent.  It controls how elements in the `knn` array are combined.
+
+```
+enum VectorQueryCombination {
+    AND,
+    OR
+}
+```
+
+`VectorSearch` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
+
+### VectorQuery
+`VectorQuery` creation is platform-idiomatic:
+
+`VectorQuery.create(String vectorFieldName, float[] vectorQuery)`
+
+Both parameters need to be mandatory.  They are sent in the JSON as "field" (string) and "vector" (number array) fields respectively.  Floats are float32.
+
+The current size limit for the vector is 2048 elements, but this will not be enforced on the SDK side.
+The vector must be non-empty though, and if not the SDK will raise `InvalidArgument`. 
+
+It will also support the following parameters, exposed in the same way as the SDK exposes traditional FTS query parameters.
+In some SDKs this is as fluent-style methods on `VectorQuery` itself, but a `VectorQueryOptions` block as an optional parameter on `Vector.create()` would be more SDK3-idiomatic.
+The SDK should follow its existing convention for FTS parameters.
+
+* `uint32 numCandidates`.  Sent as a `k` number field in the JSON.  We name the field differently in the SDK for the same reason as `knn_operator`.  If not set by the user, FTS PM requests that the SDK send a default value of 3.  It controls how many results are returned and must be >= 1.  If < 1 the SDK will raise `InvalidArgument`.
+* `float boost`.  Sent as a `boost` number field in the JSON.  If not set, the field is not sent.
+
+`VectorQuery` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
+
+### SearchRequest
+`SearchRequest` creation is platform-idiomatic.  There need to be two construction options, allowing it to be created from either a `VectorSearch` or a `SearchQuery`.
+
+```
+SearchRequest.create(VectorSearch vectorSearch)
+SearchRequest.create(SearchQuery searchQuery)
+```
+
+It will also support the following fluent-style methods, allowing one (and only one) `SearchQuery` or `VectorSearch` to be added:
+
+* `searchQuery(SearchQuery searchQuery)`.  If the user has already specified a `SearchQuery`, either at construction time or via another call to `SearchRequest.searchQuery()`, the SDK needs to raise an `InvalidArgumentException`.
+* `vectorSearch(VectorSearch vectorSearch)`.  If the user has already specified a `VectorSearch`, either at construction time or via another call to `SearchRequest.vectorSearch()`, the SDK needs to raise an `InvalidArgumentException`.
+
+These fluent-style methods are proposed because, although we do not generally use fluent-style in SDK3 (outside of FTS in some SDKs, and sub-document), this is a good fit for a concept new to the SDKs: having two (or more, in future) major top-level features that are and/or in the same request.
+
+If this is completely un-idiomatic to an SDK, this alternative single constructor can be considered by that SDK:
+
+```
+SearchRequest.searchRequest([SearchQuery searchQuery], [VectorSearch vectorSearch])
+```
+
+In this case, at least one of `SearchQuery` and `VectorSearch` must be provided and the SDK must raise `InvalidArgumentException` if not.
+Note that this alternative syntax is not hugely desirable, as it does not well support future search features.
+
+If the user does not specify a `SearchQuery`, default it to a MatchNone query, per MB-60312.
+
+`SearchRequest` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
+
+### cluster/scope.search()
+Per the SDK3 error-handling model we will document a manageable number of exceptions that can be usefully caught.
+For this operation, these are just:
+
+* TimeoutException.
+* CouchbaseException.
+
+### showrequest
+The SDK will now send `"showrequest": false` in the top-level JSON, for all queries (vector or not) sent via the new `cluster/scope.search()` interface.
+Queries sent from the original `cluster/scope.searchQuery()` interface are unaffected.
+Older server versions will silently ignore this parameter.
+
+This prevents the server from returning the original request in the response - a request that can be substantial when large vectors are used, and that is not exposed in the SDK.
+
+Note: this `showrequest` approach is being debated by the FTS team and may go through further revision.
+
+### couchbase2
+Vector search is not implemented in couchbase2 at this time.
+If the user has specified a vector search, the SDK should raise a `FeatureNotAvailableException`.
+
+If not, the SDK needs to allow the operation.  The `SearchQuery` inside the `SearchRequest` can easily be forwarded to the existing couchbase2 implementation for `cluster/scope.searchQuery()`. 
+
+### FeatureNotAvailable handling
+
+Iff a `VectorSearch` is included, before sending anything to the server, the SDK will check for the presence of this cluster capability which will only be returned by clusters that are fully upgraded to 7.6.0 or above:
+```
+  "clusterCapabilities": {
+   "search": ["vectorSearch"]
+  }
+```
+If it is not present the SDK will raise `FeatureNotAvailableException` with a message along the lines of "Vector queries are available from Couchbase Server 7.6.0 and above".
+
+The SDK will check for this capability in the most recent config it received.
+If it does not currently have one (in which case one should already be in the process of being asynchronously fetched), the SDK will wait for it to be available.
+This may lead the operation to timeout if the config does not arrive in time.
+The SDK will wait for at least the GCCCP config.  To simplify implementations, and because GCCCP has long been available, it may choose to not use bucket configs.
+
+## Return Types 
 
 ### SearchResult
 
@@ -713,12 +1036,20 @@ interface SearchMetrics {
 * August 27, 2020
     * Converted to Markdown.
 
-* December 7, 2021 (by Charles Dixon)
+* December 7, 2021 - Revision #8 (by Charles Dixon)
     * Added `includeLocations` to `SearchOptions`.
     * Added `MatchOperator` and added `operator` to `MatchQuery`.
 
-* March 6, 2023 (by Graham Pople)
+* March 6, 2023 - Revision #9 (by Graham Pople)
     * Added `scope.searchQuery()`.
+
+* December 18, 2023 - Revision #10 (by Graham Pople)
+    * Added vector search and the `cluster.search()` and `scope.search()` APIs.
+    * Modified scoped search index support to use only the `scope.search()` interface added alongside vector search.
+    * Clarified scoped search index error handling.
+
+* February 14th, 2024 - Revision #11 (by Graham Pople)
+    * Specified that scoped index and vector search operations should raise `FeatureNotAvailableException` against clusters that do not support them.
 
 # Signoff
 
