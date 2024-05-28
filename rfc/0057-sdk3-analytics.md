@@ -173,13 +173,9 @@ The status needs to be decoded from the wire representation, which is in all cas
 enum AnalyticsStatus {
     RUNNING,
     SUCCESS,
-    ERRORS,
-    COMPLETED,
-    STOPPED,
     TIMEOUT,
-    CLOSED,
+    FAILED,
     FATAL,
-    ABORTED,
     UNKNOWN
 }
 ```
@@ -199,6 +195,8 @@ class AnalyticsWarning {
   * Initial Draft
 * April 30, 2020
   * Moved RFC to ACCEPTED state.
+* May 20, 2024 - Revision #2 (by Dimitris Christodoulou)
+  * Correct `AnalyticsStatus` enum values.
 
 # Signoff
 
