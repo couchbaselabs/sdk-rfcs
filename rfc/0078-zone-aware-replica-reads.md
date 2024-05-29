@@ -177,6 +177,41 @@ In all failure cases, when the SDK cannot handle operation, it must return `102
 DocumentIrretrievable` with human-readable explanation whenever it is possible
 that explains the details.
 
+## Transactions
+
+Inside transaction closure, the replica read API takes simplified form, and
+always read from local group, which implies that the SDK will always throw `102
+DocumentIrretrievable` error for servers that do not expose `serverGroup`
+property in cluster configuration.
+
+```
+class TransactionAttemptContext {
+    // ...
+    public TransactionGetResult getReplica(Collection collection,
+                                           String id,
+                                           TransactionGetReplicaOptions options);
+    // ...
+}
+```
+
+`TransactionGetReplicaOptions` here does not have any specific options except
+common with `get()` method. The user cannot select read preference.
+
+```
+class TransactionGetReplicaOptions {
+    Transcoder transcoder;
+}
+```
+
+The method might throw the following errors:
+
+* `101 DocumentNotFound`, when the server returns KV Code `0x01 ENOENT` for
+  *all* requests.
+
+* `102 DocumentIrretrievable`, when the SDK finds that there are nodes in local
+  group, or there is no group available with the name selected in connection
+  options.
+
 # Caveats
 
 The use must be aware of the following topics when dealing with
@@ -192,10 +227,6 @@ Zone-Aware-Replica-Reads:
 - The User must consult server documentation regarding setting up balanced
   cluster for efficient usage of the feature. Number of the replicas and number
   of the groups have to be carefully selected.
-
-- At the moment of writing this RFC, the transactions spec does not describe
-  Read-Replica API, but when it will be implemented, it must follow this spec
-  and expose Zone-Aware-Replica-Read options.
 
 # Open Questions
 
