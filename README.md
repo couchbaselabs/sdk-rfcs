@@ -15,6 +15,11 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 
 ## SDK RFC Index
 
+The following index represents the RFC numbers in their natural order, but then grouped according to their current status. As the index grows, and more SDK & Connector RFCs are added, we may add other sub-sections or a catalog to help focus on one logical topic in the future (e.g., Columnar SDK).
+
+[comment]: # "RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED"
+[comment]: # "Next RFC ID 84"
+
 ### Accepted RFCs
 
 | RFC # | Description                                                            | Owner        | Status   |
@@ -69,6 +74,11 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 75    | [Faster Failover and Configuration Push](https://github.com/couchbaselabs/sdk-rfcs/pull/123)                                                                               | Sergey                | DRAFT  |
 | 77    | couchbase2 support [\[gdoc\]](https://docs.google.com/document/d/1BZe7m6cT5SqUO86W4si9gdNqBOGusYAOW0JLXoe47qU/edit)                                                        | Graham P.             | DRAFT  |
 | 78    | [Zone-Aware Replica Reads](https://github.com/couchbaselabs/sdk-rfcs/pull/136)                                                                                             | Sergey                | DRAFT  |
+| 79    | [Columnar API Foundation RFC](https://docs.google.com/document/d/1BzNX8B5XqcDxn8NAi8lVrxP257IdG5kaOsA3mwDMLyQ)                                                                                             | Charles                | DRAFT  |
+| 80    | [Columnar API Connection Management](https://docs.google.com/document/d/11LRvVUGt3fEZt2K3CmxwtQQ0QHYW6hZO733cXPtxHVE)                                                                                             | Sergey                | DRAFT  |
+| 81    | [Columnar API Streaming](https://docs.google.com/document/d/1Sx9rzJNEFMvEO0Tsho3jQum5TGyjJB2q-dIKrYl--o8)                                                                                             | Dimitris & Matt                | DRAFT  |
+| 82    | [Columnar API Error Handling and Retries](https://docs.google.com/document/d/12WJ4i-B9CcNjIq5NnaFXbxZQfaaNm_tzemrmlRl5YcE)                                                                                             | Richard                | DRAFT  |
+| 83    | [API Versioning](https://docs.google.com/document/d/1GFp25bBHMg6kuFhaz0OEA0kQl_gY9ysNOeTK3M-K2Sc)                                                                                             | Jared                | DRAFT  |
 
 ### Identified RFCs
 
@@ -83,8 +93,6 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 41    | Multi-Document Atomicity                                                            | Graham  | IDENTIFIED |
 | 42    | Config Publish Interleave                                                           | Charlie | IDENTIFIED |
 | 44    | XDCR Durability                                                                     | SDK     | IDENTIFIED |
-
-[comment]: # Next RFC ID 79
 
 ### Superseded and Deprecated RFCs
 
@@ -114,12 +122,11 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 | 43    | ~~Enhanced Durability Requirements~~ (see RFC 46)                                                                                                    | Michael         | SUPERSEDED |
 | 60    | SDK3 Response Time Observability [\[gdoc\]](https://docs.google.com/document/d/11s2QCIBB-koFUm0ZzWI6aBy27hdRoDc0cRHsWvDT-xI/edit) (superseded by 67) | Mike G          | SUPERSEDED |
 
-[comment]: # "RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED"
 
 ## Background
 
-We take the addition or extension of API seriously because we intend this work to have a lifecycle of years or decades. Toward that end, we had originally been writing a set of "one pagers" which had been influenced by experience in other software development organizations. While those were great and we're even porting some of them over to RFCs, we recognized that we'd caught some mistakes late and want to focus ourselves on identifying affecting all platforms as early as possible.
+We take the addition or extension of APIs seriously because we intend this work to have a lifecycle of years or decades. Toward that end, we had originally been writing a set of "one pagers" which had been influenced by experience in other software development organizations. While those were great and we're even porting some of them over to RFCs, we recognized that we'd caught some mistakes late and want to focus ourselves on identifying affecting all platforms as early as possible.
 
 Thus, we defined a new SDK RFC process. We're not alone in this kind of endeavor. Note that [Joyent have created RFDs](https://github.com/joyent/rfd) (which came from some similar experience [@ingenthr](http://github.com/ingenthr) and [@trondn](http://github.com/trondn) had at Sun as well), and [Rust has Rust RFCs](https://github.com/rust-lang/rfcs) in addition to the well known [IETF RFCs](http://ietf.org/rfc.html).
 
-Even though this says "SDKs", frequently the discussion here will expose things not always considered at protocol and component design. Those issues may be discussed in the SDK RFC or the discussion may spawn off to [Couchbase's issue tracker](https://issues.couchbase.com)
+Even though this says "SDKs", frequently the discussion here will expose issues not always considered at protocol and component design. Those issues may be discussed in the SDK RFC or the discussion may spawn off to [Couchbase's issue tracker](https://issues.couchbase.com)
