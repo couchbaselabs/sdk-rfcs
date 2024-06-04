@@ -297,8 +297,7 @@ capability flags, we could support mixed mode.
 
 > Moving nodes between groups generates configuration, but does not really moves
 > data. The user might forget to trigger rebalance, and the SDK will try to do
-> `Selected-Server-Group` or `Selected-Server-Group-Or-All-Available` strategy,
-> while the operations are still expensive.
+> `Selected-Server-Group` strategy, while the operations are still expensive.
 
 The sever generates notice in UI warning the user that rebalance is necessary.
 The SDK should not detect whether the vBucket moved or not, and just trust the
@@ -322,11 +321,8 @@ vBucketMap in the configuration.
 > groups, so we don't have enough information to reason about cost of
 > communication with non-local groups.
 
-Same response as in previous questions, the SDK does not guarantee the cost of
-the communication in unbalanced cluster. The application might use
-`Selected-Server-Group-Or-All-Available` strategy to automatically select all
-available replicas (just like in `No-Preference` strategy), but even this might
-lead to `102 DocumentUnretrievable` and the application might need to handle it.
+The SDK does not reason about any other groups but the one that selected as
+preferred.
 
 ## Q8
 
