@@ -35,7 +35,7 @@ groups.
 
 ## Selected Server Group
 
-In this case, all reads will be done only from the local availability zone. It
+In this case, all reads will be done only from the selected server group. It
 is the cheapest solution, although it reduces chances of getting data from
 replicas (if the server groups are unbalanced).
 
@@ -47,14 +47,26 @@ This strategy allows using all available replicas, but only in case when the
 local server group is empty. The selected server group might be empty in case
 the groups are not balanced properly on the cluster, or some nodes has been
 failed over. The previous strategy in this case would return
-`102 DocumentIrretrievable` error and refuse touching replicas from non-local
+`102 DocumentUnretrievable` error and refuse touching replicas from non-local
 group.
 
-Note that in this case we do not do second round trip after trying nodes from
-selected server group, but only use current topology to detect the Empty-Group
-case.
-
 ![Selected Server Group or All Available](figures/0078-case-3-selected-server-group-or-all-available.svg)
+
+In general, the user must be expecting that the document will not be available
+in local group, so
+
+```
+try {
+   return collection.getAnyReplica(docId,
+                                   options()
+                                    .timeout("20ms")
+                                    .read_preference(SELECTED_SERVER_GROUP))
+} catch DocumentUnretrievableException | DocumentNotFoundException {
+  return collection.get(docId)
+  // or collection.getAnyReplica(docId)
+  // or collection.getAllReplicas(docId)
+}
+```
 
 # Changes
 
@@ -134,7 +146,6 @@ read replica APIs:
 enum ReadPreference {
     NO_PREFERENCE,
     SELECTED_SERVER_GROUP,
-    SELECTED_SERVER_GROUP_OR_ALL_AVAILABLE,
 };
 ```
 
@@ -174,14 +185,14 @@ class LookupInAnyReplicaOptions {
 ```
 
 In all failure cases, when the SDK cannot handle operation, it must return `102
-DocumentIrretrievable` with human-readable explanation whenever it is possible
+DocumentUnretrievable` with human-readable explanation whenever it is possible
 that explains the details.
 
 ## Transactions
 
 Inside transaction closure, the replica read API takes simplified form, and
 always read from local group, which implies that the SDK will always throw `102
-DocumentIrretrievable` error for servers that do not expose `serverGroup`
+DocumentUnretrievable` error for servers that do not expose `serverGroup`
 property in cluster configuration.
 
 ```
@@ -208,7 +219,7 @@ The method might throw the following errors:
 * `101 DocumentNotFound`, when the server returns KV Code `0x01 ENOENT` for
   *all* requests.
 
-* `102 DocumentIrretrievable`, when the SDK finds that there are nodes in local
+* `102 DocumentUnretrievable`, when the SDK finds that there are nodes in local
   group, or there is no group available with the name selected in connection
   options.
 
@@ -268,10 +279,9 @@ used
 > behave with older server? Do we need to fail fast or silently fall back to
 > current behavior?
 
-The behavior of this feature with older servers (pre 7.6.2) is not defined. It
-is up to SDK to decide what to do (for example, it could return `102
-DocumentIrretrievable` in this case, because the configuration does not tell us
-anything about server groups assigned to the nodes)
+The behavior of this feature with older servers (pre 7.6.2) is not defined. The
+User might handle it will falling back to get from active or any of the old APIs
+see the fall back snippet in the RFC body.
 
 
 ## Q4
@@ -316,7 +326,7 @@ Same response as in previous questions, the SDK does not guarantee the cost of
 the communication in unbalanced cluster. The application might use
 `Selected-Server-Group-Or-All-Available` strategy to automatically select all
 available replicas (just like in `No-Preference` strategy), but even this might
-lead to `102 DocumentIrretrievable` and the application might need to handle it.
+lead to `102 DocumentUnretrievable` and the application might need to handle it.
 
 ## Q8
 
