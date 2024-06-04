@@ -186,11 +186,11 @@ property in cluster configuration.
 
 ```
 class TransactionAttemptContext {
-    // ...
-    public TransactionGetResult getReplica(Collection collection,
-                                           String id,
-                                           TransactionGetReplicaOptions options);
-    // ...
+  // ...
+  public TransactionGetResult
+  getReplicaFromPreferredServerGroup(Collection collection, String id,
+                                     TransactionGetReplicaOptions options);
+  // ...
 }
 ```
 
@@ -214,7 +214,7 @@ The method might throw the following errors:
 
 # Caveats
 
-The use must be aware of the following topics when dealing with
+The user must be aware of the following topics when dealing with
 Zone-Aware-Replica-Reads:
 
 - Regardless the fact that the Couchbase supports Server Groups for a long time
