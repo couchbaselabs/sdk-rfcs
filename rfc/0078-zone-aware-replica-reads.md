@@ -35,16 +35,17 @@ groups.
 
 ## Selected Server Group
 
-In this case, all reads will be done only from the selected server group. It
+In this case, all reads will be done from all nodes in the selected server group. It
 is the cheapest solution, although it reduces chances of getting data from
 replicas (if the server groups are unbalanced).
 
 ![Selected Server Group](figures/0078-case-2-local-only.svg)
 
-## Selected Server Group or All Available
+## Selected Server Group with Fallback
 
-This strategy allows using all available replicas, but only in case when the
-local server group is empty. The selected server group might be empty in case
+This strategy does not require extra SDK support, but it is important that the
+user will be able to handle cases, when the replica cannot be read because
+selected group is empty. The selected server group might be empty in case
 the groups are not balanced properly on the cluster, or some nodes has been
 failed over. The previous strategy in this case would return
 `102 DocumentUnretrievable` error and refuse touching replicas from non-local
@@ -336,17 +337,23 @@ Right now the structure of responses remains unchanged.
 * April 25 2024 - Revision #1
   * Initial Draft
 
+* June 10 2024 - Revision #2
+  * Clarification that the SDK reads from all nodes that qualify the server
+    group selection.
+  * Updated title of the third strategy, that highlights the handling on the
+    empty groups.
+
 # Signoff
 
 | Language    | Team Member    | Signoff Date | Revision |
 |-------------|----------------|--------------|----------|
 | .NET        |                | 2024-MM-DD   |          |
 | Go          |                | 2024-MM-DD   |          |
-| C/C++       | Sergey Avseyev | 2024-06-10   | #1       |
+| C/C++       | Sergey Avseyev | 2024-06-10   | #2       |
 | Node.js     |                | 2024-MM-DD   |          |
-| PHP         | Sergey Avseyev | 2024-06-10   | #1       |
+| PHP         | Sergey Avseyev | 2024-06-10   | #2       |
 | Python      |                | 2024-MM-DD   |          |
-| Ruby        | Sergey Avseyev | 2024-06-10   | #1       |
+| Ruby        | Sergey Avseyev | 2024-06-10   | #2       |
 | Java        |                | 2024-MM-DD   |          |
 | Kotlin      |                | 2024-MM-DD   |          |
 | Scala       |                | 2024-MM-DD   |          |
