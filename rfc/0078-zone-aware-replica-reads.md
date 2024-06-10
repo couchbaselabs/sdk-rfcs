@@ -346,7 +346,7 @@ Right now the structure of responses remains unchanged.
 | Node.js     |                | 2024-MM-DD   |          |
 | PHP         |                | 2024-MM-DD   |          |
 | Python      |                | 2024-MM-DD   |          |
-| Ruby        |                | 2024-MM-DD   |          |
+| Ruby        | Sergey Avseyev | 2024-06-10   | #1       |
 | Java        |                | 2024-MM-DD   |          |
 | Kotlin      |                | 2024-MM-DD   |          |
 | Scala       |                | 2024-MM-DD   |          |
