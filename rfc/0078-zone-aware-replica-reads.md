@@ -342,7 +342,7 @@ Right now the structure of responses remains unchanged.
 |-------------|----------------|--------------|----------|
 | .NET        |                | 2024-MM-DD   |          |
 | Go          |                | 2024-MM-DD   |          |
-| C/C++       |                | 2024-MM-DD   |          |
+| C/C++       | Sergey Avseyev | 2024-06-10   | #1       |
 | Node.js     |                | 2024-MM-DD   |          |
 | PHP         |                | 2024-MM-DD   |          |
 | Python      |                | 2024-MM-DD   |          |
