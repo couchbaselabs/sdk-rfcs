@@ -138,6 +138,10 @@ class ClusterOptions {
 Where `serverGroupName` matches name of the group as it seen in Admin UI of the
 server and in cluster configuration JSON.
 
+In the case when, at the time of the request, there is no group with the given
+name, the SDK should still try to filter the nodes and return a `102
+DocumentUnretrievable` error because the result set is empty.
+
 ## Selecting Read Preference for Operations
 
 New enumeration should be defined for expressing different strategies for the
@@ -187,7 +191,8 @@ class LookupInAnyReplicaOptions {
 
 In all failure cases, when the SDK cannot handle operation, it must return `102
 DocumentUnretrievable` with human-readable explanation whenever it is possible
-that explains the details.
+that explains the details. This includes cases when the preferred server group
+was not selected using the `ClusterOptions::preferredServerGroup()` call.
 
 ## Transactions
 
@@ -343,17 +348,22 @@ Right now the structure of responses remains unchanged.
   * Updated title of the third strategy, that highlights the handling on the
     empty groups.
 
+* August 7 2024 - Revision #3
+  * Clarification that the SDK should return `102 DocumentUnretrievable` if the
+    preferred server group is not specified or missing while fetch with
+    `SELECTED_SERVER_GROUP` requested.
+
 # Signoff
 
 | Language    | Team Member    | Signoff Date | Revision |
 |-------------|----------------|--------------|----------|
 | .NET        |                | 2024-MM-DD   |          |
 | Go          |                | 2024-MM-DD   |          |
-| C/C++       | Sergey Avseyev | 2024-06-10   | #2       |
+| C/C++       | Sergey Avseyev | 2024-08-07   | #3       |
 | Node.js     |                | 2024-MM-DD   |          |
-| PHP         | Sergey Avseyev | 2024-06-10   | #2       |
+| PHP         | Sergey Avseyev | 2024-08-07   | #3       |
 | Python      |                | 2024-MM-DD   |          |
-| Ruby        | Sergey Avseyev | 2024-06-10   | #2       |
+| Ruby        | Sergey Avseyev | 2024-08-07   | #3       |
 | Java        |                | 2024-MM-DD   |          |
 | Kotlin      |                | 2024-MM-DD   |          |
 | Scala       |                | 2024-MM-DD   |          |
