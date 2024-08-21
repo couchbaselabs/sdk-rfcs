@@ -77,7 +77,7 @@ The following index represents the RFC numbers in their natural order, but then 
 | 79    | [Columnar API Foundation RFC](https://docs.google.com/document/d/1BzNX8B5XqcDxn8NAi8lVrxP257IdG5kaOsA3mwDMLyQ)                                                                                             | Charles                | DRAFT  |
 | 80    | [Columnar API Connection Management](https://docs.google.com/document/d/11LRvVUGt3fEZt2K3CmxwtQQ0QHYW6hZO733cXPtxHVE)                                                                                             | David N                | DRAFT  |
 | 81    | [Columnar API Streaming](https://docs.google.com/document/d/1Sx9rzJNEFMvEO0Tsho3jQum5TGyjJB2q-dIKrYl--o8)                                                                                             | Dimitris & Matt                | DRAFT  |
-| 82    | [Columnar API Error Handling and Retries](https://docs.google.com/document/d/12WJ4i-B9CcNjIq5NnaFXbxZQfaaNm_tzemrmlRl5YcE)                                                                                             | Richard                | DRAFT  |
+| 82    | [Columnar API Error Handling and Retries](https://docs.google.com/document/d/12WJ4i-B9CcNjIq5NnaFXbxZQfaaNm_tzemrmlRl5YcE)                                                                                             | David N                | DRAFT  |
 | 83    | [API Versioning](https://docs.google.com/document/d/1GFp25bBHMg6kuFhaz0OEA0kQl_gY9ysNOeTK3M-K2Sc)                                                                                             | Jared                | DRAFT  |
 
 ### Identified RFCs
