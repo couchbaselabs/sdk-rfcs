@@ -4,8 +4,9 @@
 - RFC ID: 0050-sdk3-datastructures
 - Start Date: July 28, 2019
 - Owner: Brett Lawson \<brett@couchbase.com\>
-- Current Status: ACCEPTED- Relates To
-  - SDK-RFC#8 (Datastructures)
+- Current Status: ACCEPTED
+- Relates To
+  - [SDK-RFC#8](rfc/0008-datastructures.md) (Datastructures)
 - [Original Google Drive Doc](https://docs.google.com/document/d/1mKk20ScVE8ssF2DvqZTe9xIUvOUanJ7LOARFiCJPkQ0)
 
 # Motivation
