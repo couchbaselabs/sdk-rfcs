@@ -51,7 +51,7 @@ That means in SDK instances, we largely have three major errors that a user may
 see along with additional error context.  The error context tends to be service
 specific and these may not have a similar shape as the services were
 independently developed (among other reasons).  There are a number of other
-errors, like InvalidArgument and KeyNotFound which are not useful from a
+errors, like `InvalidArgument` and `KeyNotFound` which are not useful from a
 Capella Experience perspective.
 
 The three metrics we should collect are:
@@ -60,7 +60,7 @@ The three metrics we should collect are:
   * The requested operation has timed out, but the SDK does not know if it was
   received by the intended remote system.  For example, it was written to the
   network and timed out before the response was received.  This is only for
-  mutations, as get() operations will always return an UnambiguiousTimeout.
+  mutations, as `get()` operations will always return an `UnambiguiousTimeout`.
 * Unambiguous Timeout
   * The requested operation has timed out and the SDK knows it could not have
   been received by the intended remote system.  For example, it was intended
@@ -187,9 +187,16 @@ significantly between two applications.
 
 # API and Implementation Details
 
-It should be possible to reuse existing Meter implementation, that according to
-RFC-67 (Extended SDK Observability) already builds histograms for request
-latencies.
+The decision to reuse the existing Meter implementation is considered an SDK
+implementation detail, and this RFC does not specify the API for collecting
+metrics from the library.
+
+One possible approach is to introduce a "compound meter" that aggregates an
+existing meter (which could be overridden by the user) and the application
+service-level telemetry meter described in this RFC. This compound meter would
+collect counters and fixed-bucket latency histograms. The application
+service-level meter would continue to function even if the user provides a
+custom meter implementation.
 
 In addition to latencies, which would be used for reporting histograms, the
 default Meter should also maintain the following counters:
@@ -212,11 +219,11 @@ either of the following mechanisms:
 * presence of the `appTelemetry` property of the node in `nodexExt` entry of
   the configuration (NOTE: the exact name and semantics of the value might be
   defined by the server team later). In this case the SDK would either use
-  hardcoded path or extract one from the JSON configuration and use for and
+  hard-coded path or extract one from the JSON configuration and use for and
   build the endpoint address the websocket connection.
 
 * presence of the `app_telemetry_endpoint` property in the connection option,
-  or similar optiion in the `ClusterOptions`:
+  or similar option in the `ClusterOptions`:
 
       couchbases://abc.cloud.couchbase.com?app_telemetry_endpoint=ws://localhost:9090/app_telemetry
 
@@ -226,7 +233,7 @@ either of the following mechanisms:
   This endpoint must not have authentication, and should support WebSocket
   protocol.
 
-## Network Interacation
+## Network Interaction
 
 Once the SDK determined the endpoint it should establish HTTP connection and
 upgrade it to WebSocket.
@@ -243,6 +250,11 @@ to change the backoff value.
 
 The SDK must either implement or enable WebSocket PING frame, and respond to
 server request with WebSocket PONG whenever the server requests it.
+
+The SDK must respond to any WebSocket PING frame with PONG frame whenever it is
+possible to avoid termination of the connection.
+
+The SDK might also send PING frames to the server and expect PONG frame.
 
 ## Wire Protocol
 
@@ -265,7 +277,7 @@ And the following statuses:
 
 | Name              | Value  | Description                                                |
 |-------------------|--------|------------------------------------------------------------|
-| `SUCCESS`         | `0x00` | No errors has been occured                                 |
+| `SUCCESS`         | `0x00` | No errors has been occurred                                 |
 | `UNKNOWN_COMMAND` | `0x01` | The SDK does not support operation requested by the server |
 
 
@@ -308,8 +320,12 @@ Where
   | `alt_node` | If alternative address is used, this field should be present |
   | `bucket` | Name of the bucket (if present) |
 
-* `1` is a metric value. Each metric value increment represents a single network operation (e.g. `GET_ALL_REPLICAS` should be counted as `1 + number_of_replicas`).
-* `1695747260` is a metric timestamp, that represents time in milliseconds from the Epoch (1970-01-01 00:00:00 UTC) to the moment of the generation this response.
+* `1` is a metric value. Each metric value increment represents a single
+  network operation (e.g. `GET_ALL_REPLICAS` should be counted as `1 +
+  number_of_replicas`).
+* `1695747260` is a metric timestamp, that represents time in milliseconds from
+   the Epoch (1970-01-01 00:00:00 UTC) to the moment of the generation this
+   response.
 
 #### Histograms
 
@@ -473,11 +489,10 @@ Unmasked data (88579 bytes):
 
 ## Integration with Custom Meters
 
-The user might override the default meter with their own, and in this case
-reporting features, described in this RFC must be disabled (i.e. no WebSocket
-connections), but the SDK must still report counters to the user's Meter
-implementation to allow them to gather similar insight of the SDK and
-application health.
+When the user might overrides the default meter with their own (e.g. providing
+OpenTelemetry meter), the reporting features, described in this RFC must not be
+disabled and the SDK must still collect and report metrics regarding
+application and library health.
 
 ## Configuration
 
