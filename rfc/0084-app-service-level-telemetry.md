@@ -117,70 +117,18 @@ simply and inexpensively understand if the service level has likely changed.
 It's proposed that we establish a set of standardized histograms, specific to
 services and to the service level expected with the service using those
 parameters.  Counters for these histograms can be sent to Couchbase and both
-stored individually and aggregated.
+stored individually and aggregated. See histogram buckets in "Histograms" table
+below.
 
 As an aggregated set of metrics, it would give Couchbase a rough view over the
 service level the user is experiencing.  Deviations in service level can be dug
 into and, in particular, we can check for correlation to Couchbase Capella
 management activities like upgrades.
 
-This list represents the services, buckets.
-
-* Data Service, Non-Durable
-  * Retrieval
-    * <1ms
-    * 1-10ms
-    * 10-100ms
-    * 100-500ms
-    * 500-1000ms
-    * 1s-2.5s
-    * \>2.5s
-  * Mutation
-    * <1ms
-    * 1-10ms
-    * 10-100ms
-    * 100-500ms
-    * 500-1000ms
-    * 1s-2.5s
-    * \>2.5s
-* Data Service, Durable
-  * Mutation
-    * 1-10ms
-    * 10-100ms
-    * 100-1000ms
-    * 1-2s
-    * 2s-5s
-    * 5s-10s
-    * \>10s
-* Query Service
-  * Query (all)
-    * 0-100ms
-    * 100-1000ms
-    * 1s-10s
-    * 10s-30s
-    * 30-75s
-    * \>75s
-* FTS Service
-  * Search (all)
-    * 0-100ms
-    * 100-1000ms
-    * 1s-10s
-    * 10s-30s
-    * 30-75s
-    * \>75s
-* Analytics Service
-  * Query (all)
-    * 0-100ms
-    * 100-1000ms
-    * 1s-10s
-    * 10s-30s
-    * 30-75s
-    * \>75s
-
 The Indexing Service and Eventing Services are not included as they are not
 network-available services for applications to make requests from.
 
-As with the Service Experience Counters above, it may be incorrect to try to
+As with the Service Experience Counters, it may be incorrect to try to
 compare between deployments.  For example, the query complexity may differ
 significantly or the data size and use of features like compression may vary
 significantly between two applications.
