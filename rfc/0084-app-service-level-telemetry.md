@@ -211,6 +211,12 @@ default Meter should also maintain the following counters:
 Where the service is a part of the visible counter name, and hostname and
 bucket must be stored and exported as a meta data.
 
+The SDK must only account network operations that are visible to server. In
+other words it must not increment counter for virtual/compound operations like
+`GET_ALL_REPLICAS` and instead track all `GET_REPLICA` sub-operations
+individually. Also during retry/retransmit each operation should be tracked
+separately.
+
 ## App Telemetry Activation
 
 The collection and reporting of application telemetry should be activated by
