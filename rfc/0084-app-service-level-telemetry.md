@@ -260,7 +260,9 @@ server request with WebSocket PONG whenever the server requests it.
 The SDK must respond to any WebSocket PING frame with PONG frame whenever it is
 possible to avoid termination of the connection.
 
-The SDK might also send PING frames to the server and expect PONG frame.
+The SDK might also send PING frames to the server and expect PONG frame. If the
+server does not respond to SDK-initiated PING request, the SDK should close
+connection, and reconnect after `app_telemetry_backoff` interval.
 
 ## Wire Protocol
 
