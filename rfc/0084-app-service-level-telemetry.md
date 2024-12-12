@@ -301,8 +301,8 @@ Where
 #### Histograms
 
     sdk_kv_retrieval_duration_seconds_bucket{le="0.001",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 24054
-    sdk_kv_retrieval_duration_seconds_bucket{le="0.010",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 33444
-    sdk_kv_retrieval_duration_seconds_bucket{le="0.100",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 100392
+    sdk_kv_retrieval_duration_seconds_bucket{le="0.01",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 33444
+    sdk_kv_retrieval_duration_seconds_bucket{le="0.1",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 100392
     sdk_kv_retrieval_duration_seconds_bucket{le="0.5",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 129389
     sdk_kv_retrieval_duration_seconds_bucket{le="1",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 133988
     sdk_kv_retrieval_duration_seconds_bucket{le="2.5",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 139823
@@ -325,7 +325,8 @@ Where
 * `le="0.001"` label is the upper bound of the bucket. All SDK must use hard
   coded buckets to allow easy aggregation. The value would fall into all
   buckets where upper bound is higher. The following buckets should be used
-  by the SDKs:
+  by the SDKs (note that bucket label have to be treated as a string literal,
+  i.e. no trailing zeroes):
 
 <table>
   <thead>
@@ -337,63 +338,63 @@ Where
   <tbody>
     <tr>
       <td>sdk_kv_retrieval</td>
-      <td>&lt;=1ms</td>
-      <td>&lt;=10ms</td>
-      <td>&lt;=100ms</td>
-      <td>&lt;=500ms</td>
-      <td>&lt;=1000ms</td>
-      <td>&lt;=2.5s</td>
-      <td>&gt;2.5s</td>
+      <td>&lt;=1ms<br><code style="white-space:nowrap">le="0.001"</code></td>
+      <td>&lt;=10ms<br><code style="white-space:nowrap">le="0.01"</code></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
+      <td>&lt;=500ms<br><code style="white-space:nowrap">le="0.5"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
+      <td>&lt;=2.5s<br><code style="white-space:nowrap">le="2.5"</code></td>
+      <td>&gt;2.5s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_kv_mutation_nondurable</td>
-      <td>&lt;=1ms</td>
-      <td>&lt;=10ms</td>
-      <td>&lt;=100ms</td>
-      <td>&lt;=500ms</td>
-      <td>&lt;=1000ms</td>
-      <td>&lt;=2.5s</td>
-      <td>&gt;2.5s</td>
+      <td>&lt;=1ms<br><code style="white-space:nowrap">le="0.001"</code></td>
+      <td>&lt;=10ms<br><code style="white-space:nowrap">le="0.01"</code></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
+      <td>&lt;=500ms<br><code style="white-space:nowrap">le="0.5"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
+      <td>&lt;=2.5s<br><code style="white-space:nowrap">le="2.5"</code></td>
+      <td>&gt;2.5s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_kv_mutation_durable</td>
-      <td>&lt;=10ms</td>
-      <td>&lt;=100ms</td>
-      <td>&lt;=1000ms</td>
-      <td>&lt;=2s</td>
-      <td>&lt;=5s</td>
-      <td>&lt;=10s</td>
-      <td>&gt;10s</td>
+      <td>&lt;=10ms<br><code style="white-space:nowrap">le="0.01"</code></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
+      <td>&lt;=500ms<br><code style="white-space:nowrap">le="0.5"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
+      <td>&lt;=2s<br><code style="white-space:nowrap">le="2"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="5"</code></td>
+      <td>&gt;10s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_query</td>
-      <td>&lt;=100ms</td>
-      <td>&lt;=1000ms</td>
-      <td>&lt;=10s</td>
-      <td>&lt;=30s</td>
-      <td>&lt;=75s</td>
-      <td>&gt;75s</td>
       <td></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="10"</code></td>
+      <td>&lt;=30s<br><code style="white-space:nowrap">le="30"</code></td>
+      <td>&lt;=75s<br><code style="white-space:nowrap">le="75"</code></td>
+      <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_search</td>
-      <td>&lt;=100ms</td>
-      <td>&lt;=1000ms</td>
-      <td>&lt;=10s</td>
-      <td>&lt;=30s</td>
-      <td>&lt;=75s</td>
-      <td>&gt;75s</td>
       <td></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="10"</code></td>
+      <td>&lt;=30s<br><code style="white-space:nowrap">le="30"</code></td>
+      <td>&lt;=75s<br><code style="white-space:nowrap">le="75"</code></td>
+      <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_analytics</td>
-      <td>&lt;=100ms</td>
-      <td>&lt;=1000ms</td>
-      <td>&lt;=10s</td>
-      <td>&lt;=30s</td>
-      <td>&lt;=75s</td>
-      <td>&gt;75s</td>
       <td></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="10"</code></td>
+      <td>&lt;=30s<br><code style="white-space:nowrap">le="30"</code></td>
+      <td>&lt;=75s<br><code style="white-space:nowrap">le="75"</code></td>
+      <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
   </tbody>
 </table>
