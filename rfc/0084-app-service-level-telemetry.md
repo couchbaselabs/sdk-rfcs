@@ -307,7 +307,9 @@ Where
   `sdk_{service}_retrieval_duration_seconds` prefix describes particular metric
   of the service. There are two special metrics associated with each histogram:
   `_sum` and `_count` that represent the overall sum of all buckets, and total
-  number of the points in the histogram.
+  number of the points in the histogram. The `_sum` value should be a total sum
+  of the points in seconds represented so that it could be parsed with Go's
+  `ParseFloat()`[1][text-exposition-format].
 * `le="0.001"` label is the upper bound of the bucket. All SDK must use hard
   coded buckets to allow easy aggregation. The value would fall into all
   buckets where upper bound is higher. The following buckets should be used
@@ -489,3 +491,5 @@ should implement the following options and document them as Volatile.
 
 * November 11, 2024 - Revision #1 (by Sergey Avseyev)
     * Initial Draft
+
+[text-exposition-format]: https://prometheus.io/docs/instrumenting/exposition_formats/
