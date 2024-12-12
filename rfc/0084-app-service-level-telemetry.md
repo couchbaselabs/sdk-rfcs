@@ -125,8 +125,9 @@ service level the user is experiencing.  Deviations in service level can be dug
 into and, in particular, we can check for correlation to Couchbase Capella
 management activities like upgrades.
 
-The Indexing Service and Eventing Services are not included as they are not
-network-available services for applications to make requests from.
+The Indexing Service is not included as it is not used by SDK, even for
+management operations. All future services must be reported if the service
+exposes separate port and the SDK is using it.
 
 As with the Service Experience Counters, it may be incorrect to try to
 compare between deployments.  For example, the query complexity may differ
@@ -160,7 +161,15 @@ The SDK must send zero metric, because it still carries information that at
 given timestamp, no events have been registered.
 
 Where the service is a part of the visible counter name, and hostname and
-bucket must be stored and exported as a meta data.
+bucket must be stored and exported as a meta data. Valid service names are (see
+RFC-67 for `Service Identifier`):
+
+* `kv`
+* `query`
+* `search`
+* `analytics`
+* `management`
+* `eventing`
 
 The SDK must only account network operations that are visible to server. In
 other words it must not increment counter for virtual/compound operations like
