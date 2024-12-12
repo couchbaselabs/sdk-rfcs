@@ -290,7 +290,10 @@ Where
 
 * `1` is a metric value. Each metric value increment represents a single
   network operation (e.g. `GET_ALL_REPLICAS` should be counted as `1 +
-  number_of_replicas`).
+  number_of_replicas`). The value must be integer (Note that it is more
+  restrictive than Prometheus specification, which allows floats for metric
+  values, but using integers makes it easier for the server to implement
+  aggregation).
 * `1695747260` is a metric timestamp, that represents time in milliseconds from
    the Epoch (1970-01-01 00:00:00 UTC) to the moment of the generation this
    response.
