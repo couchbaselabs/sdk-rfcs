@@ -267,7 +267,7 @@ Where
   | `sdk_{service}_r_utimedout` | Unambiguous timeout |
   | `sdk_{service}_r_atimedout` | Ambiguous timeout |
   | `sdk_{service}_r_canceled` | Canceled |
-  | `sdk_{service}_r_total` | Total number of operations |
+  | `sdk_{service}_r_total` | Total number of operations. Note that this number might differ from `_count` of the histogram, because histograms do not account failures. |
 
 * `{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)", id="66388CF5BFCF7522/18CC8791579B567C", node="node1", bucket="travel-sample"}` is a list of the tags. The server is free to strip/transform any tags before relaying to Prometheus collector.
 
