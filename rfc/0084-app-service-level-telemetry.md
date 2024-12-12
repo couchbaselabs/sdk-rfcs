@@ -242,7 +242,7 @@ And the following statuses:
 
 ### `GET_TELEMETRY`
 
-The request must not have payload.
+The request should not have payload.
 
 The response might have payload if the SDK has metrics to report.
 
