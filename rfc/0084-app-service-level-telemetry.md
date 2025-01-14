@@ -265,7 +265,7 @@ report.
 
 #### Metrics
 
-    sdk_kv_r_utimedout{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)", id="66388CF5BFCF7522/18CC8791579B567C", node="node1", bucket="travel-sample"} 1 1695747260
+    sdk_kv_r_utimedout{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)", node="node1", bucket="travel-sample"} 1 1695747260
 
 Where
 
@@ -278,12 +278,11 @@ Where
   | `sdk_{service}_r_canceled` | Canceled |
   | `sdk_{service}_r_total` | Total number of operations. Note that this number might differ from `_count` of the histogram, because histograms do not account failures. |
 
-* `{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)", id="66388CF5BFCF7522/18CC8791579B567C", node="node1", bucket="travel-sample"}` is a list of the tags. The server is free to strip/transform any tags before relaying to Prometheus collector.
+* `{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)", node="node1", bucket="travel-sample"}` is a list of the tags. The server is free to strip/transform any tags before relaying to Prometheus collector.
 
   | Label | Description |
   | ---- | ---- |
   | `agent` | agent string of the SDK, as it is used everywhere (HELLO message, logs etc.) |
-  | `id` | SDK identifier string as specified by [SDK-RFC #35](0035-rto.md#client--connection-ids) in section "Client / Connection IDs" |
   | `node` | The hostname of the node as seen in configuration, and used by the SDK to establish connection. |
   | `alt_node` | If alternative address is used, this field should be present |
   | `bucket` | Name of the bucket (if present) |
@@ -300,15 +299,15 @@ Where
 
 #### Histograms
 
-    sdk_kv_retrieval_duration_seconds_bucket{le="0.001",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 24054
-    sdk_kv_retrieval_duration_seconds_bucket{le="0.01",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 33444
-    sdk_kv_retrieval_duration_seconds_bucket{le="0.1",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 100392
-    sdk_kv_retrieval_duration_seconds_bucket{le="0.5",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 129389
-    sdk_kv_retrieval_duration_seconds_bucket{le="1",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 133988
-    sdk_kv_retrieval_duration_seconds_bucket{le="2.5",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 139823
-    sdk_kv_retrieval_duration_seconds_bucket{le="+Inf",agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 144320
-    sdk_kv_retrieval_duration_seconds_sum{agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 53423
-    sdk_kv_retrieval_duration_seconds_count{agent="sdk/2.4.5.0",id="66388C/18CC8",bucket="travel-sample",node="node1"} 144320
+    sdk_kv_retrieval_duration_seconds_bucket{le="0.001",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 24054
+    sdk_kv_retrieval_duration_seconds_bucket{le="0.01",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 33444
+    sdk_kv_retrieval_duration_seconds_bucket{le="0.1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 100392
+    sdk_kv_retrieval_duration_seconds_bucket{le="0.5",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 129389
+    sdk_kv_retrieval_duration_seconds_bucket{le="1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 133988
+    sdk_kv_retrieval_duration_seconds_bucket{le="2.5",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 139823
+    sdk_kv_retrieval_duration_seconds_bucket{le="+Inf",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 144320
+    sdk_kv_retrieval_duration_seconds_sum{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 53423
+    sdk_kv_retrieval_duration_seconds_count{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 144320
 
 Where
 
