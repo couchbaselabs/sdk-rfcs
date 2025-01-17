@@ -182,9 +182,9 @@ separately.
 The collection and reporting of application telemetry should be activated by
 either of the following mechanisms:
 
-* presence of the `appTelemetry` property of the node in `nodexExt` entry of
-  the configuration (NOTE: the exact name and semantics of the value might be
-  defined by the server team later). In this case the SDK would either use
+* presence of the `appTelemetryPath` property of the node in `nodexExt` entry
+  of the configuration that contains path on the management port that could be
+  upgraded to WebSocket protocol. In this case the SDK would either use
   hard-coded path or extract one from the JSON configuration and use for and
   build the endpoint address the websocket connection.
 
