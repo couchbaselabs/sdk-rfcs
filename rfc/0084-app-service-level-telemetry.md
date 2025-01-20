@@ -47,27 +47,22 @@ much of the error handling for an app developer into a few specific errors many
 of which may have an error context. The SDKs try to balance this Couchbase
 design of error handling with respecting platform idioms.
 
-That means in SDK instances, we largely have three major errors that a user may
+That means in SDK instances, we largely have two major errors that a user may
 see along with additional error context.  The error context tends to be service
 specific and these may not have a similar shape as the services were
 independently developed (among other reasons).  There are a number of other
 errors, like `InvalidArgument` and `KeyNotFound` which are not useful from a
 Capella Experience perspective.
 
-The three metrics we should collect are:
+The two metrics we should collect are:
 
-* Ambiguous Timeout
-  * The requested operation has timed out, but the SDK does not know if it was
-  received by the intended remote system.  For example, it was written to the
-  network and timed out before the response was received.  This is only for
-  mutations, as `get()` operations will always return an `UnambiguiousTimeout`.
-* Unambiguous Timeout
-  * The requested operation has timed out and the SDK knows it could not have
-  been received by the intended remote system.  For example, it was intended
-  for a system which there was no connection for and the connection couldn't be
-  built to send it before the connection timeout.
-* Request Canceled
-  * The requested operation was started and dispatched to the intended system.
+* Timeout.
+  The requested operation has timed out.  For example, it was written to the
+  network and timed out before the response was received. The SDK might still
+  receive response from the Server, which is then qualified as an orphan
+  response, but the Timeout counter must be incremented anyway.
+* Request Canceled.
+  The requested operation was started and dispatched to the intended system.
   However, it has been canceled by the SDK's processing.  Typically this is if
   the connection is severed, but it could also have other causes (e.g.,
   shutdown) and can even be triggered by the user themselves (e.g., calling
@@ -79,21 +74,11 @@ other types of errors.
 For this set of metrics, we propose gathering simple counters, and on a per SDK
 instance basis (these do not correlate 1:1 to hostnames and a definition of
 runtime/instance identifiers is in the [Response Time Observability
-RFC](rfc/0035-rto.md)). Each counter must be associated with the connection and
+RFC](rfc/0035-rto.md)). Each counter must be associated with the node hostname, node UUID and
 bucket if it is possible. In particular, it must be possible to label counters
 with bucket name and hostname for KV service, while often not possible to even
 reliably associate hostname with Search request due to proxies on the Cloud
 deployments.
-
-From these two simple pieces of information, we can intuit that the connection
-was likely severed and a number of operations timed out before the connection
-could be re-established.
-
-Determining why the connection was severed requires correlation to other
-information.  For example, we may need to look at the Couchbase Server logs to
-see that a particular process for a given service crashed where we would expect
-to find the SDK runtime/instance identifier being sent in the request (defined
-in the [Response Time Observability RFC](rfc/0035-rto.md)).
 
 We should note that existence of timeouts is possibly expected.  For example,
 with an ad-targeting or recommendation targeting deployment, there may be short
@@ -134,6 +119,14 @@ compare between deployments.  For example, the query complexity may differ
 significantly or the data size and use of features like compression may vary
 significantly between two applications.
 
+The SDK must record latency for histogram on the lower layer for each
+transmission attempt instead of top-level operation. For example, if KV GET
+operation results in three network requests, there should be three data points
+for the metrics counter, and if the operation has not been canceled, it should
+record three data points for histogram, even if the operation has been timed
+out, because on the lower-level API, the SDK still sees orphan responses and is
+able to figure out true latency of the request.
+
 # API and Implementation Details
 
 The decision to reuse the existing Meter implementation is considered an SDK
@@ -152,8 +145,7 @@ default Meter should also maintain the following counters:
 
 | Metric | Description |
 | :---- | :---- |
-| sdk\_*{service}*\_r\_utimedout | Unambiguous timeout |
-| sdk\_*{service}*\_r\_atimedout | Ambiguous timeout |
+| sdk\_*{service}*\_r\_timedout | Timeout |
 | sdk\_*{service}*\_r\_canceled | Canceled |
 | sdk\_*{service}*\_r\_total | Total number of operations |
 
@@ -177,6 +169,11 @@ other words it must not increment counter for virtual/compound operations like
 individually. Also during retry/retransmit each operation should be tracked
 separately.
 
+The SDK must infer timeout condition on the lower level by pushing timeout
+duration from the higher level API, or calculate it from the current time and
+the operation deadline, even in case when the SDK core does not have access to
+the timer object associated with the request.
+
 ## App Telemetry Activation
 
 The collection and reporting of application telemetry should be activated by
@@ -198,6 +195,19 @@ either of the following mechanisms:
 
   This endpoint must not have authentication, and should support WebSocket
   protocol.
+
+Below is an exceprt from the server configuration that exposes WebSocket endpoint:
+
+    $ curl -s -u Administrator:password http://192.168.106.128:8091/pools/default/b/default | \
+        jq '.nodesExt[0] | pick(.hostname, .services.mgmt, .services.mgmtSSL, .appTelemetryPath)'
+    {
+      "hostname": "192.168.106.128",
+      "services": {
+        "mgmt": 8091,
+        "mgmtSSL": 18091
+      },
+      "appTelemetryPath": "/_appTelemetry"
+    }
 
 ## Network Interaction
 
@@ -265,26 +275,25 @@ report.
 
 #### Metrics
 
-    sdk_kv_r_utimedout{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)", node="node1", bucket="travel-sample"} 1 1695747260
+    sdk_kv_r_timedout{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a",bucket="travel-sample"} 1 1695747260
 
 Where
 
-* `sdk_kv_r_utimedout` is a name of the metric, one of the:
+* `sdk_kv_r_timedout` is a name of the metric, one of the:
 
   | Metric | Description |
   | ---- | ---- |
-  | `sdk_{service}_r_utimedout` | Unambiguous timeout |
-  | `sdk_{service}_r_atimedout` | Ambiguous timeout |
+  | `sdk_{service}_r_timedout` | Timeout |
   | `sdk_{service}_r_canceled` | Canceled |
   | `sdk_{service}_r_total` | Total number of operations. Note that this number might differ from `_count` of the histogram, because histograms do not account failures. |
 
-* `{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)", node="node1", bucket="travel-sample"}` is a list of the tags. The server is free to strip/transform any tags before relaying to Prometheus collector.
+* `{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a",bucket="travel-sample"}` is a list of the tags. The server is free to strip/transform any tags before relaying to Prometheus collector.
 
   | Label | Description |
   | ---- | ---- |
   | `agent` | agent string of the SDK, as it is used everywhere (HELLO message, logs etc.) |
-  | `node` | The hostname of the node as seen in configuration, and used by the SDK to establish connection. |
-  | `alt_node` | If alternative address is used, this field should be present |
+  | `node` | The hostname (without port) of the node as seen in `nodesExt[].hostname` of the configuration. |
+  | `node_uuid` | The UUID of the node as it is seen in `nodesExt[].nodeUUID` of the configuration. |
   | `bucket` | Name of the bucket (if present) |
 
 * `1` is a metric value. Each metric value increment represents a single
@@ -299,15 +308,15 @@ Where
 
 #### Histograms
 
-    sdk_kv_retrieval_duration_seconds_bucket{le="0.001",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 24054
-    sdk_kv_retrieval_duration_seconds_bucket{le="0.01",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 33444
-    sdk_kv_retrieval_duration_seconds_bucket{le="0.1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 100392
-    sdk_kv_retrieval_duration_seconds_bucket{le="0.5",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 129389
-    sdk_kv_retrieval_duration_seconds_bucket{le="1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 133988
-    sdk_kv_retrieval_duration_seconds_bucket{le="2.5",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 139823
-    sdk_kv_retrieval_duration_seconds_bucket{le="+Inf",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 144320
-    sdk_kv_retrieval_duration_seconds_sum{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 53423
-    sdk_kv_retrieval_duration_seconds_count{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1"} 144320
+    sdk_kv_retrieval_duration_seconds_bucket{le="0.001",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 24054
+    sdk_kv_retrieval_duration_seconds_bucket{le="0.01",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 33444
+    sdk_kv_retrieval_duration_seconds_bucket{le="0.1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 100392
+    sdk_kv_retrieval_duration_seconds_bucket{le="0.5",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 129389
+    sdk_kv_retrieval_duration_seconds_bucket{le="1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 133988
+    sdk_kv_retrieval_duration_seconds_bucket{le="2.5",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 139823
+    sdk_kv_retrieval_duration_seconds_bucket{le="+Inf",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 144320
+    sdk_kv_retrieval_duration_seconds_sum{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 53423
+    sdk_kv_retrieval_duration_seconds_count{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 144320
 
 Where
 
