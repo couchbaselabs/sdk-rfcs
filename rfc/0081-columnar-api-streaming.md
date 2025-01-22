@@ -349,10 +349,10 @@ The timeout should apply to the whole stream. This is similar to the approach in
 | Python | Jared Casey |  |  |
 | Scala | Graham Pople | 2024-08-22 | 4 |
 | .NET | Jeffry Morris |  |  |
-| Java | David Nault | 2024-06-07 | 2 |
+| Java | David Nault | 2025-01-22 | 4 |
 | C++ | Sergey Avseyev |  |  |
 | Ruby | Sergey Avseyev |  |  |
-| Kotlin | David Nault | 2024-06-07 | 2 |
+| Kotlin | David Nault | 2025-01-22 | 4 |
 
 [sdk-rfc-0079]: /rfc/0079-columnar-api-foundation.md
 [sdk-rfc-0082]: /rfc/0082-columnar-api-error-handling-retries.md
