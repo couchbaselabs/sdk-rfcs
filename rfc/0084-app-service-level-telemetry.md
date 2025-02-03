@@ -210,6 +210,11 @@ Below is an exceprt from the server configuration that exposes WebSocket endpoin
       "appTelemetryPath": "/_appTelemetry"
     }
 
+The SDK must not collect metrics if the feature is disabled with
+`enable_app_telemetry` or when the cluster does not advertize
+`appTelemetryPath` property for at least one node and the user does not specify
+`app_telemetry_endpoint`.
+
 ## Network Interaction
 
 Once the SDK determined the endpoint it should establish HTTP connection and
@@ -493,6 +498,10 @@ application and library health.
 This SDK does not require any additional configuration properties with
 Committed status. Although for the faster adoption and easier testing, it
 should implement the following options and document them as Volatile.
+
+* `enable_app_telemetry` Option to control whether the feature is enabled or
+not. When the feature is disabled, the SDK will ignore telemetry endpoints in
+the configuration. The default value should be `true`.
 
 * `app_telemetry_endpoint` that allows to override the reporting endpoint
   discovered through configuration, or provide one if the configuration does
