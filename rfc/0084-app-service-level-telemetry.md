@@ -322,14 +322,14 @@ the Prometheus reference.
 
 #### Histograms
 
-    sdk_kv_retrieval_duration_ms_bucket{le="0.001",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 24054
-    sdk_kv_retrieval_duration_ms_bucket{le="0.01",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 33444
-    sdk_kv_retrieval_duration_ms_bucket{le="0.1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 100392
-    sdk_kv_retrieval_duration_ms_bucket{le="0.5",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 129389
-    sdk_kv_retrieval_duration_ms_bucket{le="1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 133988
-    sdk_kv_retrieval_duration_ms_bucket{le="2.5",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 139823
+    sdk_kv_retrieval_duration_ms_bucket{le="1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 24054
+    sdk_kv_retrieval_duration_ms_bucket{le="10",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 33444
+    sdk_kv_retrieval_duration_ms_bucket{le="100",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 100392
+    sdk_kv_retrieval_duration_ms_bucket{le="500",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 129389
+    sdk_kv_retrieval_duration_ms_bucket{le="1000",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 133988
+    sdk_kv_retrieval_duration_ms_bucket{le="2500",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 139823
     sdk_kv_retrieval_duration_ms_bucket{le="+Inf",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 144320
-    sdk_kv_retrieval_duration_ms_sum{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 53423
+    sdk_kv_retrieval_duration_ms_sum{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 53423000
     sdk_kv_retrieval_duration_ms_count{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 144320
 
 Where
@@ -365,72 +365,72 @@ should use `sdk_kv_retrieval`.
   <tbody>
     <tr>
       <td>sdk_kv_retrieval</td>
-      <td>&lt;=1ms<br><code style="white-space:nowrap">le="0.001"</code></td>
-      <td>&lt;=10ms<br><code style="white-space:nowrap">le="0.01"</code></td>
-      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
-      <td>&lt;=500ms<br><code style="white-space:nowrap">le="0.5"</code></td>
-      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
-      <td>&lt;=2.5s<br><code style="white-space:nowrap">le="2.5"</code></td>
+      <td>&lt;=1ms<br><code style="white-space:nowrap">le="1"</code></td>
+      <td>&lt;=10ms<br><code style="white-space:nowrap">le="10"</code></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="100"</code></td>
+      <td>&lt;=500ms<br><code style="white-space:nowrap">le="500"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1000"</code></td>
+      <td>&lt;=2.5s<br><code style="white-space:nowrap">le="2500"</code></td>
       <td>&gt;2.5s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_kv_mutation_nondurable</td>
-      <td>&lt;=1ms<br><code style="white-space:nowrap">le="0.001"</code></td>
-      <td>&lt;=10ms<br><code style="white-space:nowrap">le="0.01"</code></td>
-      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
-      <td>&lt;=500ms<br><code style="white-space:nowrap">le="0.5"</code></td>
-      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
-      <td>&lt;=2.5s<br><code style="white-space:nowrap">le="2.5"</code></td>
+      <td>&lt;=1ms<br><code style="white-space:nowrap">le="1"</code></td>
+      <td>&lt;=10ms<br><code style="white-space:nowrap">le="10"</code></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="100"</code></td>
+      <td>&lt;=500ms<br><code style="white-space:nowrap">le="500"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1000"</code></td>
+      <td>&lt;=2.5s<br><code style="white-space:nowrap">le="2500"</code></td>
       <td>&gt;2.5s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_kv_mutation_durable</td>
-      <td>&lt;=10ms<br><code style="white-space:nowrap">le="0.01"</code></td>
-      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
-      <td>&lt;=500ms<br><code style="white-space:nowrap">le="0.5"</code></td>
-      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
-      <td>&lt;=2s<br><code style="white-space:nowrap">le="2"</code></td>
-      <td>&lt;=10s<br><code style="white-space:nowrap">le="5"</code></td>
+      <td>&lt;=10ms<br><code style="white-space:nowrap">le="10"</code></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="100"</code></td>
+      <td>&lt;=500ms<br><code style="white-space:nowrap">le="500"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1000"</code></td>
+      <td>&lt;=2s<br><code style="white-space:nowrap">le="2000"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="10000"</code></td>
       <td>&gt;10s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_query</td>
       <td></td>
-      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
-      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
-      <td>&lt;=10s<br><code style="white-space:nowrap">le="10"</code></td>
-      <td>&lt;=30s<br><code style="white-space:nowrap">le="30"</code></td>
-      <td>&lt;=75s<br><code style="white-space:nowrap">le="75"</code></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="100"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1000"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="10000"</code></td>
+      <td>&lt;=30s<br><code style="white-space:nowrap">le="30000"</code></td>
+      <td>&lt;=75s<br><code style="white-space:nowrap">le="75000"</code></td>
       <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_search</td>
       <td></td>
-      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
-      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
-      <td>&lt;=10s<br><code style="white-space:nowrap">le="10"</code></td>
-      <td>&lt;=30s<br><code style="white-space:nowrap">le="30"</code></td>
-      <td>&lt;=75s<br><code style="white-space:nowrap">le="75"</code></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="100"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1000"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="10000"</code></td>
+      <td>&lt;=30s<br><code style="white-space:nowrap">le="30000"</code></td>
+      <td>&lt;=75s<br><code style="white-space:nowrap">le="75000"</code></td>
       <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_analytics</td>
       <td></td>
-      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
-      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
-      <td>&lt;=10s<br><code style="white-space:nowrap">le="10"</code></td>
-      <td>&lt;=30s<br><code style="white-space:nowrap">le="30"</code></td>
-      <td>&lt;=75s<br><code style="white-space:nowrap">le="75"</code></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="100"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1000"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="10000"</code></td>
+      <td>&lt;=30s<br><code style="white-space:nowrap">le="30000"</code></td>
+      <td>&lt;=75s<br><code style="white-space:nowrap">le="75000"</code></td>
       <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
     <tr>
       <td>sdk_eventing</td>
       <td></td>
-      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
-      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
-      <td>&lt;=10s<br><code style="white-space:nowrap">le="10"</code></td>
-      <td>&lt;=30s<br><code style="white-space:nowrap">le="30"</code></td>
-      <td>&lt;=75s<br><code style="white-space:nowrap">le="75"</code></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="100"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1000"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="10000"</code></td>
+      <td>&lt;=30s<br><code style="white-space:nowrap">le="30000"</code></td>
+      <td>&lt;=75s<br><code style="white-space:nowrap">le="75000"</code></td>
       <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
   </tbody>
