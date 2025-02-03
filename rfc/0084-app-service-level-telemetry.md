@@ -281,7 +281,7 @@ report.
 
 #### Metrics
 
-    sdk_kv_r_timedout{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a",bucket="travel-sample"} 1 1695747260000
+    sdk_kv_r_timedout{agent="couchbase-net-sdk/2.4.5.0 (clr/4.0.30319.42000) (os/Microsoft Windows NT 10.0.16299.0)",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a",bucket="travel-sample"} 1
 
 Where
 
@@ -309,9 +309,15 @@ Where
   restrictive than Prometheus specification, which allows floats for metric
   values, but using integers makes it easier for the server to implement
   aggregation).
-* `1695747260000` is a metric timestamp, that represents time in milliseconds from
-   the Epoch (1970-01-01 00:00:00 UTC) to the moment of the generation this
-   response.
+
+Note: while Prometheus allows to specify timestamp in the sample, the SDK do
+not need to include it as the Server will erase it anyway, and is not going to
+use it as the metrics will be aggregated anyway. The EBNF of the format from
+the Prometheus reference.
+
+    metric_name [
+      "{" label_name "=" `"` label_value `"` { "," label_name "=" `"` label_value `"` } [ "," ] "}"
+    ] value [ timestamp ]
 
 #### Histograms
 
