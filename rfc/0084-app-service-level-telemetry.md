@@ -167,8 +167,9 @@ RFC-67 for `Service Identifier`):
 The SDK must only account network operations that are visible to server. In
 other words it must not increment counter for virtual/compound operations like
 `GET_ALL_REPLICAS` and instead track all `GET_REPLICA` sub-operations
-individually. Also during retry/retransmit each operation should be tracked
-separately.
+individually. During retry/retransmit each operation will be tracked
+separately, and transactions will be visible as a set of unrelated subdocument
+operations.
 
 The SDK must infer timeout condition on the lower level by pushing timeout
 duration from the higher level API, or calculate it from the current time and
