@@ -350,6 +350,11 @@ Where
   by the SDKs (note that bucket label have to be treated as a string literal,
   i.e. no trailing zeroes):
 
+The SDK should use `sdk_kv_mutation_durable` for the operation that use
+mutation operations that described in RFC-46 "Synchronous Replication". Any
+other mutation should use `sdk_kv_mutation_nondurable`. All other operations
+should use `sdk_kv_retrieval`.
+
 <table>
   <thead>
     <tr>
