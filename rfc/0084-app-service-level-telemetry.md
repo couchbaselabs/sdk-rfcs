@@ -149,8 +149,9 @@ default Meter should also maintain the following counters:
 | sdk\_*{service}*\_r\_canceled | Canceled |
 | sdk\_*{service}*\_r\_total | Total number of operations |
 
-The SDK must send zero metric, because it still carries information that at
-given timestamp, no events have been registered.
+The SDK should not send zero metric.
+
+The SDK must send histogram buckets even if it has zero hits.
 
 Where the service is a part of the visible counter name, and hostname and
 bucket must be stored and exported as a meta data. Valid service names are (see
