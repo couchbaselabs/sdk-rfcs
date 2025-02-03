@@ -522,7 +522,11 @@ the configuration. The default value should be `true`.
   reconnection. The default value should be `5 seconds`.
 
 * `app_telemetry_ping_interval` the time duration to wait between consecutive
-PING commands to the server. The default value should be `5 seconds`.
+PING commands to the server. The default value should be `30 seconds`. The
+default scraping interval on the server is 60 seconds, and we want to avoid the
+server is using dead WebSocket as the server cannot initiate connection back to
+the SDK. As a solution the ping interval from the SDK should be smaller than
+the scraping interval.
 
 * `app_telemetry_ping_deadline` the time to allow the server to respond to PING
 WebSocket command before destroying the connection. The default value should be
