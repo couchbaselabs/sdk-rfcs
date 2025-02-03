@@ -342,8 +342,7 @@ Where
   of the service. There are two special metrics associated with each histogram:
   `_sum` and `_count` that represent the overall sum of all buckets, and total
   number of the points in the histogram. The `_sum` value should be a total sum
-  of the points in milliseconds represented so that it could be parsed with Go's
-  `ParseFloat()`[1][text-exposition-format].
+  of the points in milliseconds represented as an integer.
 * `le="1"` label is the upper bound of the bucket. All SDK must use hard
   coded buckets to allow easy aggregation. The value would fall into all
   buckets where upper bound is higher. The following buckets should be used
