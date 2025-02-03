@@ -501,6 +501,13 @@ should implement the following options and document them as Volatile.
 * `app_telemetry_backoff` the time duration to wait before WebSocket
   reconnection. The default value should be `5 seconds`.
 
+* `app_telemetry_ping_interval` the time duration to wait between consecutive
+PING commands to the server. The default value should be `5 seconds`.
+
+* `app_telemetry_ping_deadline` the time to allow the server to respond to PING
+WebSocket command before destroying the connection. The default value should be
+`2 seconds`.
+
 # References
 
 
