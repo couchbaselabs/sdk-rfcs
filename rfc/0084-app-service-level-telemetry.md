@@ -404,6 +404,16 @@ Where
       <td>&lt;=75s<br><code style="white-space:nowrap">le="75"</code></td>
       <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
+    <tr>
+      <td>sdk_eventing</td>
+      <td></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="0.1"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="10"</code></td>
+      <td>&lt;=30s<br><code style="white-space:nowrap">le="30"</code></td>
+      <td>&lt;=75s<br><code style="white-space:nowrap">le="75"</code></td>
+      <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
+    </tr>
   </tbody>
 </table>
 
