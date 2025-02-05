@@ -432,6 +432,16 @@ should use `sdk_kv_retrieval`.
       <td>&lt;=75s<br><code style="white-space:nowrap">le="75000"</code></td>
       <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
     </tr>
+    <tr>
+      <td>sdk_management</td>
+      <td></td>
+      <td>&lt;=100ms<br><code style="white-space:nowrap">le="100"</code></td>
+      <td>&lt;=1s<br><code style="white-space:nowrap">le="1000"</code></td>
+      <td>&lt;=10s<br><code style="white-space:nowrap">le="10000"</code></td>
+      <td>&lt;=30s<br><code style="white-space:nowrap">le="30000"</code></td>
+      <td>&lt;=75s<br><code style="white-space:nowrap">le="75000"</code></td>
+      <td>&gt;75s<br><code style="white-space:nowrap">le="+Inf"</code></td>
+    </tr>
   </tbody>
 </table>
 
