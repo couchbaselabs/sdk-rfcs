@@ -322,23 +322,23 @@ the Prometheus reference.
 
 #### Histograms
 
-    sdk_kv_retrieval_duration_ms_bucket{le="1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 24054
-    sdk_kv_retrieval_duration_ms_bucket{le="10",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 33444
-    sdk_kv_retrieval_duration_ms_bucket{le="100",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 100392
-    sdk_kv_retrieval_duration_ms_bucket{le="500",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 129389
-    sdk_kv_retrieval_duration_ms_bucket{le="1000",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 133988
-    sdk_kv_retrieval_duration_ms_bucket{le="2500",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 139823
-    sdk_kv_retrieval_duration_ms_bucket{le="+Inf",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 144320
-    sdk_kv_retrieval_duration_ms_sum{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 53423000
-    sdk_kv_retrieval_duration_ms_count{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 144320
+    sdk_kv_retrieval_duration_milliseconds_bucket{le="1",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 24054
+    sdk_kv_retrieval_duration_milliseconds_bucket{le="10",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 33444
+    sdk_kv_retrieval_duration_milliseconds_bucket{le="100",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 100392
+    sdk_kv_retrieval_duration_milliseconds_bucket{le="500",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 129389
+    sdk_kv_retrieval_duration_milliseconds_bucket{le="1000",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 133988
+    sdk_kv_retrieval_duration_milliseconds_bucket{le="2500",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 139823
+    sdk_kv_retrieval_duration_milliseconds_bucket{le="+Inf",agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 144320
+    sdk_kv_retrieval_duration_milliseconds_sum{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 53423000
+    sdk_kv_retrieval_duration_milliseconds_count{agent="sdk/2.4.5.0",bucket="travel-sample",node="node1",node_uuid="91442eb8202e0e16bbb59624d9ccdb0a"} 144320
 
 Where
 
 * `24054` is a number of the points in the bucket
-* `sdk_kv_retrieval_duration_ms_bucket` is a name of the histogram, where
+* `sdk_kv_retrieval_duration_milliseconds_bucket` is a name of the histogram, where
   `_bucket` is a special suffix, that signifies that the line should be
   interpreted as a bucket of the histogram, and
-  `sdk_{service}_retrieval_duration_ms` prefix describes particular metric
+  `sdk_{service}_retrieval_duration_milliseconds` prefix describes particular metric
   of the service. There are two special metrics associated with each histogram:
   `_sum` and `_count` that represent the overall sum of all buckets, and total
   number of the points in the histogram. The `_sum` value should be a total sum
