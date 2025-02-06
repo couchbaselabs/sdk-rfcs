@@ -18,11 +18,23 @@ This RFC is part of the bigger SDK 3.0 RFC and describes the N1QL Query APIs in 
 
 ## API Entry Point
 
+The Query API is located at Cluster level:
+
 ```
 interface ICluster {
     ...
     QueryResult Query(string statement, [QueryOptions options]);
     ...
+}
+```
+
+And at the Scope level:
+
+```
+interface IScope {
+  ...
+  QueryResult Query(string statement, [QueryOptions options]);
+  ...
 }
 ```
 
@@ -134,6 +146,10 @@ A `QueryResult` that maps the result of the N1QL query to an object.
   * PreparedStatementException (#203)
   * ParsingFailedException (#8)
   * FeatureNotAvailableException (#15)
+
+## IScope#Query
+
+The API and implementation are identical to `ICluster::Query`, except that all queries will be sent with a `query_context` parameter of ``"default:`bucket-name`.`scope-name`"``.
 
 ## QueryProfile
 
@@ -262,6 +278,8 @@ class QueryWarning {
   * Added useReplica to QueryOptions.
 * Dec 11, 2023 - Revision #7 (by David Nault)
   * Change type of QueryMetadata.signature() from JsonObject to JsonValue.
+* Feb 6, 2025 - Revision #8 (by Dimitris Christodoulou)
+  * Add IScope#Query API.
 
 
 # Signoff
