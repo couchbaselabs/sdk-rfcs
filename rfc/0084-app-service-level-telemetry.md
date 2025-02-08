@@ -546,7 +546,7 @@ server is using dead WebSocket as the server cannot initiate connection back to
 the SDK. As a solution the ping interval from the SDK should be smaller than
 the scraping interval.
 
-* `app_telemetry_ping_deadline` the time to allow the server to respond to PING
+* `app_telemetry_ping_timeout` the time to allow the server to respond to PING
 WebSocket command before destroying the connection. The default value should be
 `2 seconds`.
 
