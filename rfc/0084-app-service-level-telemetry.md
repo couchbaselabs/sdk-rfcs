@@ -308,7 +308,7 @@ Where
   | ---- | ---- |
   | `agent` | agent string of the SDK, as it is used everywhere (HELLO message, logs etc.) |
   | `node` | The hostname (without port) of the node as seen in `nodesExt[].hostname` of the configuration. |
-  | `alt_node` | The hostname (without port)  of the node as seen in `nodesExt[]["alternateAddresses"]["<network>"]["hostname"]`. |
+  | `alt_node` | The hostname (without port)  of the node as seen in `nodesExt[]["alternateAddresses"]["<network>"]["hostname"]`. (if present) |
   | `node_uuid` | The UUID of the node as it is seen in `nodesExt[].nodeUUID` of the configuration. |
   | `bucket` | Name of the bucket (if present) |
 
