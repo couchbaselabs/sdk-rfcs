@@ -312,6 +312,10 @@ Where
   | `node_uuid` | The UUID of the node as it is seen in `nodesExt[].nodeUUID` of the configuration. |
   | `bucket` | Name of the bucket (if present) |
 
+  It is possible for a `node` or `node_uuid` label to be empty (or absent) if a
+  client has yet to receive a config prior to an operation timing out or being
+  canceled.
+
 * `1` is a metric value. Each metric value increment represents a single
   network operation (e.g. `GET_ALL_REPLICAS` should be counted as `1 +
   number_of_replicas`). The value must be integer (Note that it is more
