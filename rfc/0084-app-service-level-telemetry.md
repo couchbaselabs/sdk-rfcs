@@ -314,7 +314,9 @@ Where
 
   It is possible for a `node` or `node_uuid` label to be empty (or absent) if a
   client has yet to receive a config prior to an operation timing out or being
-  canceled.
+  canceled. The SDK should still try to collect as many metrics as possible,
+  and leave it to collector to filter and reject data with empty/stale node
+  UUIDs.
 
 * `1` is a metric value. Each metric value increment represents a single
   network operation (e.g. `GET_ALL_REPLICAS` should be counted as `1 +
