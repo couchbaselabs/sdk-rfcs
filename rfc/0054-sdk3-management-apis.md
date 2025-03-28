@@ -2330,7 +2330,7 @@ Nothing
 
 ### Throws
 
-* `BucketAlreadyExistsException` (HTTP 400 and content contains `Bucket with given name already exists`)
+* `BucketExistsException` (HTTP 400 and content contains `Bucket with given name already exists`)
 
 * `InvalidArgumentsException`
 
@@ -3678,6 +3678,11 @@ enum StorageBackend {
 
 * `StorageBackend` ([`StorageBackend`](#storagebackend)) - The storage type to use (note: Magma is EE only).
 
+* `NumVBuckets` (`int`) - The number of vbuckets the bucket should have.
+  * URL query field: `numVBuckets`.
+  * Must not be sent to the server if not set.
+  * The server accepts values 128 and 1024 when `StorageBackend` is `MAGMA` and 1024 for `COUCHSTORE`. SDKs must **not** have any client-side logic that validates this. It should be left up to ns-server. SDKs should simply ensure any error from ns_server is exposed to the user.
+
 * `HistoryRetentionCollectionDefault` (`bool`) - Whether to enable history retention on collections by default.
   * URL query field: `historyRetentionCollectionDefault`
   * If the SDK does not have the ability to differentiate between not set and `false` then a different type should be used instead, suggested:
@@ -4005,6 +4010,9 @@ interface ScopeSpec {
 * May 22nd, 2024 - Revision #26 (by Charles Dixon)
   * Specified that base64 vector search operations should raise `FeatureNotAvailableException` against clusters that do not support them.
 
+* March 25th, 2025 - Revision #27 (by Dimitris Christodoulou)
+  * `CreateBucket` can raise `BucketExistsException`, not `BucketAlreadyExistsException`. The latter does not exist in the latest revision of the [Error Handling RFC](0058-error-handling.md).
+  * Adding `NumVBuckets` to `BucketSettings`.
 
 # Signoff
 
