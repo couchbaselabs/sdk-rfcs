@@ -222,26 +222,28 @@ property in cluster configuration.
 class TransactionAttemptContext {
   // ...
   public TransactionGetResult
-  getReplicaFromPreferredServerGroup(Collection collection, String id,
-                                     TransactionGetReplicaOptions options);
+  getReplicaFromPreferredServerGroup(
+        Collection collection, String id,
+        TransactionGetReplicaFromPreferredServerGroupOptions options);
+
+  public TransactionGetMultiReplicasFromPreferredServerGroupResult
+  getMultiReplicasFromPreferredServerGroup(
+        List<TransactionGetMultiReplicasFromPreferredServerGroupSpec> specs,
+        TransactionGetMultiReplicasFromPreferredServerGroupOptions options);
   // ...
 }
 ```
 
-`TransactionGetReplicaOptions` here does not have any specific options except
-common with `get()` method. The user cannot select read preference.
-
-```
-class TransactionGetReplicaOptions {
-    Transcoder transcoder;
-}
-```
-
-The method might throw the following errors:
+The methods might throw the following errors:
 
 * `102 DocumentUnretrievable`, when the SDK finds that there are nodes in local
   group, or there is no group available with the name selected in connection
   options.
+
+See more details about reading replicas inside Transactions in
+[Transactions Spec](https://github.com/couchbaselabs/couchbase-transactions-specs/blob/master/transactions-api.md#getreplicafrompreferredservergroup)
+and [ExtReplicaFromPreferredGroup](https://github.com/couchbaselabs/couchbase-transactions-specs/blob/master/transactions-extensions.md#extreplicafrompreferredgroup)
+extension of it.
 
 # Caveats
 
@@ -373,6 +375,7 @@ Right now the structure of responses remains unchanged.
   * Expanded definition of third strategy
     `SELECTED_SERVER_GROUP_OR_ALL_AVAILABLE`, add example of
     `getMultiReplicasFromPreferredServerGroup`.
+  * Added links to transactions spec.
 
 # Signoff
 
