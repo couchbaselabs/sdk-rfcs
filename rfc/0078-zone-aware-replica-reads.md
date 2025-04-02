@@ -49,7 +49,9 @@ selected group is empty. The selected server group might be empty in case
 the groups are not balanced properly on the cluster, or some nodes has been
 failed over. The previous strategy in this case would return
 `102 DocumentUnretrievable` error and refuse touching replicas from non-local
-group.
+group. The same error `102 DocumentUnretrievable` must be returned if none of
+the responses is successful (according to "Replica Reads" section of the
+[RFC-0053](0053-sdk3-crud.md#replica-reads)).
 
 ![Selected Server Group or All Available](figures/0078-case-3-selected-server-group-or-all-available.svg)
 
@@ -62,7 +64,7 @@ try {
                                    options()
                                     .timeout("20ms")
                                     .read_preference(SELECTED_SERVER_GROUP))
-} catch DocumentUnretrievableException | DocumentNotFoundException {
+} catch DocumentUnretrievableException {
   return collection.get(docId)
   // or collection.getAnyReplica(docId)
   // or collection.getAllReplicas(docId)
@@ -221,9 +223,6 @@ class TransactionGetReplicaOptions {
 ```
 
 The method might throw the following errors:
-
-* `101 DocumentNotFound`, when the server returns KV Code `0x01 ENOENT` for
-  *all* requests.
 
 * `102 DocumentUnretrievable`, when the SDK finds that there are nodes in local
   group, or there is no group available with the name selected in connection
