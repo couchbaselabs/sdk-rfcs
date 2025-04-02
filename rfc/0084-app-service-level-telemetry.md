@@ -565,8 +565,8 @@ WebSocket command before destroying the connection. The default value should be
 
 # Signoff
 
-| Language   | Team Member         | Signoff Date   | Revision |
-|------------|---------------------|----------------|----------|
+| Language   | Team Member            | Signoff Date   | Revision |
+|------------|------------------------|----------------|----------|
 | .NET       | Emilien Bevierre       | 2025-04-02     | 1        |
 | C++        | Sergey Avseyev         | 2025-04-02     | 1        |
 | Go         | Dimitris Christodoulou | 2025-04-02     | 1        |
@@ -576,7 +576,7 @@ WebSocket command before destroying the connection. The default value should be
 | PHP        | Sergey Avseyev         | 2025-04-02     | 1        |
 | Python     | Jared Casey            | 2025-04-02     | 1        |
 | Ruby       | Sergey Avseyev         | 2025-04-02     | 1        |
-| Scala      |                     |                |          |
+| Scala      | Graham Pople           | 2024-04-02     | 1        |
 
 # Changelog
 
