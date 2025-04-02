@@ -79,7 +79,9 @@ QueryResult Query(string statement, [QueryOptions options]);
     * Sent in the JSON payload
       * For positional parameters as a json array under the "args" key
       * For named parameters directly in the JSON payload, but each named argument is prefixed with "$" if it doesn't already have the dollar prefix provided by the user
-    * Setting JsonArray or JsonObject overrides any previously set parameters
+      * The payload can include both positional and named parameters
+    * Setting JsonArray overrides any previously set _positional_ parameters
+    * Setting JsonObject overrides any previously set _named_ parameters
   * pipelineBatch(uint32) = undefined
     * Specifies pipeline batching characteristics
     * Sent in the JSON payload as "pipeline_batch" as a JSON String
@@ -280,7 +282,8 @@ class QueryWarning {
   * Change type of QueryMetadata.signature() from JsonObject to JsonValue.
 * Feb 6, 2025 - Revision #8 (by Dimitris Christodoulou)
   * Add IScope#Query API.
-
+* April 30, 2025 - Revision #9 (by Dimitris Christodoulou)
+  * Allow setting both positional and named parameters.
 
 # Signoff
 

@@ -62,7 +62,9 @@ IAnalyticsResult AnalyticsQuery(string statement, [AnalyticsOptions options]);
     * Sent in the JSON payload
       * For positional parameters as a JSON array under the "args" key
       * For named parameters directly in the JSON payload, but each named argument is prefixed with "$" if it doesn't already have the dollar prefix provided by the user
-    * Setting JsonArray or JsonObject overrides any previously set parameters
+      * The payload can include both positional and named parameters
+    * Setting JsonArray overrides any previously set _positional_ parameters
+    * Setting JsonObject overrides any previously set _named_ parameters
   * priority(boolean) = undefined(0)
     * Allows to give certain requests higher priority than others.
     * Sent on the wire in the HTTP header as "Analytics-Priority" a JSON Number. See the section on Priority in this RFC for more details how it should be encoded.
@@ -197,6 +199,8 @@ class AnalyticsWarning {
   * Moved RFC to ACCEPTED state.
 * May 20, 2024 - Revision #2 (by Dimitris Christodoulou)
   * Correct `AnalyticsStatus` enum values.
+* April 30, 2025 - Revision #3 (by Dimitris Christodoulou)
+  * Allow setting both positional and named parameters.
 
 # Signoff
 
