@@ -352,6 +352,10 @@ Right now the structure of responses remains unchanged.
     preferred server group is not specified or missing while fetch with
     `SELECTED_SERVER_GROUP` requested.
 
+* April 2 2025 - Revision #4
+  * Removed requirement to throw `DocumentNotFound` for consistency with
+    regular replica read section of RFC-0053 and RFC-0058.
+
 # Signoff
 
 | Language   | Team Member            | Signoff Date   | Revision |
