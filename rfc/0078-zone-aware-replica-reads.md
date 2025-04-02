@@ -355,15 +355,16 @@ Right now the structure of responses remains unchanged.
 
 # Signoff
 
-| Language    | Team Member    | Signoff Date | Revision |
-|-------------|----------------|--------------|----------|
-| .NET        |                | 2024-MM-DD   |          |
-| Go          |                | 2024-MM-DD   |          |
-| C/C++       | Sergey Avseyev | 2024-08-07   | #3       |
-| Node.js     |                | 2024-MM-DD   |          |
-| PHP         | Sergey Avseyev | 2024-08-07   | #3       |
-| Python      |                | 2024-MM-DD   |          |
-| Ruby        | Sergey Avseyev | 2024-08-07   | #3       |
-| Java        |                | 2024-MM-DD   |          |
-| Kotlin      |                | 2024-MM-DD   |          |
-| Scala       |                | 2024-MM-DD   |          |
+| Language   | Team Member            | Signoff Date   | Revision |
+|------------|------------------------|----------------|----------|
+| .NET       | Emilien Bevierre       |                |          |
+| C          | Sergey Avseyev         |                |          |
+| C++        | Sergey Avseyev         |                |          |
+| Go         | Dimitris Christodoulou |                |          |
+| Java       | David Nault            |                |          |
+| Kotlin     | David Nault            |                |          |
+| Node.js    | Jared Casey            |                |          |
+| PHP        | Sergey Avseyev         |                |          |
+| Python     | Jared Casey            |                |          |
+| Ruby       | Sergey Avseyev         |                |          |
+| Scala      | Graham Pople           |                |          |
