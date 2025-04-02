@@ -385,8 +385,8 @@ Right now the structure of responses remains unchanged.
 | C          | Sergey Avseyev         |                |          |
 | C++        | Sergey Avseyev         |                |          |
 | Go         | Dimitris Christodoulou |                |          |
-| Java       | David Nault            |                |          |
-| Kotlin     | David Nault            |                |          |
+| Java       | David Nault            |  2025-04-02    | 1        |
+| Kotlin     | David Nault            |  2025-04-02    | 1        |
 | Node.js    | Jared Casey            |                |          |
 | PHP        | Sergey Avseyev         |                |          |
 | Python     | Jared Casey            |                |          |
