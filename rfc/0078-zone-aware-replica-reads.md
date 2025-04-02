@@ -382,13 +382,13 @@ Right now the structure of responses remains unchanged.
 | Language   | Team Member            | Signoff Date   | Revision |
 |------------|------------------------|----------------|----------|
 | .NET       | Emilien Bevierre       |                |          |
-| C          | Sergey Avseyev         |                |          |
-| C++        | Sergey Avseyev         |                |          |
+| C          | Sergey Avseyev         |  2025-04-02    | 4        |
+| C++        | Sergey Avseyev         |  2025-04-02    | 4        |
 | Go         | Dimitris Christodoulou |                |          |
-| Java       | David Nault            |  2025-04-02    | 1        |
-| Kotlin     | David Nault            |  2025-04-02    | 1        |
+| Java       | David Nault            |  2025-04-02    | 4        |
+| Kotlin     | David Nault            |  2025-04-02    | 4        |
 | Node.js    | Jared Casey            |                |          |
-| PHP        | Sergey Avseyev         |                |          |
+| PHP        | Sergey Avseyev         |  2025-04-02    | 4        |
 | Python     | Jared Casey            |                |          |
-| Ruby       | Sergey Avseyev         |                |          |
+| Ruby       | Sergey Avseyev         |  2025-04-02    | 4        |
 | Scala      | Graham Pople           |                |          |
