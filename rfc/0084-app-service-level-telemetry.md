@@ -567,14 +567,14 @@ WebSocket command before destroying the connection. The default value should be
 
 | Language   | Team Member         | Signoff Date   | Revision |
 |------------|---------------------|----------------|----------|
-| .NET       |                     |                |          |
+| .NET       |   Emilien Bevierre  |   2025-04-02   |     1    |
 | C++        | Sergey Avseyev      | 2025-04-02     | 1        |
 | Go         |                     |                |          |
 | Java       | DavidN              | 2025-04-02     | 1        |
 | Kotlin     | DavidN              | 2025-04-02     | 1        |
-| Node.js    |                     |                |          |
+| Node.js    |  Jared Casey              |  2025-04-02              | 1         |
 | PHP        | Sergey Avseyev      | 2025-04-02     | 1        |
-| Python     |                     |                |          |
+| Python     |  Jared Casey                   |  2025-04-02              |  1        |
 | Ruby       | Sergey Avseyev      | 2025-04-02     | 1        |
 | Scala      |                     |                |          |
 
