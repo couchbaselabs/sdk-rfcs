@@ -4,7 +4,7 @@
 * RFC ID: 81
 * Start Date: 2024-04-23
 * Owners: Dimitris Christodoulou, Matt Wozakowski
-* Current Status: REVIEW
+* Current Status: ACCEPTED
 * Revision: \#4
 * Relates to:
     * [SDK-RFC#79 (Columnar API Foundation)][sdk-rfc-0079]
@@ -198,7 +198,11 @@ type QueryWarning {
 
 Rows are deserialized according to the custom deserializer specified in the `QueryOptions` (or the default deserializer) in order to convert the encoded rows into the type `T` specified in the `RowsAs\<T\>()` call, or in the case of dynamic row typing, the type that is returned by the deserializer in the `rows()` call.
 
-A `JsonDeserializer` should be included, and used as the default deserializer. It should be taken into consideration that Capella Columnar may not necessarily be returning JSON in the future, so it should be possible to accommodate that by using a different implementation of the `Deserializer` interface. For languages with dynamic row typing (where `RowsAs<Byte[]>` is not possible) a `PassthroughDeserializer` that simply emits the raw bytes of the row, should also be provided.
+A `JsonDeserializer` should be included, and used as the default deserializer. If `T == Byte[]` the `JsonDeserializer` simply passes through the encoded value.
+
+It should be taken into consideration that Capella Columnar may not necessarily be returning JSON in the future, so it should be possible to accommodate that by using a different implementation of the `Deserializer` interface.
+
+For languages with dynamic row typing (where `RowsAs<Byte[]>` is not possible) a `PassthroughDeserializer` that simply emits the raw bytes of the row, should also be provided.
 
 Any valid deserializers must implement the following interface:
 
@@ -208,7 +212,6 @@ interface Deserializer {
     (T, error)      Deserialize<T>(Byte[] encoded)
 }
 ```
-_Note:_ If `T == Byte[]` the deserializer simply passes through the encoded value.
 
 **Dynamic row typing:**
 ```
@@ -331,27 +334,29 @@ The timeout should apply to the whole stream. This is similar to the approach in
 # Changelog
 
 * 2024-06-05 \- Revision \#1 (Dimitris Christodoulou, Matt Wozakowski)  
-* Initial draft  
+    * Initial draft
 * 2024-06-06 \- Revision \#2 (Dimitris Christodoulou, Matt Wozakowski)  
-* Added optional Buffered API for `executeQuery`  
+    * Added optional Buffered API for `executeQuery`
 * 2024-07-31 \- Revision \#3 (Dimitris Christodoulou, Matt Wozakowski)  
-* Removed option to raise a `ColumnarException` when metadata is not yet available, as that exception is now reserved for errors resulting from a failed client-server interaction  
+    * Removed option to raise a `ColumnarException` when metadata is not yet available, as that exception is now reserved for errors resulting from a failed client-server interaction.
 * 2024-08-20 \- Revision \#4 (Dimitris Christodoulou, Matt Wozakowski)  
-* Renamed `QueryResultRow` to `Row` for SDKs implementing individual row typing
+    * Renamed `QueryResultRow` to `Row` for SDKs implementing individual row typing.
+* 2025-04-04 (Dimitris Christodoulou)
+   * Moved RFC to ACCEPTED state.
 
 # Signoff
 
 | Language | Team Member | Signoff Date | Revision |
 | :---- | :---- | :---- | :---- |
-| Node.js | Jared Casey |  |  |
-| Go | Charles Dixon |  |  |
-| PHP | Sergey Avseyev |  |  |
-| Python | Jared Casey |  |  |
+|| Node.js | Jared Casey | 2025-02-03 | 4 |
+| Go | Charles Dixon | 2025-04-03 | 4  |
+| PHP | Sergey Avseyev | 2025-04-02 | 4 |
+| Python | Jared Casey |  2025-02-03 | 4 |
 | Scala | Graham Pople | 2024-08-22 | 4 |
-| .NET | Jeffry Morris |  |  |
+| .NET | Jeffry Morris | 2025-04-03 | 4 |
 | Java | David Nault | 2025-01-22 | 4 |
-| C++ | Sergey Avseyev |  |  |
-| Ruby | Sergey Avseyev |  |  |
+| C++ | Sergey Avseyev | 2025-04-02 | 4 |
+| Ruby | Sergey Avseyev | 2025-04-02 | 4 |
 | Kotlin | David Nault | 2025-01-22 | 4 |
 
 [sdk-rfc-0079]: /rfc/0079-columnar-api-foundation.md
