@@ -569,7 +569,7 @@ WebSocket command before destroying the connection. The default value should be
 |------------|---------------------|----------------|----------|
 | .NET       | Emilien Bevierre    | 2025-04-02     | 1        |
 | C++        | Sergey Avseyev      | 2025-04-02     | 1        |
-| Go         |                     |                |          |
+| Go         | Dimitris Christodoulou | 2025-04-02  |  #1      |
 | Java       | DavidN              | 2025-04-02     | 1        |
 | Kotlin     | DavidN              | 2025-04-02     | 1        |
 | Node.js    | Jared Casey         | 2025-04-02     | 1        |
