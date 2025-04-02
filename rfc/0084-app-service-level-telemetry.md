@@ -369,8 +369,8 @@ other mutation should use `sdk_kv_mutation_nondurable`. All other operations
 should use `sdk_kv_retrieval`.
 
 The SDK should consult [`protocol/mcbp/opcode.cc`](https://github.com/couchbase/kv_engine/blob/master/protocol/mcbp/opcode.cc) of `kv_engine`,
-all operations that have `Attribute::ClientWritingData` associated must be
-considered as mutations.
+all operations that have `Attribute::ClientWritingData` or `Attribute::Durability`
+associated must be considered as mutations.
 
 <table>
   <thead>
