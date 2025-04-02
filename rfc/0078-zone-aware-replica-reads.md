@@ -132,12 +132,12 @@ To allow user to select preferred server groups, new setter/property for
 ```
 class ClusterOptions {
     // ...
-    ClusterOptions preferredServerGroup(String serverGroupName);
+    ClusterOptions preferredServerGroup(String serverGroup);
     // ...
 }
 ```
 
-Where `serverGroupName` matches name of the group as it seen in Admin UI of the
+Where `serverGroup` matches name of the group as it seen in Admin UI of the
 server and in cluster configuration JSON.
 
 In the case when, at the time of the request, there is no group with the given
