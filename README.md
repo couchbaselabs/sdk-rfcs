@@ -49,6 +49,7 @@ The following index represents the RFC numbers in their natural order, but then 
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
 | 76    | [KV Subdoc Replica Reads](rfc/0076-subdoc-replica-reads.md)            | Charles D.   | ACCEPTED |
+| 81    | [Columnar API Streaming](rfc/0081-columnar-api-streaming.md)           | Dimitris & Matt W. | ACCEPTED  |
 | 84    | [Application Service Level Telemetry](rfc/0084-app-service-level-telemetry.md) | Sergey | ACCEPTED |
 
 ### Draft & Review RFCs
@@ -77,7 +78,6 @@ The following index represents the RFC numbers in their natural order, but then 
 | 78    | [Zone-Aware Replica Reads](https://github.com/couchbaselabs/sdk-rfcs/pull/136)                                                                                             | Sergey                | DRAFT  |
 | 79    | [Columnar API Foundation RFC](https://docs.google.com/document/d/1BzNX8B5XqcDxn8NAi8lVrxP257IdG5kaOsA3mwDMLyQ)                                                                                             | Charles                | DRAFT  |
 | 80    | [Columnar API Connection Management](https://docs.google.com/document/d/11LRvVUGt3fEZt2K3CmxwtQQ0QHYW6hZO733cXPtxHVE)                                                                                             | David N                | DRAFT  |
-| 81    | [Columnar API Streaming](https://docs.google.com/document/d/1Sx9rzJNEFMvEO0Tsho3jQum5TGyjJB2q-dIKrYl--o8)                                                                                             | Dimitris & Matt                | DRAFT  |
 | 82    | [Columnar API Error Handling and Retries](https://docs.google.com/document/d/12WJ4i-B9CcNjIq5NnaFXbxZQfaaNm_tzemrmlRl5YcE)                                                                                             | David N                | DRAFT  |
 | 83    | [API Versioning](https://docs.google.com/document/d/1GFp25bBHMg6kuFhaz0OEA0kQl_gY9ysNOeTK3M-K2Sc)                                                                                             | Jared                | DRAFT  |
 
