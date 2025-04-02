@@ -5,7 +5,7 @@
 * Start-Date: 2024-01-04
 * Owners: Sergey Avseyev
 * Contributors: Matt Ingenthron, Sergey Avseyev
-* Current Status: DRAFT
+* Current Status: ACCEPTED
 
 # Summary
 

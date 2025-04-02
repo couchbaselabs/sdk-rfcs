@@ -18,7 +18,7 @@ Coding happens all the time and is encouraged. We just recognize there is a poin
 The following index represents the RFC numbers in their natural order, but then grouped according to their current status. As the index grows, and more SDK & Connector RFCs are added, we may add other sub-sections or a catalog to help focus on one logical topic in the future (e.g., Columnar SDK).
 
 [comment]: # "RFC States: IDENTIFIED > DRAFT > REVIEW > ACCEPTED"
-[comment]: # "Next RFC ID 84"
+[comment]: # "Next RFC ID 85"
 
 ### Accepted RFCs
 
@@ -49,6 +49,7 @@ The following index represents the RFC numbers in their natural order, but then 
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
 | 76    | [KV Subdoc Replica Reads](rfc/0076-subdoc-replica-reads.md)            | Charles D.   | ACCEPTED |
+| 84    | [Application Service Level Telemetry](rfc/0084-app-service-level-telemetry.md) | Sergey | ACCEPTED |
 
 ### Draft & Review RFCs
 
