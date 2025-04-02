@@ -51,7 +51,8 @@ The following identifiers must be followed by the implementations:
 | ------------- | ---------- |
 | .NET          | `dotnet`   |
 | C++           | `cxx`      |
-| Go            | `golang`   |
+| Go            | `gocb`     |
+| Go Core       | `gocbcore` |
 | JVM Core      | `jvm-core` |
 | Java          | `java`     |
 | Kotlin        | `kotlin`   |
@@ -64,6 +65,9 @@ The following identifiers must be followed by the implementations:
 | Scala         | `scala`    |
 | Kafka         | `kafka`    |
 | ElasticSearch | `es`       |
+| Java Columnar      | `couchbase-java-columnar` |
+| Node.js Columnar   | `nodejs-columnar`         |
+| Python Columnar    | `python-columnar`         |
 
 Future identifiers should be added as amendments to this RFC as a single point
 of reference.
