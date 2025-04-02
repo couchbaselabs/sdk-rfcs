@@ -837,6 +837,7 @@ The SDK should follow its existing convention for FTS parameters.
 
 * `uint32 numCandidates`.  Sent as a `k` number field in the JSON.  We name the field differently in the SDK for the same reason as `knn_operator`.  If not set by the user, FTS PM requests that the SDK send a default value of 3.  It controls how many results are returned and must be >= 1.  If < 1 the SDK will raise `InvalidArgument`.
 * `float boost`.  Sent as a `boost` number field in the JSON.  If not set, the field is not sent.
+* `SearchQuery prefilter`.  Sent as a `filter` object field in the JSON.  The object JSON is the `SearchQuery` JSON. If not set, the field is not sent.
 
 `VectorQuery` does not extend the `SearchQuery` interface, which is now reserved for traditional FTS queries.
 
@@ -1069,6 +1070,9 @@ interface SearchMetrics {
 
 * May 22nd, 2024 - Revision #12 (by Charles Dixon)
     * Added base64 vector search.
+
+* April 2nd, 2025 - Revision #13 (by Jared Casey)
+    * Added prefilter option to vector search.
 
 # Signoff
 
