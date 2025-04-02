@@ -28,12 +28,20 @@ operations if nodes of the cluster deployed in different availability zones
 
 ## No Preference
 
+```
+ReadPreference::NO_PREFERENCE
+```
+
 This is current behaviour, where the SDK does not take into account server
 groups.
 
 ![No Prefrence](figures/0078-case-1-no-preference.svg)
 
 ## Selected Server Group
+
+```
+ReadPreference::SELECTED_SERVER_GROUP
+```
 
 In this case, all reads will be done from all nodes in the selected server group. It
 is the cheapest solution, although it reduces chances of getting data from
@@ -43,14 +51,20 @@ replicas (if the server groups are unbalanced).
 
 ## Selected Server Group with Fallback
 
-This strategy does not require extra SDK support, but it is important that the
-user will be able to handle cases, when the replica cannot be read because
-selected group is empty. The selected server group might be empty in case
-the groups are not balanced properly on the cluster, or some nodes has been
-failed over. The previous strategy in this case would return
-`102 DocumentUnretrievable` error and refuse touching replicas from non-local
-group. The same error `102 DocumentUnretrievable` must be returned if none of
-the responses is successful (according to "Replica Reads" section of the
+```
+ReadPreference::SELECTED_SERVER_GROUP_OR_ALL_AVAILABLE
+```
+
+This strategy that the user will be able to handle cases, when the replica
+cannot be read because selected group is empty. The selected server group might
+be empty in case the groups are not balanced properly on the cluster, or some
+nodes has been failed over. Or in the context of the
+`getMultiReplicasFromPreferredServerGroup` API of transactions when it is not
+possible to guarantee that all of the keys in the set live in the same group
+The previous strategy in this case would return `102 DocumentUnretrievable`
+error and refuse touching replicas from non-local group. The same error `102
+DocumentUnretrievable` must be returned if none of the responses is successful
+(according to "Replica Reads" section of the
 [RFC-0053](0053-sdk3-crud.md#replica-reads)).
 
 ![Selected Server Group or All Available](figures/0078-case-3-selected-server-group-or-all-available.svg)
@@ -153,6 +167,7 @@ read replica APIs:
 enum ReadPreference {
     NO_PREFERENCE,
     SELECTED_SERVER_GROUP,
+    SELECTED_SERVER_GROUP_OR_ALL_AVAILABLE,
 };
 ```
 
@@ -355,6 +370,9 @@ Right now the structure of responses remains unchanged.
 * April 2 2025 - Revision #4
   * Removed requirement to throw `DocumentNotFound` for consistency with
     regular replica read section of RFC-0053 and RFC-0058.
+  * Expanded definition of third strategy
+    `SELECTED_SERVER_GROUP_OR_ALL_AVAILABLE`, add example of
+    `getMultiReplicasFromPreferredServerGroup`.
 
 # Signoff
 
