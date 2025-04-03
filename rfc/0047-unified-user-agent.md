@@ -168,3 +168,20 @@ should refer to this RFC as a reference documentation.
 
 * February, 2019 - Revision #1
   See details and discussion at [original Google Drive document](https://docs.google.com/document/d/1B4QM9UO6kz2yjLrBqLjSgArUeM1DvzKnakC_e8KfrmY/edit).
+
+# Signoff
+
+| Language   | Team Member            | Signoff Date   | Revision |
+|------------|------------------------|----------------|----------|
+| .NET       |                        |                |          |
+| Go         |                        |                |          |
+| Java       |                        |                |          |
+| Kotlin     |                        |                |          |
+| Node.js    |                        |                |          |
+| Python     |                        |                |          |
+| Scala      |                        |                |          |
+| C          | Sergey Avseyev         | 2025-04-03     | 1        |
+| C++        | Sergey Avseyev         | 2025-04-03     | 1        |
+| PHP        | Sergey Avseyev         | 2025-04-03     | 1        |
+| Ruby       | Sergey Avseyev         | 2025-04-03     | 1        |
+
