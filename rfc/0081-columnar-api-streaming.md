@@ -196,7 +196,7 @@ type QueryWarning {
 
 ## Deserialization
 
-Rows are deserialized according to the custom deserializer specified in the `QueryOptions` (or the default deserializer) in order to convert the encoded rows into the type `T` specified in the `RowsAs\<T\>()` call, or in the case of dynamic row typing, the type that is returned by the deserializer in the `rows()` call.
+Rows are deserialized according to the custom deserializer specified in the `QueryOptions` (or the default deserializer) in order to convert the encoded rows into the type `T` specified in the `RowsAs<T>()` call, or in the case of dynamic row typing, the type that is returned by the deserializer in the `rows()` call.
 
 A `JsonDeserializer` should be included, and used as the default deserializer. It should be taken into consideration that Capella Columnar may not necessarily be returning JSON in the future, so it should be possible to accommodate that by using a different implementation of the `Deserializer` interface. For languages with dynamic row typing (where `RowsAs<Byte[]>` is not possible) a `PassthroughDeserializer` that simply emits the raw bytes of the row, should also be provided.
 
@@ -345,13 +345,13 @@ The timeout should apply to the whole stream. This is similar to the approach in
 | :---- | :---- | :---- | :---- |
 | Node.js | Jared Casey | 2025-02-03 | 4 |
 | Go | Charles Dixon |  |  |
-| PHP | Sergey Avseyev |  |  |
+| PHP | Sergey Avseyev | 2025-04-02 | 4 |
 | Python | Jared Casey |  2025-02-03 | 4 |
 | Scala | Graham Pople | 2024-08-22 | 4 |
 | .NET | Jeffry Morris |  |  |
 | Java | David Nault | 2025-01-22 | 4 |
-| C++ | Sergey Avseyev |  |  |
-| Ruby | Sergey Avseyev |  |  |
+| C++ | Sergey Avseyev | 2025-04-02 | 4 |
+| Ruby | Sergey Avseyev | 2025-04-02 | 4 |
 | Kotlin | David Nault | 2025-01-22 | 4 |
 
 [sdk-rfc-0079]: /rfc/0079-columnar-api-foundation.md
