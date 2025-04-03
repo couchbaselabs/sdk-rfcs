@@ -68,6 +68,7 @@ The following identifiers must be followed by the implementations:
 | Java Columnar      | `couchbase-java-columnar` |
 | Node.js Columnar   | `nodejs-columnar`         |
 | Python Columnar    | `python-columnar`         |
+| Go Columnar        | `gocb-columnar`           |
 
 Future identifiers should be added as amendments to this RFC as a single point
 of reference.
