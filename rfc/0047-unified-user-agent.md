@@ -140,17 +140,17 @@ as it implemented in most recent versions for November 6, 2024.
 | Kotlin        | `kotlin/1.4.0 (Mac OS X 14.4.1 aarch64; OpenJDK 64-Bit Server VM 23.0.1)` |
 | Libcouchbase  | `libcouchbase/3.3.13 (Darwin-23.4.0; arm64; AppleClang 15.0.0.15000309)`  |
 | Scala         | `scala/1.7.4 (Mac OS X 14.4.1 aarch64; OpenJDK 64-Bit Server VM 23.0.1)`  |
+| C++           | `cxx/1.0.6 (Darwin/arm64;bssl/0x1010107f;cbc)`                                                               |
+| Ruby          | `ruby/3.5.6 (cxx/1.0.6;Darwin/arm64;bssl/0x1010107f;ruby_sdk/9bca6059;ruby_abi/3.4.0)`                       |
+| Python        | `python/4.3.5 (cxx/1.0.5;Darwin/arm64;bssl/0x1010107f;python/3.9.6)`                                         |
+| PHP           | `php/4.2.7 (cxx/1.0.6;Darwin/arm64;bssl/0x1010107f;php_sdk/4.2.7/d1ff155b;php/8.4.5/n)`                      |
+| Node.js       | `nodejs/4.4.5 (cxx/1.0.5;Darwin/arm64;bssl/0x1010107f;node/21.2.0; v8/11.8.172.17-node.15; ssl/3.0.12+quic)` |
 
 The following SDK at the moment do not follow the spec.
 
-| SDK           | User Agent                                                                                                      |
-| ------------- | --------------------------------------------------------------------------------------------------------------- |
-| Go            | `gocbcore/v10.5.2 gocb/v2.9.2`                                                                                  |
-| C++           | `cxx/1.0.3/b7086c0;Darwin/arm64;ssl/0x30400000;cbc`                                                             |
-| Node.js       | `cxx/1.0.3;Darwin/arm64;bssl/0x1010107f;couchnode/4.4.3 (node/18.13.0; v8/10.2.154.23-node.21; ssl/3.0.7+quic)` |
-| PHP           | `cxx/1.0.3/b7086c0;Darwin/arm64;bssl/0x1010107f;php_sdk/4.2.4/763e1dc8;php/8.3.12/n`                            |
-| Python        | `cxx/1.0.3;Darwin/arm64;bssl/0x1010107f;pycbc/4.3.3 (python/3.11.10)`                                           |
-| Ruby          | `cxx/1.0.3/b7086c0;Darwin/arm64;bssl/0x1010107f;ruby_sdk/044bd593;ruby_abi/3.3.0`                               |
+| SDK           | User Agent                      |
+| ------------- | ------------------------------- |
+| Go            | `gocbcore/v10.5.4 gocb/v2.9.4`  |
 
 # Documentation
 
