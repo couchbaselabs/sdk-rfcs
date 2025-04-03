@@ -178,7 +178,7 @@ should refer to this RFC as a reference documentation.
 | Go         |                        |                |          |
 | Java       |                        |                |          |
 | Kotlin     |                        |                |          |
-| Node.js    |                        |                |          |
+| Node.js    |  Jared Casey                      |   2025-04-03             |  1        |
 | Python     |                        |                |          |
 | Scala      |                        |                |          |
 | C          | Sergey Avseyev         | 2025-04-03     | 1        |
