@@ -179,7 +179,7 @@ should refer to this RFC as a reference documentation.
 | Java       |                        |                |          |
 | Kotlin     |                        |                |          |
 | Node.js    |  Jared Casey                      |   2025-04-03             |  1        |
-| Python     |                        |                |          |
+| Python     | Jared Casey                       | 2025-04-03               | 1         |
 | Scala      |                        |                |          |
 | C          | Sergey Avseyev         | 2025-04-03     | 1        |
 | C++        | Sergey Avseyev         | 2025-04-03     | 1        |
