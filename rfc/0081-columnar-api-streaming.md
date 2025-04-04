@@ -348,7 +348,7 @@ The timeout should apply to the whole stream. This is similar to the approach in
 | PHP | Sergey Avseyev | 2025-04-02 | 4 |
 | Python | Jared Casey |  2025-02-03 | 4 |
 | Scala | Graham Pople | 2024-08-22 | 4 |
-| .NET | Jeffry Morris |  |  |
+| .NET | Jeffry Morris | 2025-04-03 |  |
 | Java | David Nault | 2025-01-22 | 4 |
 | C++ | Sergey Avseyev | 2025-04-02 | 4 |
 | Ruby | Sergey Avseyev | 2025-04-02 | 4 |
