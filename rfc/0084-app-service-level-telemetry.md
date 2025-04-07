@@ -580,14 +580,14 @@ WebSocket command before destroying the connection. The default value should be
 | Language   | Team Member            | Signoff Date   | Revision |
 |------------|------------------------|----------------|----------|
 | .NET       | Emilien Bevierre       |                |          |
-| C++        | Sergey Avseyev         |                |          |
+| C++        | Sergey Avseyev         | 2025-04-07     | 2        |
 | Go         | Dimitris Christodoulou |                |          |
 | Java       | David Nault            |                |          |
 | Kotlin     | David Nault            |                |          |
 | Node.js    | Jared Casey            |                |          |
-| PHP        | Sergey Avseyev         |                |          |
+| PHP        | Sergey Avseyev         | 2025-04-07     | 2        |
 | Python     | Jared Casey            |                |          |
-| Ruby       | Sergey Avseyev         |                |          |
+| Ruby       | Sergey Avseyev         | 2025-04-07     | 2        |
 | Scala      | Graham Pople           |                |          |
 
 # Changelog
