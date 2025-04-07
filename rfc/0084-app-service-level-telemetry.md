@@ -223,9 +223,8 @@ upgrade it to WebSocket.
 
 The server allows to close connection at any point of time.
 
-Once the server closes connection, the SDK should pick next available endpoint.
-Both initial and next endpoints must be randomized in case of more than one
-endpoint configured.
+Once the server closes connection, after backoff interval (see section below),
+the SDK should pick the next available endpoint, and reconnect.
 
 The SDK must either implement or enable WebSocket PING frame, and respond to
 server request with WebSocket PONG whenever the server requests it.
