@@ -223,13 +223,8 @@ upgrade it to WebSocket.
 
 The server allows to close connection at any point of time.
 
-Once the server closes connection, the SDK should pick next available endpoint.
-Both initial and next endpoints must be randomized in case of more than one
-endpoint configured.
-
-The SDK must wait for backoff interval before connection attempt to avoid
-stressing the server. The SDK might use `app_telemetry_backoff` option to allow
-to change the backoff value.
+Once the server closes connection, after backoff interval (see section below),
+the SDK should pick the next available endpoint, and reconnect.
 
 The SDK must either implement or enable WebSocket PING frame, and respond to
 server request with WebSocket PONG whenever the server requests it.
@@ -239,7 +234,22 @@ possible to avoid termination of the connection.
 
 The SDK might also send PING frames to the server and expect PONG frame. If the
 server does not respond to SDK-initiated PING request, the SDK should close
-connection, and reconnect after `app_telemetry_backoff` interval.
+connection, and reconnect after backoff interval (see section below).
+
+## Reconnection Backoff Interval
+
+To prevent server overload, the SDK must implement an exponential backoff
+strategy when reconnecting to the WebSocket.
+
+Upon receiving a configuration update, the SDK must shuffle the list of
+endpoints.
+
+The SDK should not apply backoff during the initial iteration of the endpoints.
+However, once all endpoints have been tried, it must use an exponential backoff
+calculation for subsequent attempts.
+
+The backoff interval must start at `100ms` and gradually increase toward
+`app_telemetry_backoff` with each unsuccessful reconnection attempt.
 
 ## Wire Protocol
 
@@ -290,9 +300,9 @@ Where
 
   | Metric | Description |
   | ---- | ---- |
-  | `sdk_{service}_r_timedout` | Timeout |
-  | `sdk_{service}_r_canceled` | Canceled |
-  | `sdk_{service}_r_total` | Total number of operations. Note that this number might differ from `_count` of the histogram, if the response from the server has never been received. |
+  | <code style="white-space:nowrap">sdk_{service}_r_timedout</code> | Timeout |
+  | <code style="white-space:nowrap">sdk_{service}_r_canceled</code> | Canceled |
+  | <code style="white-space:nowrap">sdk_{service}_r_total</code> | Total number of operations. Note that this number might differ from `_count` of the histogram, if the response from the server has never been received. |
 
   The `{service}` is one of the following:
   * `kv`
@@ -546,8 +556,10 @@ the configuration. The default value should be `true`.
   discovered through configuration, or provide one if the configuration does
   not announce support for the Application Telemetry.
 
-* `app_telemetry_backoff` the time duration to wait before WebSocket
-  reconnection. The default value should be `5 seconds`.
+* `app_telemetry_backoff` the maximum time duration to wait before WebSocket
+  reconnection. Once exponential backoff calculator will approach this maximum,
+  it must stop increasing the backoff interval and remain constant. The default
+  value should be `1 hour`.
 
 * `app_telemetry_ping_interval` the time duration to wait between consecutive
 PING commands to the server. The default value should be `30 seconds`. The
@@ -567,20 +579,24 @@ WebSocket command before destroying the connection. The default value should be
 
 | Language   | Team Member            | Signoff Date   | Revision |
 |------------|------------------------|----------------|----------|
-| .NET       | Emilien Bevierre       | 2025-04-02     | 1        |
-| C++        | Sergey Avseyev         | 2025-04-02     | 1        |
-| Go         | Dimitris Christodoulou | 2025-04-02     | 1        |
-| Java       | David Nault            | 2025-04-02     | 1        |
-| Kotlin     | David Nault            | 2025-04-02     | 1        |
-| Node.js    | Jared Casey            | 2025-04-02     | 1        |
-| PHP        | Sergey Avseyev         | 2025-04-02     | 1        |
-| Python     | Jared Casey            | 2025-04-02     | 1        |
-| Ruby       | Sergey Avseyev         | 2025-04-02     | 1        |
-| Scala      | Graham Pople           | 2024-04-02     | 1        |
+| .NET       | Emilien Bevierre       | 2025-04-08     | 2        |
+| C++        | Sergey Avseyev         | 2025-04-07     | 2        |
+| Go         | Dimitris Christodoulou | 2025-04-07     | 2        |
+| Java       | David Nault            | 2025-04-08     | 2        |
+| Kotlin     | David Nault            | 2025-04-08     | 2        |
+| Node.js    | Jared Casey            | 2025-04-07     | 2        |
+| PHP        | Sergey Avseyev         | 2025-04-07     | 2        |
+| Python     | Jared Casey            | 2025-04-07     | 2        |
+| Ruby       | Sergey Avseyev         | 2025-04-07     | 2        |
+| Scala      | Graham Pople           | 2025-04-08     | 2        |
 
 # Changelog
 
 * November 11, 2024 - Revision #1 (by Sergey Avseyev)
     * Initial Draft
+
+* April 7, 2024 - Revision #2 (by Sergey Avseyev)
+    * Clarify reconnection backoff behavior.
+    * Update `app_telemetry_backoff` default to `1 hour`
 
 [text-exposition-format]: https://prometheus.io/docs/instrumenting/exposition_formats/
