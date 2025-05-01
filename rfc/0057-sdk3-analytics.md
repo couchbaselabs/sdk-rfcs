@@ -206,14 +206,15 @@ class AnalyticsWarning {
 
 | Language   | Team Member         | Signoff Date    | Revision |
 |------------|---------------------|-----------------|----------|
-| Node.js    | Brett Lawson        | Sept 27, 2019   | #1       |
+| Node.js    | Jared Casey         | May 1, 2025     | #3       |
 | Go         | Charles Dixon       | April 22, 2020  | #1       |
-| Connectors | David Nault         | April 29, 2020  | #1       |
+| Connectors | David Nault         | May 1, 2025     | #3       |
 | PHP        | Sergey Avseyev      | May 7, 2025     | #3       |
-| Python     | Ellis Breen         | April 29, 2020  | #1       |
-| Scala      | Graham Pople        | Oct 18, 2019    | #1       |
-| .NET       | Jeffry Morris       | Sept 27, 2019   | #1       |
-| Java       | Michael Nitschinger | Sept 27, 2019   | #1       |
+| Python     | Jared Casey         | May 1, 2025     | #3       |
+| Scala      | Graham Pople        | May 2, 2025     | #3       |
+| .NET       | Jeffry Morris       | May 8, 2025     | #3       |
+| Java       | David Nault         | May 1, 2025     | #3       |
+| Kotlin     | David Nault         | May 1, 2025     | #3       |
 | C          | Sergey Avseyev      | May 7, 2025     | #3       |
 | C++        | Sergey Avseyev      | May 7, 2025     | #3       |
 | Ruby       | Sergey Avseyev      | May 7, 2025     | #3       |

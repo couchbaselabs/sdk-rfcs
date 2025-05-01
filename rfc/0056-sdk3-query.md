@@ -289,15 +289,15 @@ class QueryWarning {
 
 | Language   | Team Member    | Signoff Date  | Revision |
 |------------|----------------|---------------|----------|
-| Node.js    | Jared Casey    | July 19, 2023 | #6       |
+| Node.js    | Jared Casey    | May 1, 2025   | #9       |
 | Go         | Charles Dixon  | July 6, 2023  | #6       |
-| Connectors | David Nault    | July 6, 2023  | #6       |
+| Connectors | David Nault    | May 1, 2025   | #9       |
 | PHP        | Sergey Avseyev | May 7, 2025   | #9       |
-| Python     | Jared Casey    | July 19, 2023 | #6       |
-| Scala      | Graham Pople   | July 6, 2023  | #6       |
-| .NET       | Jeffry Morris  | July 21, 2023 | #6       |
-| Java       | David Nault    | July 6, 2023  | #6       |
-| Kotlin     | David Nault    | July 6, 2023  | #6       |
+| Python     | Jared Casey    | May 1, 2025   | #9       |
+| Scala      | Graham Pople   | May 2, 2025   | #9       |
+| .NET       | Jeffry Morris  | May 8, 2025   | #9       |
+| Java       | David Nault    | May 1, 2025   | #9       |
+| Kotlin     | David Nault    | May 1, 2025   | #9       |
 | C          | Sergey Avseyev | May 7, 2025   | #9       |
 | C++        | Sergey Avseyev | May 7, 2025   | #9       |
 | Ruby       | Sergey Avseyev | May 7, 2025   | #9       |
