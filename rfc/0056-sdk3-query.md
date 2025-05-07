@@ -292,11 +292,12 @@ class QueryWarning {
 | Node.js    | Jared Casey    | July 19, 2023 | #6       |
 | Go         | Charles Dixon  | July 6, 2023  | #6       |
 | Connectors | David Nault    | July 6, 2023  | #6       |
-| PHP        | Sergey Avseyev | July 6, 2023  | #6       |
+| PHP        | Sergey Avseyev | May 7, 2025   | #9       |
 | Python     | Jared Casey    | July 19, 2023 | #6       |
 | Scala      | Graham Pople   | July 6, 2023  | #6       |
 | .NET       | Jeffry Morris  | July 21, 2023 | #6       |
 | Java       | David Nault    | July 6, 2023  | #6       |
 | Kotlin     | David Nault    | July 6, 2023  | #6       |
-| C          | Sergey Avseyev | July 6, 2023  | #6       |
-| Ruby       | Sergey Avseyev | July 6, 2023  | #6       |
+| C          | Sergey Avseyev | May 7, 2025   | #9       |
+| C++        | Sergey Avseyev | May 7, 2025   | #9       |
+| Ruby       | Sergey Avseyev | May 7, 2025   | #9       |

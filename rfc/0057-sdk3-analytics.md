@@ -209,10 +209,11 @@ class AnalyticsWarning {
 | Node.js    | Brett Lawson        | Sept 27, 2019   | #1       |
 | Go         | Charles Dixon       | April 22, 2020  | #1       |
 | Connectors | David Nault         | April 29, 2020  | #1       |
-| PHP        | Sergey Avseyev      | April 22, 2020  | #1       |
+| PHP        | Sergey Avseyev      | May 7, 2025     | #3       |
 | Python     | Ellis Breen         | April 29, 2020  | #1       |
 | Scala      | Graham Pople        | Oct 18, 2019    | #1       |
 | .NET       | Jeffry Morris       | Sept 27, 2019   | #1       |
 | Java       | Michael Nitschinger | Sept 27, 2019   | #1       |
-| C          | Sergey Avseyev      | Sept 27, 2019   | #1       |
-| Ruby       | Sergey Avseyev      | Sept 27, 2019   | #1       |
+| C          | Sergey Avseyev      | May 7, 2025     | #3       |
+| C++        | Sergey Avseyev      | May 7, 2025     | #3       |
+| Ruby       | Sergey Avseyev      | May 7, 2025     | #3       |
