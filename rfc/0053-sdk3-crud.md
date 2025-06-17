@@ -718,7 +718,7 @@ Updates the expiration a document given an id, without modifying or returning it
 Signature
 
 ```csharp
-IMutationResult Touch(string id, duration expiry, [options])
+IResult Touch(string id, duration expiry, [options])
 ```
 
 Parameters
@@ -1676,6 +1676,10 @@ Invalid operation
 - April 4, 2023 - Revision #19 (by David Nault)
 
   - Clarified behavior of `ILookupInResult.Exists` and `ILookupInResult.ContentAs`.
+
+- June 17, 2025 - Revision #20 (by Matt Wozakowski)
+
+  - Fix Touch signature return type from `IMutationResult` to `IResult`
 
   # Signoff
 
