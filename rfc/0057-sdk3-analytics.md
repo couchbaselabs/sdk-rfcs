@@ -199,7 +199,7 @@ With the upcoming release of Enterprise Analytics, and the risk of users acciden
 Before performing each analytics operation, check the cluster config, and iff the prodName field is present, check if it starts with "Couchbase Server".  If it doesn't, fast-fail the request with a generic `CouchbaseException`.  A suitable error message could be:
 
 ```
-var errStr = "This ${prodName}' cluster cannot be used with this SDK, which is intended for use with operational clusters."
+var errStr = "This '${prodName}' cluster cannot be used with this SDK, which is intended for use with operational clusters."
 if (prodName == "Enterprise Analytics") {
   errStr += ". For this cluster, an Enterprise Analytics SDK should be used."
 }
