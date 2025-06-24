@@ -354,7 +354,7 @@ sequenceDiagram
 | .NET        | Jeffry Morris  |              |          |
 | C/C++       | Sergey Avseyev |              |          |
 | Go          | Charles Dixon  |              |          |
-| Java/Kotlin | David Nault    |              |          |
+| Java/Kotlin | David Nault    |  2023-07-18  |  #1      |
 | Node.js     | Jared Casey    |              |          |
 | PHP         | Sergey Avseyev |              |          |
 | Python      | Jared Casey    |              |          |
