@@ -210,6 +210,8 @@ If the cluster config is not yet available, wait for it using the request timeou
 
 For discussion of why "Couchbase Server" is matched, and why we check it starts with rather than the exact string, see the MB.
 
+An SDK-specific 'backdoor' needs to be added to disable the error.  This should not be exposed through the public API, but instead handled via a platform/SDK-specific path - System properties, envvars, undocumented connection string params, or similar.  This is to ease migration of Couchbase tools and drivers that will continue to use the operational SDKs for a time.  This mechanism is not user-facing and should not be documented externally.
+
 # Changelog
 
 * Sept 27, 2019 - Revision #1 (by Michael Nitschinger)
