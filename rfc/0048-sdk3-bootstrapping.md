@@ -193,6 +193,40 @@ class PasswordAuthenticator {
 }
 ```
 
+#### Credential rotation
+
+To support credential rotation without requiring an app restart, the SDK lets the user periodically provide a new authenticator.
+
+An SDK can satisfy this requirement by providing a `DynamicAuthenticator`.
+When the user creates a `DynamicAuthenticator`, they specify a callback that returns the actual authenticator to use, and a duration for which to cache the actual authenticator.
+
+DynamicAuthenticator delegates all authentication requests to the authenticator returned by the user's callback. 
+
+The user's callback might do I/O or other expensive operations, so take care not to invoke it in a context where waiting for it to complete might affect SDK performance.
+This is why the Java SDK schedules a recurring task on a background thread to refresh the cached authenticator.
+
+To give users more control, an SDK may also provide a way to have the `DynamicAuthenticator` invoke the callback each time the SDK does authentication.
+If appropriate, consider somehow flagging this method as "unsafe", since the user is responsible for ensuring the callback does not block an SDK thread that does not expect to be doing I/O.
+
+If an SDK cannot implement `DynamicAuthenticator`, or if it would not be idiomatic, an alternate recommendation would be to add a method to the Cluster that lets the user set a new authenticator. 
+
+An example of how a Java SDK user can periodically refresh the authenticator used by the SDK:
+
+```java
+Cluster cluster = Cluster.connect(
+  "couchbase://example.com",
+  ClusterOptions.clusterOptions(
+    DynamicAuthenticator.create(
+      Duration.ofMinutes(15), // refresh interval 
+      () -> { // The SDK invokes this lambda to get a new authenticator
+        UsernameAndPassword credential = loadCredentialFromSomewhere();
+        return PasswordAuthenticator.create(credential.username(), credential.password());
+      }
+    )
+  )
+);
+```
+
 # Changelog
 
 - Apr 1, 2019
