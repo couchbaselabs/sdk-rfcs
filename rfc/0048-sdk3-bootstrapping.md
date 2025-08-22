@@ -153,11 +153,13 @@ interface Authenticator {
 }
 ```
 
-The SDK is expected to provide two default Authenticators, providing the ability to authenticate using Role-Based Access Control via a username and password, and the ability to authenticate using a client certificate.
+The SDK is expected to provide three default Authenticators, providing the ability to authenticate using Role-Based Access Control via a username and password, the ability to authenticate using a client certificate, and the ability to delegate to a different Authnenticator.
 
 The RBAC Authenticator is expected to take a username and password as input from the user, and then use this information to perform SASL authentication on any KV connections, and to inject the HTTP Authorization header into HTTP requests. It does not provide any certificates for TLS connecting.
 
 The Certificate Authenticator is expected to take a PrivateKey (or possibly simply a key name) from the user and use this information to provide a client-certificate for KV and HTTP connections alike.  It is also responsible for disabling the use of SASL_AUTH on connections as the server will already have authenticated the connection once its established using the provided client-certificate.
+
+The DelegatingAuthenticator takes another Authenticator as a delegate, and forwards all operations to the delegate.  It has a public `setDelegate` method that allows the user to switch to a different delegate.  This lets the user refresh the Couchbase credential without having to restart the app.
 
 An example implementation for the above mentioned authenticators might be:
 
@@ -191,40 +193,15 @@ class PasswordAuthenticator {
     return true
   }
 }
-```
 
-#### Credential rotation
+class DelegatingAuthenticator {
+  Authenticator Delegate;
 
-To support credential rotation without requiring an app restart, the SDK lets the user periodically provide a new authenticator.
+  setDelegate(delegate: Authenticator) { this.Delegate = delegate }
 
-An SDK can satisfy this requirement by providing a `DynamicAuthenticator`.
-When the user creates a `DynamicAuthenticator`, they specify a callback that returns the actual authenticator to use, and a duration for which to cache the actual authenticator.
-
-DynamicAuthenticator delegates all authentication requests to the authenticator returned by the user's callback. 
-
-The user's callback might do I/O or other expensive operations, so take care not to invoke it in a context where waiting for it to complete might affect SDK performance.
-This is why the Java SDK schedules a recurring task on a background thread to refresh the cached authenticator.
-
-To give users more control, an SDK may also provide a way to have the `DynamicAuthenticator` invoke the callback each time the SDK does authentication.
-If appropriate, consider somehow flagging this method as "unsafe", since the user is responsible for ensuring the callback does not block an SDK thread that does not expect to be doing I/O.
-
-If an SDK cannot implement `DynamicAuthenticator`, or if it would not be idiomatic, an alternate recommendation would be to add a method to the Cluster that lets the user set a new authenticator. 
-
-An example of how a Java SDK user can periodically refresh the authenticator used by the SDK:
-
-```java
-Cluster cluster = Cluster.connect(
-  "couchbase://example.com",
-  ClusterOptions.clusterOptions(
-    DynamicAuthenticator.create(
-      Duration.ofMinutes(15), // refresh interval 
-      () -> { // The SDK invokes this lambda to get a new authenticator
-        UsernameAndPassword credential = loadCredentialFromSomewhere();
-        return PasswordAuthenticator.create(credential.username(), credential.password());
-      }
-    )
-  )
-);
+  // Also has all the usual methods, each one delegating
+  // to the corresponding method of `Delegate`.
+}
 ```
 
 # Changelog
@@ -255,6 +232,10 @@ Cluster cluster = Cluster.connect(
 - Sept 17, 2021 (by Brett Lawson)
 
   - Converted to Markdown
+
+- Aug 22, 2025 (by David Nault)
+
+  - Added decription of DelegatingAuthenticator
 
 # Signoff
 
