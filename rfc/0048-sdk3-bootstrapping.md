@@ -5,6 +5,7 @@
 - Start Date: April 1, 2019
 - Owner: Brett Lawson \<brett@couchbase.com\>
 - Current Status: ACCEPTED
+- Revision: #4
 - Relates To
   - [SDK-RFC#7 (Cluster Level Authentication)][sdk-rfc-0007]
   - [SDK-RFC#16 (RBAC)][sdk-rfc-0016]
@@ -159,7 +160,7 @@ The RBAC Authenticator is expected to take a username and password as input from
 
 The Certificate Authenticator is expected to take a PrivateKey (or possibly simply a key name) from the user and use this information to provide a client-certificate for KV and HTTP connections alike.  It is also responsible for disabling the use of SASL_AUTH on connections as the server will already have authenticated the connection once its established using the provided client-certificate.
 
-The DelegatingAuthenticator takes another Authenticator as a delegate, and forwards all operations to the delegate.  It has a public `setDelegate` method that allows the user to switch to a different delegate.  This lets the user refresh the Couchbase credential without having to restart the app.
+The DelegatingAuthenticator takes another Authenticator as a delegate, and forwards all operations to the delegate.  It has a public `setDelegate` method that allows the user to switch to a different delegate.  This lets the user refresh the Couchbase credential without having to restart the app.  SDK implementers must take care to ensure it's safe to call `setDelegate` at any time, from any thread, and concurrently with an authentication operation.  For example, in Java this requires marking the `delegate` field as `volatile` so the change is immediately visible to all threads.
 
 An example implementation for the above mentioned authenticators might be:
 
@@ -233,7 +234,7 @@ class DelegatingAuthenticator {
 
   - Converted to Markdown
 
-- Aug 22, 2025 (by David Nault)
+- Aug 22, 2025 - Revision #4 (by David Nault)
 
   - Added decription of DelegatingAuthenticator
 
