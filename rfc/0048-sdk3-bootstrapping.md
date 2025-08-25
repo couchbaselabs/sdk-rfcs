@@ -154,7 +154,7 @@ interface Authenticator {
 }
 ```
 
-The SDK is expected to provide three default Authenticators, providing the ability to authenticate using Role-Based Access Control via a username and password, the ability to authenticate using a client certificate, and the ability to delegate to a different Authnenticator.
+The SDK is expected to provide three default Authenticators, providing the ability to authenticate using Role-Based Access Control via a username and password, the ability to authenticate using a client certificate, and the ability to delegate to a different Authenticator.
 
 The RBAC Authenticator is expected to take a username and password as input from the user, and then use this information to perform SASL authentication on any KV connections, and to inject the HTTP Authorization header into HTTP requests. It does not provide any certificates for TLS connecting.
 
