@@ -5,6 +5,7 @@
 - Start Date: April 1, 2019
 - Owner: Brett Lawson \<brett@couchbase.com\>
 - Current Status: ACCEPTED
+- Revision: #4
 - Relates To
   - [SDK-RFC#7 (Cluster Level Authentication)][sdk-rfc-0007]
   - [SDK-RFC#16 (RBAC)][sdk-rfc-0016]
@@ -153,11 +154,13 @@ interface Authenticator {
 }
 ```
 
-The SDK is expected to provide two default Authenticators, providing the ability to authenticate using Role-Based Access Control via a username and password, and the ability to authenticate using a client certificate.
+The SDK is expected to provide three default Authenticators, providing the ability to authenticate using Role-Based Access Control via a username and password, the ability to authenticate using a client certificate, and the ability to delegate to a different Authenticator.
 
 The RBAC Authenticator is expected to take a username and password as input from the user, and then use this information to perform SASL authentication on any KV connections, and to inject the HTTP Authorization header into HTTP requests. It does not provide any certificates for TLS connecting.
 
 The Certificate Authenticator is expected to take a PrivateKey (or possibly simply a key name) from the user and use this information to provide a client-certificate for KV and HTTP connections alike.  It is also responsible for disabling the use of SASL_AUTH on connections as the server will already have authenticated the connection once its established using the provided client-certificate.
+
+The DelegatingAuthenticator takes another Authenticator as a delegate, and forwards all operations to the delegate.  It has a public `setDelegate` method that allows the user to switch to a different delegate.  This lets the user refresh the Couchbase credential without having to restart the app.  SDK implementers must take care to ensure it's safe to call `setDelegate` at any time, from any thread, and concurrently with an authentication operation.  For example, in Java this requires marking the `delegate` field as `volatile` so the change is immediately visible to all threads.
 
 An example implementation for the above mentioned authenticators might be:
 
@@ -191,6 +194,15 @@ class PasswordAuthenticator {
     return true
   }
 }
+
+class DelegatingAuthenticator {
+  Authenticator Delegate;
+
+  setDelegate(delegate: Authenticator) { this.Delegate = delegate }
+
+  // Also has all the usual methods, each one delegating
+  // to the corresponding method of `Delegate`.
+}
 ```
 
 # Changelog
@@ -221,6 +233,10 @@ class PasswordAuthenticator {
 - Sept 17, 2021 (by Brett Lawson)
 
   - Converted to Markdown
+
+- Aug 22, 2025 - Revision #4 (by David Nault)
+
+  - Added decription of DelegatingAuthenticator
 
 # Signoff
 
