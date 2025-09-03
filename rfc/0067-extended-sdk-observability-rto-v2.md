@@ -348,7 +348,7 @@ Since every SDK is different internally, the following provides a rough guidelin
   * End: Right after the payload encoding finished.
 * Dispatch to Server Span
   * Start: Right before the already encoded op for the wire is sent outside of the control bounds of the SDK. Usually some kind of "write/flush" event into the IO stack
-  * End: Right after the operation is decoded from the network and control is back in the bounds of the SDK. Note that the packet needs to be decoded first otherwise we cannot determine to which span it belongs in an Out-Of-Order context.
+  * End: Right after the operation is decoded from the network and control is back in the bounds of the SDK. Note that the packet needs to be decoded first otherwise we cannot determine to which span it belongs in an Out-Of-Order context. The span should also end if the request has timed out or has been cancelled, to ensure that the dispatch span ends before the outer request span.
 
 ### Request Span Status
 
@@ -511,7 +511,7 @@ Note that most APMs and OpenTelemetry consumers have fairly primitive indexing c
 
 #### Attribute: System
 
-This attribute is a standard OpenTelemetry attribute and should be placed on all spans to uniquely identify them for couchbase. The attribute key is "`db.system`" and the value is "`couchbase`".
+This attribute is a standard OpenTelemetry attribute and should be placed on all spans to uniquely identify them for couchbase. The attribute key is "`db.system.name`" and the value is "`couchbase`".
 
 #### Attribute: Cluster Labels
 
@@ -534,7 +534,10 @@ Each outer request should set an attribute that classifies the service. The attr
 | Transactions | `transactions` |
 | Eventing | `eventing` |
 
-Implementation note: the management service should only be used by requests which actually go to the cluster manager. If a management operation i.e. executes a N1QL query it should use the query service instead. The span name already reflects the actual operation type.
+**Implementation notes:**
+
+  * The management service should only be used by requests which actually go to the cluster manager. If a management operation i.e. executes a N1QL query it should use the query service instead. The span name already reflects the actual operation type.
+  * For SDK API operations which need to perform multiple actual underlying operations, where these operations are performed against a number of different services (e.g. `Ping`), the service identifier should be omitted.
 
 #### Attribute: Number of Retries
 
@@ -555,7 +558,7 @@ The outer request, under specific circumstances, should include the durability l
 
 #### Attribute: Bucket Name
 
-This attribute is a standard OpenTelemetry attribute and should be placed on all operations which are at the bucket level or below. The attribute key is "`db.name`".
+This attribute is a standard OpenTelemetry attribute and should be placed on all operations which are at the bucket level or below. The attribute key is "`db.namespace`".
 
 | Service Type | Value |
 | :---- | :---- |
@@ -592,7 +595,7 @@ Should be placed on all operations which are at the collection level. The attrib
 
 #### Attribute: Statement
 
-This attribute is a standard OpenTelemetry attribute and should be placed on N1QL and analytics operations. The attribute key is "`db.statement`".
+This attribute is a standard OpenTelemetry attribute and should be placed on N1QL and analytics operations. The attribute key is "`db.query.text`".
 
 | Service Type | Value |
 | :---- | :---- |
@@ -602,9 +605,11 @@ This attribute is a standard OpenTelemetry attribute and should be placed on N1Q
 | Views | Not present |
 | Analytics | The actual analytics query |
 
+Sanitization should be performed on the statement to exclude sensitive information, by replacing all literals (e.g. String, Numeric, Boolean, Date and Time) with a placeholder, `?`.
+
 #### Attribute: Operation
 
-This attribute is a standard OpenTelemetry attribute and should be placed on all operations which do NOT have the db.statement set. The attribute key is "db.operation".
+This attribute is a standard OpenTelemetry attribute and should be placed on all operations which do NOT have the db.query.text set. The attribute key is "db.operation.name".
 
 | Service Type | Value |
 | :---- | :---- |
@@ -619,11 +624,11 @@ This attribute is a standard OpenTelemetry attribute and should be placed on all
 
 #### Attribute: System
 
-This attribute is a standard OpenTelemetry attribute and should be placed on all spans to uniquely identify them for couchbase. The attribute key is "`db.system`" and the value is "`couchbase`".
+This attribute is a standard OpenTelemetry attribute and should be placed on all spans to uniquely identify them for couchbase. The attribute key is "`db.system.name`" and the value is "`couchbase`".
 
 #### Attribute: Net Transport
 
-This attribute is a standard OpenTelemetry attribute and should be placed on every dispatch span. The key is "`net.transport`", the value is "`IP.TCP`".
+This attribute is a standard OpenTelemetry attribute and should be placed on every dispatch span. The key is "`network.transport`", the value is "`tcp`".
 
 #### Attribute: Server Duration
 
@@ -635,31 +640,43 @@ At the moment this only affects the KV service, and the server duration is inclu
 
 The local ID is the connection ID used when creating the connection against the cluster. Note that right now the ID is only populated for the KV service. The attribute key is "`db.couchbase.local_id`".
 
+The connection ID is be made up of two components separated by a forward slash. The first value will be consistent for all connections in a given client instance, and the second value is per connection.
+
+Each part is a randomly generated uint64 number that is formatted as a hex string and padded to 16 characters. 
+
 KV Example: `"66388CF5BFCF7522/18CC8791579B567C"`.
-
-#### Attribute: Local Hostname/IP
-
-The ip/hostname for the local side of the socket. The attribute key is "net.host.name".
-
-Example: "localhost" or "127.0.0.1" (string)
-
-#### Attribute: Local Port
-
-The port for the local side of the socket. The attribute key is "net.host.port".
-
-Example: 1234 (number)
 
 #### Attribute: Remote Hostname/IP
 
-The ip/hostname for the remote side of the socket. The attribute key is "net.peer.name".
+The IP/hostname for the server. The attribute key is "`server.address`".
 
-Example: "localhost" or "127.0.0.1" (string)
+Should represent the canonical address, i.e. if alternate addressing is used, the non-alternate address should be reported here, similar to the “node” attribute in App Telemetry.
+
+Example: `"localhost"` or `"127.0.0.1"` (string)
 
 #### Attribute: Remote Port
 
-The port for the remote side of the socket. The attribute key is "net.peer.port".
+The port for the server. The attribute key is "`server.port`".
 
-Example: 1234 (number)
+Should represent the canonical port, i.e. if alternate addressing is used, the non-alternate port should be reported here.
+
+Example: `1234` (number)
+
+#### Attribute: Peer Address
+
+The IP address for the remote side of the socket. The attribute key is "`network.peer.address`".
+
+Should represent the actual address that was used to send the request, so if alternate addresses are used, this should be an alternate address.
+
+Example: `"127.0.0.1"` (string)
+
+#### Attribute: Peer Port
+
+The port for the remote side of the socket. The attribute key is "`network.peer.port`".
+
+Should represent the actual port that was used to send the request, so if alternate addresses are used, this should be an alternate port.
+
+Example: `1234` (number)
 
 #### Attribute: Operation ID
 
@@ -697,9 +714,9 @@ interface ValueRecorder {
 
 Since errors from the underlying APIs can be very specific to the implementation/platform used, they should be wrapped in a `MeterException`. See the error section for specific details on the error.
 
-The Meter implementation names are heavily based on their OpenTelemetry counterparts, since the naming makes sense and is/will be understood by a wider community.
-
-* ValueRecorder: See [https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/metrics/api.md\#valuerecorder](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/metrics/api.md#valuerecorder)
+The Meter implementation names are heavily based on their OpenTelemetry counterparts, since the naming makes sense and is/will be understood by a wider community:
+* `ValueRecorder` (from v0.x spec): See https://github.com/open-telemetry/opentelemetry-specification/blob/v0.7.0/specification/metrics/api.md#valuerecorder
+  * NOTE: OpenTelemetry v1.x no longer has `ValueRecorder` in its API. The closest equivalent is `Histogram`.
 
 ### Default Implementation: LoggingMeter
 
@@ -763,7 +780,6 @@ The `emit_interval_s` is reported in the meta section of  the JSON output since 
 
 The OpenTelemetryMeter forwards the metric information to the official OpenTelemetry API language SDK.
 
-
 ```
 class OpenTelemetryMeter implements Meter {
 	static Meter wrap(otel.MeterProvider meterProvider)
@@ -783,8 +799,8 @@ In addition, if the version can be set, provide the version of the module/depend
 class OpenTelemetryValueRecorder implements ValueRecorder {}
 ```
 
-The OpenTelemetryMeter internally holds the OpenTelemetry Meter instance.
-The ValueRecorder internally maps to the OpenTelemetry [ValueRecorder](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/metrics/api.md#valuerecorder) which takes a long  value (i.e. in  Java it is  called LongValueRecorder).
+The `OpenTelemetryMeter` internally holds the OpenTelemetry Meter instance.
+The `ValueRecorder` internally maps to the OpenTelemetry [Histogram](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#histogram) which takes a double value.
 
 ### SDK API Surface Area
 
@@ -802,22 +818,22 @@ Note that the type of this instrumentation is "ValueRecorder" and not "Counter",
 
 * **Type:** ValueRecorder
 * **Value:** Response Latency in *microseconds  which covers the complete request / response cycle (think: "outer request span latency", covering encode, dispatch, retries etc). Note: for bulk operations, each individual request counts individually.*
-* **Name:** "db.couchbase.operations"
+* **Name:** "`db.client.operation.duration`"
 * **Instrumented at:** when the response has been decoded, before it is marked as completed towards the user
 * **Tags:**
   * "`db.couchbase.service`": Same as in [attribute service identifier](#attribute:-system)
-  * "`db.operation`": Same as the "outer span names" - for example `"get"`, `"get_and__lock"` etc.
-  * "`db.name`": The bucket name.
+  * "`db.operation.name`": Same as the "outer span names" - for example `"get"`, `"get_and_lock"` etc.
+  * "`db.namespace`": The bucket name
   * "`db.couchbase.scope`". The scope name.
   * "`db.couchbase.collection`".  The collection name
-  * "`outcome`".  Whether the operation succeeded ("success") or failed.  If failed, the [SDK3 error name](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0058-error-handling.md) must be used \- e.g. `"DocumentLocked"`.  It must only be the SDK3 name \- not the SDK’s version of it (`"DocumentLockedException"`, `"ErrDocLocked"`, etc.) \- so we are consistent and the user can compare metrics across SDKs.
+  * "`error.type`". The error type, if the operation failed. The [SDK3 error name](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0058-error-handling.md) must be used \- e.g. `"DocumentLocked"`.  It must only be the SDK3 name \- not the SDK’s version of it (`"DocumentLockedException"`, `"ErrDocLocked"`, etc.) \- so we are consistent and the user can compare metrics across SDKs. This tag is omitted if the operation was successful.
   * "`db.couchbase.cluster_uuid`" and "`db.couchbase.cluster_name`" (see Cluster Labels section)
 
 The tags should only be present on operations where they make sense.  If the bucket, scope or collection tags do not apply for a given operation (such as unscoped queries), then do not send a tag.  (An exception is made for Micrometer, which mandates the same tags are used everywhere on the same metric.  In this situation the SDK can use a suitable default such as "\*")
 
 Some examples for clarity:
 
-| Operation | `db.name` | `db.couchbase.scope` | `db.couchbase.collection` |
+| Operation | `db.namespace` | `db.couchbase.scope` | `db.couchbase.collection` |
 | :---- | :---- | :---- | :---- |
 | KV | Present | Present | Present |
 | `scope.query()` `scope.search()` | Present | Present | Absent |
@@ -825,6 +841,9 @@ Some examples for clarity:
 | `cluster.transactions().run(...)` | Absent | Absent | Absent |
 
 From a high-level SDKs (libcouchbase) perspective when working with a low-level SDK (such as Node.js), we can simply have the higher level SDK ignore the operations metric being generated by the lower level SDK, and have it generate its own metric for that instead.
+
+> [!NOTE]
+> Metric values for `db.client.operation.duration` are reported to the SDK's `ValueRecorder` interface as integers representing microseconds. These should be converted to _seconds_ when reported to the OpenTelemetry `Histogram`.
 
 ### Optional SDK Metric Instrumentation Points
 
@@ -952,12 +971,49 @@ If this information is not available for any reason (generally this will only be
 
 To aid performance, the SDK is allowed to cache these fields for up to (an arbitrarily chosen) 10 minutes.  This ensures that any cluster name changes (expected to be rare) are eventually picked up.
 
+# Compatibility with older semantic conventions
+
+SDKs that implemented earlier revisions of this RFC will have implemented semantic conventions that were considered 'Experimental' by OpenTelemetry.
+
+In order to support the stable OpenTelemetry semantic conventions, SDKs should report operation latencies to the `db.client.operation.duration` metric, instead of `db.couchbase.operations`. In addition, the following attributes have been renamed, removed, or added by the migration to the stable semantic conventions.
+
+| | Experimental (v0) | Stable (v1) | Note |
+| -- | ------------ | ------ | ---- |
+| System name | db.system | db.system.name | |
+| Bucket name | db.name | db.namespace | |
+| Query statement | db.statement | db.query.text | |
+| Operation name | db.operation | db.operation.name | |
+| Error | outcome | error.type | (1) |
+| OSI transport layer | net.transport | network.transport | (2) |
+| Local hostname/IP | net.host.name | Removed | |
+| Local port | net.host.port | Removed | |
+| Server hostname/IP | net.peer.name | server.address | |
+| Server port | net.peer.port | server.port | |
+| Peer address | Did not exist | network.peer.address | |
+| Peer port | Did not exist | network.peer.port | |
+
+**Notes:**
+
+1. In v0, one of the possible values was "Success". In v1, the attribute should be omitted if there was no error.
+2. In v0, the value was "TCP.IP". In v1, it should be "tcp" instead.
+
+Existing implementations should not change the conventions that they emit by default. `OpenTelemetryRequestTracer` and `OpenTelemetryRequestMeter` should recognise the `OTEL_SEMCONV_STABILITY_OPT_IN` and emit the new stable conventions on an opt-in basis, as outlined in the [OpenTelemetry Database Semantic Conventions v1.37 document](https://github.com/open-telemetry/semantic-conventions/blob/v1.37.0/docs/database/database-spans.md):
+
+> Existing database instrumentations that are using v1.24.0 of this document (or prior):
+>  * SHOULD NOT change the version of the database conventions that they emit by default in their existing major version. Conventions include (but are not limited to) attributes, metric and span names, and unit of measure.
+>  * SHOULD introduce an environment variable OTEL_SEMCONV_STABILITY_OPT_IN in their existing major version as a comma-separated list of category-specific values (e.g., http, databases, messaging). The list of values includes:
+>        * `database` - emit the stable database conventions, and stop emitting the experimental database conventions that the instrumentation emitted previously.
+>        * `database/dup` - emit both the experimental and stable database conventions, allowing for a phased rollout of the stable semantic conventions.
+>        * The default behavior (in the absence of one of these values) is to continue emitting whatever version of the old experimental database conventions the instrumentation was emitting previously.
+>        * Note: database/dup has higher precedence than database in case both values are present
+>  * SHOULD maintain (security patching at a minimum) their existing major version for at least six months after it starts emitting both sets of conventions.
+>  * MAY drop the environment variable in their next major version and emit only the stable database conventions.
+
 # Language Specifics
 
 ## Go
 
-* The Go SDK supports only kv for orphan response logging, all HTTP requests within the Go SDK are performed using the Golang HTTP library, which is synchronous. As such orphaned responses are not possible for non-kv services.
-* The Go SDK architecture is such that on timeouts the requests are removed from internal queueing systems (which is in fact how orphaned responses are detected, the lookup to find the corresponding request fails). This means that only a subset of the orphan logger fields can ever be exposed.
+* The Go SDK supports only KV for orphan response logging, all HTTP requests within the Go SDK are performed using the Golang HTTP library, which is synchronous. As such orphaned responses are not possible for non-kv services.
 * The Go SDK cannot place the number of retry attempts on the outer span \- outer spans are created in gocb whereas retries are handled in gocbcore.
   * For this reason gocbcore contains a "CMD" span for KV operations, this span owns dispatch spans.
   * Number of retries is put on the "CMD" span.
@@ -989,6 +1045,17 @@ The document ID for kv operations might be useful to be included in the trace.
 
 # Changelog
 
+* 2025-09-02: Revision \#26 (Dimitris C.)
+  * Updated implementation details so they are consistent with the [OpenTelemetry Semantic Conventions v1.37](https://github.com/open-telemetry/semantic-conventions/blob/v1.37.0/docs/database/database-spans.md).
+    * Updated span/metric attributes.
+    * Replace `db.couchbase.operations` with `db.client.operation.duration`. 
+    * Added section on backwards compatibiity with semantic conventions currently implemented.
+  * Clarify that dispatch spans should end on timeout or cancellation.
+  * Clarify that `Histogram` is now the closest equivalent to `ValueRecorder` in the v1.x OpenTelemetry API.
+  * Added detail on how the Local Connection ID is generated.
+  * Removed Go-specific limitation about reporting only a subset of fields for oprhaned responses, because requests are removed from internal queues upon timeout. This has now been addressed.
+  * Clarify that when an operation performs multiple underlying operations against a number of different services, the service identifier should be omitted from the top-level span.
+  * Added requirement that query statements should be sanitized by replacing literals with `?` when including them to span attributes.
 * 2024-08-27: Revision \#25 (Graham P.)
   * Adding cluster name and UUID labels.
 * 2023-08-04: Revision \#24 (Graham P.)
