@@ -48,7 +48,9 @@ The default JsonSerializer implementation within the SDK should handle passing t
 
 ## Default Transcoders
 
-The SDK must implement a number of specific implementations of the `ITranscoder` interface, along with a default implementation of the IJsonSerializer interface.  The JsonTranscoder implementation should be the default transcoder utilized by the SDK should no other option be specified by the user, the default serializer should take advantage of whatever JSON serialization already exists within the SDK.  The following is a list of specific transcoder implementations which MUST be implemented by the SDK, along with information about their specific behaviours.  Note that some knowledge of the specifics of [Common Flags][SDK-RFC#20] is assumed in the explanation of the transcoders below. 
+The SDK must implement a number of specific implementations of the `ITranscoder` interface, along with a default implementation of the IJsonSerializer interface.  The JsonTranscoder implementation should be the default transcoder utilized by the SDK should no other option be specified by the user, the default serializer should take advantage of whatever JSON serialization already exists within the SDK.  The following is a list of specific transcoder implementations which MUST be implemented by the SDK, along with information about their specific behaviours.  Note that some knowledge of the specifics of [Common Flags][SDK-RFC#20] is assumed in the explanation of the transcoders below.
+
+The provided transcoders should not perform any validation on the format bits of the common flags. They should attempt to deserialize the bytes regardless of the flags' value.
 
 ### LegacyTranscoder
 
@@ -140,13 +142,15 @@ Note that while utilizing a custom Transcoder may affect the ability for a custo
 
 ## Changelog
 * June 13, 2019 - Revision #1 (by Jeffry Morris)
-* * Initial Draft
+    * Initial Draft
 * Sept 26, 2019 - Revision #2 (by Brett Lawson)
-* * Rewrote the RFC according to the newly specified transcoding behaviours from Sept 21, 2019 SDK3 Core meeting.  Specifically, changing the transcoder behaviour to utilize individualized transcoders to explicitly specify the desired transcoding behaviour as opposed to utilizing a DataFormat abstraction.
-* * Added a number of clarifications with regards to the implementation of transcoders and their interaction with Common Flags and the Datatype field supported by the server.
+    * Rewrote the RFC according to the newly specified transcoding behaviours from Sept 21, 2019 SDK3 Core meeting.  Specifically, changing the transcoder behaviour to utilize individualized transcoders to explicitly specify the desired transcoding behaviour as opposed to utilizing a DataFormat abstraction.
+    * Added a number of clarifications with regards to the implementation of transcoders and their interaction with Common Flags and the Datatype field supported by the server.
 Clarified the behaviour of the JsonSerializer.
 * April 30, 2020
-* * Moved RFC to ACCEPTED state.
+    * Moved RFC to ACCEPTED state.
+* August 26, 2025 - Revision #3 (by Dimitris Christodoulou)
+    * Clarify that the provided transcoders should not validate the format bits of the common flags when decoding.
 
 |Language |Representative |Date |Revision |
 |:--- |:--- |:--- |:--- |
