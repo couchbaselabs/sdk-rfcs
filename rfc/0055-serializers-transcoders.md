@@ -152,17 +152,19 @@ Clarified the behaviour of the JsonSerializer.
 * August 26, 2025 - Revision #3 (by Dimitris Christodoulou)
     * Clarify that the provided transcoders should not validate the format bits of the common flags when decoding.
 
-|Language |Representative |Date |Revision |
+| Language | Representative | Date | Revision |
 |:--- |:--- |:--- |:--- |
-|Node.js|Brett Lawson|Sept 26, 2019|#2 |
-|Go|Charles Dixon|April 22, 2020|#2 |
-|Connectors|David Nault|April 29, 2020 |#2 |
-|PHP|Sergey Avseyev|Sept 27, 2019|#2 |
-|Python|Ellis Breen|April 30, 2020|#2 |
-|Scala|Graham Pople |Oct 24, 2019|#2 |
-|Java|Michael Nitschinger|Sept 27, 2019|#2 |
-|C|Sergey Avseyev|Sept 27, 2019|#2 |
-|Ruby|Sergey Avseyev|Sept 27, 2019|#2 |
+| Node.js    | Jared Casey         | Aug 27, 2025   | #3 |
+| Go         | Charles Dixon       | April 22, 2020 | #2 |
+| Connectors | David Nault         | Aug 26, 2025   | #3 |
+| PHP        | Sergey Avseyev      | Sept 27, 2019  | #2 |
+| Python     | Jared Casey         | Aug 27, 2020   | #3 |
+| Scala      | Graham Pople        | Oct 24, 2019   | #2 |
+| Java       | David Nault         | Aug 26, 2025   | #3 |
+| Kotlin     | David Nault         | Aug 26, 2025   | #3 |
+| C          | Sergey Avseyev      | Sept 27, 2019  | #2 |
+| Ruby       | Sergey Avseyev      | Sept 27, 2019  | #2 |
+| .NET       | Jeffry Morris       | Sept 8, 2025   | #3 |
 
 
 [SDK-RFC#20]: /rfc/0020-common-flags.md
