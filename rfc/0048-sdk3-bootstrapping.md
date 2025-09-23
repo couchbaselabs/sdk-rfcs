@@ -196,8 +196,11 @@ class PasswordAuthenticator {
 
 #### Credential rotation
 
-To support credential rotation, the SDK should allow replacing the Authenticator used by a `Cluster`.
+A user should be able to supply a new Couchbase credential without having to restart the app.
+To support this, the SDK should allow replacing the Authenticator used by a `Cluster`.
 The recommended way to support this is for `Cluster` to have an instance method called `setAuthenticator` that takes the new authenticator as an argument.
+
+SDK implementers must take care to ensure it's safe to call `setAuthenticator` at any time, from any thread, and concurrently with an authentication operation.
 
 # Changelog
 
