@@ -200,7 +200,12 @@ A user should be able to supply a new Couchbase credential without having to res
 To support this, the SDK should allow replacing the Authenticator used by a `Cluster`.
 The recommended way to support this is for `Cluster` to have an instance method called `setAuthenticator` that takes the new authenticator as an argument.
 
-SDK implementers must take care to ensure it's safe to call `setAuthenticator` at any time, from any thread, and concurrently with an authentication operation.
+The `setAuthenticator` method should do the same validation as `Cluster.connect()`.
+Specifically, if the new authenticator requires TLS but TLS is not enabled, `setAuthenticator` should throw `InvalidArgumentException` or the idiomatic equivalent.
+
+The API reference documentation for `setAuthentictor` should clearly state that setting a new authenticator does not change the authentication status of existing connections.
+
+SDK implementers must ensure it is safe to call `setAuthenticator` from any thread at any time, including concurrently with an authentication operation.
 
 # Changelog
 
