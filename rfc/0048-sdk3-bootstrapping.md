@@ -165,7 +165,11 @@ The SDK provides different Authenticators for different kinds of credentials:
 
 `JwtAuthenticator` takes a JSON Web Token as input from the user, and uses it to perform SASL authentication on KV connections using the `OAUTHBEARER` mechanism, and to inject the HTTP `Authorization` header into HTTP requests using the `Bearer` authentication scheme. 
 
-An example implementation for the above mentioned authenticators might be:
+#### Stale credentials
+
+If a KV response has status code `0x1f` ("auth stale"), the SDK must close the connection that received the response, and replace it with a new connection.
+
+#### Authenticator pseudocode
 
 ```typescript
 class CertificateAuthenticator {
