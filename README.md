@@ -46,8 +46,8 @@ The following index represents the RFC numbers in their natural order, but then 
 | 58    | [SDK3 Error Handling](rfc/0058-error-handling.md)                      | Jeff         | ACCEPTED |
 | 59    | [SDK3 Foundation](rfc/0059-sdk3-foundation.md)                         | Brett        | ACCEPTED |
 | 61    | [SDK3 Diagnostics](rfc/0061-sdk3-diagnostics.md)                       | Michael N.   | ACCEPTED |
-| 67.   | [SDK3 Extended SDK Observability (RTO v2)](rfc/0067-extended-sdk-observability-rto-v2.md) | Dimitris C. | ACCEPTED |
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
+| 67    | [SDK3 Extended SDK Observability (RTO v2)](rfc/0067-extended-sdk-observability-rto-v2.md) | Dimitris C. | ACCEPTED |
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
 | 76    | [KV Subdoc Replica Reads](rfc/0076-subdoc-replica-reads.md)            | Charles D.   | ACCEPTED |
 | 84    | [Application Service Level Telemetry](rfc/0084-app-service-level-telemetry.md) | Sergey | ACCEPTED |
