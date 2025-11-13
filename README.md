@@ -46,6 +46,7 @@ The following index represents the RFC numbers in their natural order, but then 
 | 58    | [SDK3 Error Handling](rfc/0058-error-handling.md)                      | Jeff         | ACCEPTED |
 | 59    | [SDK3 Foundation](rfc/0059-sdk3-foundation.md)                         | Brett        | ACCEPTED |
 | 61    | [SDK3 Diagnostics](rfc/0061-sdk3-diagnostics.md)                       | Michael N.   | ACCEPTED |
+| 67.   | [SDK3 Extended SDK Observability (RTO v2)](rfc/0067-extended-sdk-observability-rto-v2.md) | Dimitris C. | ACCEPTED |
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
 | 76    | [KV Subdoc Replica Reads](rfc/0076-subdoc-replica-reads.md)            | Charles D.   | ACCEPTED |
@@ -65,7 +66,6 @@ The following index represents the RFC numbers in their natural order, but then 
 | 63    | User Impersonation [\[gdoc\]](https://docs.google.com/document/d/18FTOTIHktHjrntMT2A4qApZco7i5FZwlTEqUcyaquqo/edit#)                                                       | Brett                 | DRAFT  |
 | 65    | CreateAsDeleted Support [\[doc\]](https://docs.google.com/document/d/1QccFEvHWEL2-ldS_aTfjphYJGB4YVmMKrMB-UyL2KFI/edit?usp=sharing)                                        | Graham P.             | DRAFT  |
 | 66    | Collection-Aware Query Support [\[doc\]](https://docs.google.com/document/d/1U1f7OMNua90NPx2S2-NK9LQYxsq2P0riR8lqNGFwKiA/edit#)                                            | Michael R.            | DRAFT  |
-| 67    | Extended SDK Observability (also known as "Tracing & Metrics") [\[doc\]](https://docs.google.com/document/d/1BAPS8bPMv8-4FPIdysgpxEsKrUgd595EAGOU-_nXHRY/edit?usp=sharing) | Michael N.            | DRAFT  |
 | 68    | Collection-Aware FTS Support [\[doc\]](https://docs.google.com/document/d/1mWD4Qa56iIE9nnwQT83GutU8BcLQ8RS7iW90qEfiElU)                                                    | Michael R.            | DRAFT  |
 | 69    | ReplaceBodyWithXattr  Support [\[doc\]](https://docs.google.com/document/d/1pafGxfhhg4Nmw_huvjJoGuUBWA39kCCXpkMoIb1MtW0/edit?usp=sharing)                                  | Graham P.             | DRAFT  |
 | 71    | HTTP Client [\[doc\]](https://docs.google.com/document/d/161XtCxl2S-aT3_kEHKQBpm3q89NjwUJPtu902BewbME)                                                                     | David N.              | DRAFT  |

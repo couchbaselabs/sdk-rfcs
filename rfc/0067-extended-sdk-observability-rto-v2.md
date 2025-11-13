@@ -7,8 +7,8 @@
 * RFC Name: Extended SDK Observability (RTO v2)
 * RFC ID: 67
 * Start Date: 2020-09-07
-* Owner: Michael Nitschinger
-* Current Status: DRAFT
+* Owner: Dimitris Christodoulou, Michael Nitschinger
+* Current Status: ACCEPTED
 
 # Summary
 
@@ -1155,14 +1155,14 @@ The document ID for kv operations might be useful to be included in the trace.
 
 | Language | Team Member | Signoff Date | Revision |
 | :---- | :---- | :---- | :---- |
-| Node.js | Jared Casey |  |  |
-| Go | Charles Dixon |  |  |
-| Connectors | David Nault |  |  |
-| PHP | Sergey Avseyev | 2024–09-11 | \#25 |
-| Python | Jared Casey |  |  |
-| Scala | Graham Pople |  |  |
-| .NET | Jeffry Morris |  |  |
-| Java | David Nault |  |  |
-| C | Sergey Avseyev | 2024–09-11 | \#25 |
-| C++ | Sergey Avseyev | 2024–09-11 | \#25 |
-| Ruby | Sergey Avseyev | 2024–09-11 | \#25 |
+| Go | Charles Dixon | 2025-11-13 | \#26 |
+| C++ | Sergey Avseyev | 2025-11-13 | \#26 |
+| Ruby | Sergey Avseyev | 2025-11-13 | \#26 |
+| PHP | Sergey Avseyev | 2025-11-13 | \#26 |
+| Node.js | Jared Casey | 2025-11-13 | \#26 |
+| Python | Jared Casey | 2025-11-13 | \#26 |
+| .NET | Jeffry Morris | 2025-11-13 | \#26 |
+| Java | David Nault | 2025-10-28 | \#26 |
+| Kotlin | David Nault | 2025-10-28 | \#26 |
+| Scala | Graham Pople | 2025-10-29 | \#26 |
+| Connectors | David Nault | 2025-10-28 | \#26 |
