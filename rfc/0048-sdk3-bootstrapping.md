@@ -154,13 +154,23 @@ interface Authenticator {
 }
 ```
 
-The SDK is expected to provide two default Authenticators, providing the ability to authenticate using Role-Based Access Control via a username and password, and the ability to authenticate using a client certificate.
+The SDK provides different Authenticators for different kinds of credentials:
 
-The RBAC Authenticator is expected to take a username and password as input from the user, and then use this information to perform SASL authentication on any KV connections, and to inject the HTTP Authorization header into HTTP requests. It does not provide any certificates for TLS connecting.
+* `PasswordAuthenticator` -- username and password
+* `CertificateAuthenticator` -- client certificate for TLS mutual authentication (mTLS)
+* `JwtAuthenticator` -- JSON Web Token (JWT)
 
-The Certificate Authenticator is expected to take a PrivateKey (or possibly simply a key name) from the user and use this information to provide a client-certificate for KV and HTTP connections alike.  It is also responsible for disabling the use of SASL_AUTH on connections as the server will already have authenticated the connection once its established using the provided client-certificate.
+`PasswordAuthenticator` takes a username and password as input from the user, and then uses this information to perform SASL authentication on any KV connections, and to inject the HTTP `Authorization` header into HTTP requests using the `Basic` authentication scheme.
 
-An example implementation for the above mentioned authenticators might be:
+`CertificateAuthenticator` takes a PrivateKey (or possibly simply a key name) from the user and uses this information to provide a client-certificate for KV and HTTP connections alike. It is also responsible for disabling the use of SASL_LIST_MECHS and SASL_AUTH on connections as the server will already have authenticated the connection once its established using the provided client-certificate.
+
+`JwtAuthenticator` takes a JSON Web Token as input from the user, and uses it to perform SASL authentication on KV connections using the `OAUTHBEARER` mechanism, and to inject the HTTP `Authorization` header into HTTP requests using the `Bearer` authentication scheme. 
+
+#### Stale credentials
+
+If a KV response has status code `0x1f` ("auth stale"), the SDK must close the connection that received the response, and replace it with a new connection.
+
+#### Authenticator pseudocode
 
 ```typescript
 class CertificateAuthenticator {
@@ -188,7 +198,28 @@ class PasswordAuthenticator {
     return conn.SASL_AUTH(this.Username, this.Password)
   }
   authHttp(type: ServiceType, req: HttpRequest) {
-    req.headers['Authorization'] = this.Username + ':' + this.Password
+    byte[] usernameAndPasswordBytes = (this.Username + ':' + this.Password).getBytes(UTF_8)
+    req.headers['Authorization'] = "Basic " + base64Encode(usernameAndPasswordBytes)
+    return true
+  }
+}
+
+class JwtAuthenticator {
+  String Token;
+
+  supportsTls() { return true }
+  supportsNonTls() { return false }
+
+  getCertificate(ServiceType, Endpoint) { return nil }
+
+  authKv(conn: KvConnection) {
+    // SASL authentication using the OAUTHBEARER mechanism.
+    // This is a single-step mechanism, similar to PLAIN but with a different payload.
+    // Note that \1 represents a byte with value 1 (the ASCII "start of heading" character).
+    return conn.SASL_AUTH("n,,\1auth=Bearer " + this.Token + "\1\1")
+  }
+  authHttp(type: ServiceType, req: HttpRequest) {
+    req.headers['Authorization'] = "Bearer " + this.Token
     return true
   }
 }
