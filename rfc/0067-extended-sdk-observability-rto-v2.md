@@ -813,13 +813,14 @@ Note that the type of this instrumentation is "ValueRecorder" and not "Counter",
 * **Name:** "`db.client.operation.duration`"
 * **Instrumented at:** when the response has been decoded, before it is marked as completed towards the user
 * **Tags:**
-  * "`couchbase.service`": Same as in [attribute service identifier](#attribute-system)
+  * "`couchbase.service`": Same as in [service identifier attribute](#attribute-service-identifier)
   * "`db.operation.name`": Same as the "outer span names" - for example `"get"`, `"get_and_lock"` etc.
   * "`db.namespace`": The bucket name
   * "`couchbase.scope.name`". The scope name.
   * "`couchbase.collection.name`".  The collection name
   * "`error.type`". The error type, if the operation failed. This tag is omitted if the operation was successful. The [SDK3 error name](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0058-error-handling.md) must be used \- e.g. `"DocumentLocked"`.  It must only be the SDK3 name \- not the SDK’s version of it (`"DocumentLockedException"`, `"ErrDocLocked"`, etc.) \- so we are consistent and the user can compare metrics across SDKs. If the error does not match any of the known types, `_OTHER` should be used.
   * "`couchbase.cluster.name`" and "`couchbase.cluster.uuid`" (see [Cluster Labels](#attribute-cluster-labels) section)
+  * "`db.system.name`": Same as in [system attribute](#attribute-system)
 
 The tags should only be present on operations where they make sense.  If the bucket, scope or collection tags do not apply for a given operation (such as unscoped queries), then do not send a tag.  (An exception is made for Micrometer, which mandates the same tags are used everywhere on the same metric.  In this situation the SDK can use a suitable default such as "\*")
 
