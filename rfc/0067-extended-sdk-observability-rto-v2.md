@@ -297,6 +297,8 @@ When the is OpenTelemetryRequestTracer created, internally it must construct a T
 * Prefix: "com.couchbase.client."
 * Suffix: the language of the SDK (i.e. "jvm", "go", "dotnet", etc).
 
+All spans created by the `OpenTelemetryRequestTracer` must have `SpanKind` set to `CLIENT`. This is typically stored as a `span.kind` span attribute by OpenTelemetry backends. However, it must be set on creation using the relevant [OpenTelemetry API parameter](https://opentelemetry.io/docs/specs/otel/trace/api/#span-creation), not as an attribute.
+
 In addition, if the version can be set, provide the version of the module/dependency.
 
 ```
@@ -981,6 +983,7 @@ Note that all Couchbase-specific attributes have now dropped the `db.` prefix.
 | System name | db.system | db.system.name | |
 | Cluster name | db.couchbase.cluster_name | couchbase.cluster.name | |
 | Cluster UUID | db.couchbase.cluster_uuid | couchbase.cluster.uuid | |
+| Service | db.couchbase.service | couchbase.service | |
 | Bucket name | db.name | db.namespace | |
 | Scope name | db.couchbase.scope | couchbase.scope.name | |
 | Collection name | db.couchbase.collection | couchbase.collection.name | |
@@ -998,6 +1001,7 @@ Note that all Couchbase-specific attributes have now dropped the `db.` prefix.
 | Peer port | Did not exist | network.peer.port | |
 | Local ID | db.couchbase.local_id | couchbase.local_id | |
 | Operation ID | db.couchbase.operation_id | couchbase.operation_id | |
+| Server duration | db.couchbase.server_duration | couchbase.server_duration | |
 
 **Notes:**
 
@@ -1064,6 +1068,9 @@ The document ID for kv operations might be useful to be included in the trace.
 
 # Changelog
 
+* 2025-12-03: Revision \#27 (Dimitris C.)
+  * Added requirement that `OpenTelemetryRequestTracer` must set `SpanKind` to `CLIENT` for all spans it creates.
+  * Added some missing attributes in the "Compatibility with older semantic conventions" section.
 * 2025-09-02: Revision \#26 (Dimitris C.)
   * Updated implementation details so they are consistent with the [OpenTelemetry Semantic Conventions v1.37](https://github.com/open-telemetry/semantic-conventions/blob/v1.37.0/docs/database/database-spans.md).
     * Updated span/metric attributes. See [table](#compatibility-with-older-semantic-conventions) for details on the changes. The `db.` prefix has been dropped from all Couchbase-specific attributes.
