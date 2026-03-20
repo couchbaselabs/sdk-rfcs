@@ -37,12 +37,12 @@ interface ICollection{
 
 #### Get
 
-Fetches a value from the server if it exists.
+Fetches a value from the server if it exists, throwing `DocumentNotFoundException` if not.
 
 Signature
 
 ```csharp
-GetResultIGetResult Get(string id, [options])
+IGetResult Get(string id, [options])
 ```
 
 Parameters
@@ -78,6 +78,33 @@ Returns
 Throws
 
 - Any exceptions raised by the underlying platform
+
+#### GetIfPresent
+
+Fetches a value from the server if it exists, returning `null/none/undefined` if not.
+
+Signature
+
+```csharp
+[IGetResult] GetIfPresent(string id, [options])
+```
+
+Parameters: Same as `Get`.
+
+Throws: same set as `Get`, except `DocumentNotFoundException` which must not be thrown.
+
+Details:
+
+The only differences between `Get` and `GetIfPresent` are:
+
+* Return `null/none/undefined` rather than throwing `DocumentNotFoundException` where the document does not exist.
+* In such case, OpenTelemetry spans must not have `DocumentNotFoundException` attached.
+
+It is implemented as a separate API (rather than a toggle in `GetOptions` say) as in the majority of SDKs a nullable/optional return type needs to be part of the type signature.
+
+Returns
+
+- Either the JSON object or scalar encapsulated in an IGetResult API object, or `null/none/undefined`.
 
 #### Insert
 
