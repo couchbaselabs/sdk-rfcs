@@ -25,6 +25,7 @@ interface ICollection{
   ...
 
   IGetResult Get(string id, GetOptions options = null);
+  [IGetResult] GetOrNull(string id, GetOptions options = null);
   IMutationResult Upsert(string id, T value, UpsertOptions options = null);
   IMutationResult Insert(string id, T value, InsertOptions options = null);
   IMutationResult Replace(string id, T value, ReplaceOptions options = null);
@@ -79,27 +80,32 @@ Throws
 
 - Any exceptions raised by the underlying platform
 
-#### GetIfPresent
+#### GetIfNull
 
 Fetches a value from the server if it exists, returning `null/none/undefined` if not.
 
 Signature:
 
 ```csharp
-[IGetResult] GetIfPresent(string id, [options])
+[IGetResult] GetIfNull(string id, [options])
 ```
 
-It is implemented as a separate API (rather than a toggle in `GetOptions` say) as in the majority of SDKs a nullable/optional return type needs to be part of the type signature.
+Each SDK implementation should use an appropriate variant of the `GetIfNull` name that reflects the actual platform return type.  E.g. `GetOrNull`, `GetOrNone`, `GetOrUndefined`, and `GetOrNil` are all acceptable variants.
+
+If the SDK platform has a strong preference for functional monads such as `Optional` over null, then those can be used instead, in which case a suitable name may be `GetOptional` or `GetOrOptional`. 
+
+If the SDK platform has a clear existing idiom for these tri-states (such as .NET's `bool TryGet(id, var out valueIfExists)`), then it should instead use that.  
+
+Design note: It is implemented as a separate API (rather than a toggle in `GetOptions` say) as in the majority of SDKs a nullable/optional return type needs to be part of the type signature.
 
 Parameters: Same as `Get`.
 
 Throws: Same set as `Get`, except `DocumentNotFoundException` which must not be thrown.
 
-Observability: This should be handled exactly as a `Get` operation except named `GetIfPresent`, and spans must not attach `DocumentNotFoundException`.
+Observability: This should be handled exactly as a `Get` operation except named the span is named `get_if_present` rather than `get`, and spans must not attach `DocumentNotFoundException`.  
+Other exceptions should be attached to spans as usual, if the SDK already implements that.
 
-Returns:
-
-- Either the JSON object or scalar encapsulated in an IGetResult API object, or `null/none/undefined`.
+Returns: Either the JSON object or scalar encapsulated in an IGetResult API object, or `null/none/undefined`.
 
 #### Insert
 
@@ -1702,6 +1708,10 @@ Invalid operation
 - June 17, 2025 - Revision #20 (by Matt Wozakowski)
 
   - Fix Touch signature return type from `IMutationResult` to `IResult`
+  
+- March, 2026 - Revision #21 (by Graham Pople)
+
+  - Added `getOrNull`.
 
   # Signoff
 
