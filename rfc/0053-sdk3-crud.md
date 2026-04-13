@@ -98,7 +98,7 @@ If the SDK platform has a clear existing idiom for these tri-states (such as .NE
 
 Design note: It is implemented as a separate API (rather than a toggle in `GetOptions`) as in the majority of SDKs a nullable/optional return type needs to be part of the type signature or type hinting, and we do not want to trigger compilation warnings or IDE false negatives for existing users.
 
-Parameters: Same as `Get`.
+Parameters: Same as `Get`.  The SDK must create a new `GetOrNullOptions` object though, in case the methods diverge in future. 
 
 Throws: Same set as `Get`, except `DocumentNotFoundException` which must not be thrown.
 
