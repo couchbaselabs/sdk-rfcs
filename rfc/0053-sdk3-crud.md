@@ -80,32 +80,32 @@ Throws
 
 - Any exceptions raised by the underlying platform
 
-#### GetIfNull
+#### GetOrNull
 
 Fetches a value from the server if it exists, returning `null/none/undefined` if not.
 
 Signature:
 
 ```csharp
-[IGetResult] GetIfNull(string id, [options])
+[IGetResult] GetOrNull(string id, [options])
 ```
 
-Each SDK implementation should use an appropriate variant of the `GetIfNull` name that reflects the actual platform return type.  E.g. `GetOrNull`, `GetOrNone`, `GetOrUndefined`, and `GetOrNil` are all acceptable variants.
+Each SDK implementation should use an appropriate variant of the `GetOrNull` name that reflects the actual platform return type.  E.g. `GetOrNull`, `GetOrNone`, `GetOrUndefined`, and `GetOrNil` are all acceptable variants.
 
-If the SDK platform has a strong preference for functional monads such as `Optional` over null, then those can be used instead, in which case a suitable name may be `GetOptional` or `GetOrOptional`. 
+If the SDK platform has a strong preference for functional monads such as `Optional` over null, then those can be used instead, in which case a suitable name may be `GetOptional`. 
 
 If the SDK platform has a clear existing idiom for these tri-states (such as .NET's `bool TryGet(id, var out valueIfExists)`), then it should instead use that.  
 
-Design note: It is implemented as a separate API (rather than a toggle in `GetOptions` say) as in the majority of SDKs a nullable/optional return type needs to be part of the type signature.
+Design note: It is implemented as a separate API (rather than a toggle in `GetOptions`) as in the majority of SDKs a nullable/optional return type needs to be part of the type signature or type hinting, and we do not want to trigger compilation warnings or IDE false negatives for existing users.
 
 Parameters: Same as `Get`.
 
 Throws: Same set as `Get`, except `DocumentNotFoundException` which must not be thrown.
 
-Observability: This should be handled exactly as a `Get` operation except named the span is named `get_if_present` rather than `get`, and spans must not attach `DocumentNotFoundException`.  
+Observability: This should be handled exactly as a `Get` operation except named the span is named `get_or_null` rather than `get`, and spans must not attach `DocumentNotFoundException`.  
 Other exceptions should be attached to spans as usual, if the SDK already implements that.
 
-Returns: Either the JSON object or scalar encapsulated in an IGetResult API object, or `null/none/undefined`.
+Returns: Either an IGetResult API object, or `null/none/undefined`.
 
 #### Insert
 
