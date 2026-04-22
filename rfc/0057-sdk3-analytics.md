@@ -194,21 +194,13 @@ class AnalyticsWarning {
 ## Cluster compatibility
 With the upcoming release of Enterprise Analytics, and the risk of users accidentally using operational SDKs against it, a compatibility check is being added.
 
-[MB-67103](https://jira.issues.couchbase.com/browse/MB-67103) adds to the cluster and bucket configs a `prodName` string field identifying the cluster type.
+[MB-67581](https://jira.issues.couchbase.com/browse/MB-67581) adds to the cluster and bucket configs a `prod` string field identifying the cluster type.
 
-Before performing each analytics operation, check the cluster config, and iff the prodName field is present, check if it starts with "Couchbase Server".  If it doesn't, fast-fail the request with a generic `CouchbaseException`.  A suitable error message could be:
+Before performing each analytics operation, check the cluster config, and iff the `prod` field is present, check if it is `"analytics"`.  If it is, fast-fail the request with a generic `CouchbaseException`.  A suitable error message could be:
 
-```
-var errStr = "This '${prodName}' cluster cannot be used with this SDK, which is intended for use with operational clusters."
-if (prodName == "Enterprise Analytics") {
-  errStr += ". For this cluster, an Enterprise Analytics SDK should be used."
-}
-throw new CouchbaseException(errStr)
-```
+> This 'analytics' cluster cannot be used with this SDK, which is intended for use with operational clusters. For this cluster, an Enterprise Analytics SDK should be used.
 
 If the cluster config is not yet available, wait for it using the request timeout.  On timeout follow standard timeout rules.
-
-For discussion of why "Couchbase Server" is matched, and why we check it starts with rather than the exact string, see the MB.
 
 An SDK-specific 'backdoor' needs to be added to disable the error.  This should not be exposed through the public API, but instead handled via a platform/SDK-specific path - System properties, envvars, undocumented connection string params, or similar.  This is to ease migration of Couchbase tools and drivers that will continue to use the operational SDKs for a time.  This mechanism is not user-facing and should not be documented externally.
 
