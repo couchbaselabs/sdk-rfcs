@@ -892,6 +892,7 @@ enum EventingFunctionStatus {
 	Paused  
 	Pausing  
 	Resuming
+	Unknown
 }
 ```
 
@@ -906,6 +907,8 @@ The `EventingFunctionStatus` mapping from JSON is specified as follows:
 | Paused | “paused” |
 | Pausing | “pausing” |
 | Resuming | "resuming" |
+
+If the server returns a status that the SDK does not recognize, the status should be set to `Unknown`. This can be omitted if the SDK has a more idiomatic way to represent an unknown status. One example is Go, where the status is a string alias with constants for the known status values.
 
 > [!NOTE]
 > The JSON representation for EventingFunctionState has a `“function_scope”` field, but this must not be part of the SDK representation. In the SDK, function scope is _contextual_, in other words, the scope is determined by the scope of the manager accessing the function.
