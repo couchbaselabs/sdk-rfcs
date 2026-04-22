@@ -4,7 +4,7 @@
 - RFC ID: 62
 - Start Date: January 28, 2020
 - Owner: David Nault
-- Current Status: DRAFT
+- Current Status: ACCEPTED
 
 # Motivation
 
@@ -1054,6 +1054,8 @@ The server does not provide a practical way to detect whether eventing function 
 
 # Changes
 
+* Revision \#15 (2026-04-28 \- Dimitris Christodoulou):
+  * Moved RFC to ACCEPTED state.
 * Revision \#14 (2024-03-18 \- David Nault):  
   * Added language compatibility “7.2.0” to EventingFunctionLanguageCompatibility.  
   * Noted that URI query parameter values MUST be url-encoded.  
@@ -1112,14 +1114,14 @@ The server does not provide a practical way to detect whether eventing function 
 
 | SDK | Representative | Date | Revision |
 | :---- | :---- | :---- | :---- |
-| C++ | Sergey Avseyev |  |  |
-| Ruby | Sergey Avseyev |  |  |
+| C++ | Sergey Avseyev | 2026-04-27 | 14 |
+| Ruby | Sergey Avseyev | 2026-04-27 | 14 |
 | Go | Charles Dixon | 2024-03-24 | 14 |
-| Rust | Charles Dixon | | |
+| Rust | Charles Dixon | 2026-04-27 | 14 |
 | Java  | David Nault | 2024-03-18 | 14 |
 | Kotlin | David Nault | 2024-03-18 | 14 |
-| .NET | Jeff Morris |  |  |
+| .NET | Emilien Bevierre | 2026-04-27 | 14 |
 | NodeJS | Jared Casey |  |  |
-| PHP | Sergey Avseyev |  |  |
+| PHP | Sergey Avseyev | 2026-04-27 | 14 |
 | Python | Jared Casey |  |  |
-| Scala | Graham Pople |  |  |
+| Scala | Graham Pople | 2026-04-28 | 14 |

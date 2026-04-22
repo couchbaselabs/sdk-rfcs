@@ -46,6 +46,7 @@ The following index represents the RFC numbers in their natural order, but then 
 | 58    | [SDK3 Error Handling](rfc/0058-error-handling.md)                      | Jeff         | ACCEPTED |
 | 59    | [SDK3 Foundation](rfc/0059-sdk3-foundation.md)                         | Brett        | ACCEPTED |
 | 61    | [SDK3 Diagnostics](rfc/0061-sdk3-diagnostics.md)                       | Michael N.   | ACCEPTED |
+| 62    | [SDK3 Eventing Management APIs](rfc/0062-eventing-management.md)       | David N.     | ACCEPTED |
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
 | 67    | [SDK3 Extended SDK Observability (RTO v2)](rfc/0067-extended-sdk-observability-rto-v2.md) | Dimitris C. | ACCEPTED |
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
@@ -62,7 +63,6 @@ The following index represents the RFC numbers in their natural order, but then 
 | 45    | Advanced Analytics Querying [\[gdoc\]](https://docs.google.com/document/d/1SRYPk4ATM2PVc2Yi3WP-Ol9_qvFue9IG2uhd0UUq9GY)                                                    | Michael N.            | DRAFT  |
 | 46    | Synchronous Replication [\[gdoc\]](https://docs.google.com/document/d/1_Bn_cKLxvqFBNVcPaPnoXMpt3JEbf_6MDvMHpJDtO_s/edit)                                                   | Sergey                | DRAFT  |
 | 47    | Unified User Agent [\[gdoc\]](https://docs.google.com/document/d/1B4QM9UO6kz2yjLrBqLjSgArUeM1DvzKnakC_e8KfrmY/edit?usp=sharing)                                            | Michael N.            | DRAFT  |
-| 62    | Eventing Management APIs [\[gdoc\]](https://docs.google.com/document/d/1VSqyRjFHJvlr9kYlwzeUpSDC8QkeflTm1epH7UzL0yw)                                                       | Michael N.            | DRAFT  |
 | 63    | User Impersonation [\[gdoc\]](https://docs.google.com/document/d/18FTOTIHktHjrntMT2A4qApZco7i5FZwlTEqUcyaquqo/edit#)                                                       | Brett                 | DRAFT  |
 | 65    | CreateAsDeleted Support [\[doc\]](https://docs.google.com/document/d/1QccFEvHWEL2-ldS_aTfjphYJGB4YVmMKrMB-UyL2KFI/edit?usp=sharing)                                        | Graham P.             | DRAFT  |
 | 66    | Collection-Aware Query Support [\[doc\]](https://docs.google.com/document/d/1U1f7OMNua90NPx2S2-NK9LQYxsq2P0riR8lqNGFwKiA/edit#)                                            | Michael R.            | DRAFT  |
