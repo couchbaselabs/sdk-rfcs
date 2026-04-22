@@ -891,10 +891,11 @@ enum EventingFunctionStatus {
 	Undeploying  
 	Paused  
 	Pausing  
+	Resuming
 }
 ```
 
-The EventingFunctionStatus mapping from JSON is specified as follows:
+The `EventingFunctionStatus` mapping from JSON is specified as follows:
 
 | State | JSON Property |
 | :---- | :---- |
@@ -904,6 +905,7 @@ The EventingFunctionStatus mapping from JSON is specified as follows:
 | Undeploying | “undeploying” |
 | Paused | “paused” |
 | Pausing | “pausing” |
+| Resuming | "resuming" |
 
 > [!NOTE]
 > The JSON representation for EventingFunctionState has a `“function_scope”` field, but this must not be part of the SDK representation. In the SDK, function scope is _contextual_, in other words, the scope is determined by the scope of the manager accessing the function.
@@ -1054,6 +1056,8 @@ The server does not provide a practical way to detect whether eventing function 
 
 # Changes
 
+* Revision \#16 (2026-04-28 \- Dimitris Christodoulou):
+  * Added `Resuming` enum value for `EventingFunctionStatus`.
 * Revision \#15 (2026-04-28 \- Dimitris Christodoulou):
   * Moved RFC to ACCEPTED state.
 * Revision \#14 (2024-03-18 \- David Nault):  
