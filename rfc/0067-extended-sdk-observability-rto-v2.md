@@ -297,6 +297,8 @@ When the is OpenTelemetryRequestTracer created, internally it must construct a T
 * Prefix: "com.couchbase.client."
 * Suffix: the language of the SDK (i.e. "jvm", "go", "dotnet", etc).
 
+All spans created by the `OpenTelemetryRequestTracer` must have `SpanKind` set to `CLIENT`. This is typically stored as a `span.kind` span attribute by OpenTelemetry backends. However, it must be set on creation using the relevant [OpenTelemetry API parameter](https://opentelemetry.io/docs/specs/otel/trace/api/#span-creation), not as an attribute.
+
 In addition, if the version can be set, provide the version of the module/dependency.
 
 ```
@@ -811,13 +813,14 @@ Note that the type of this instrumentation is "ValueRecorder" and not "Counter",
 * **Name:** "`db.client.operation.duration`"
 * **Instrumented at:** when the response has been decoded, before it is marked as completed towards the user
 * **Tags:**
-  * "`couchbase.service`": Same as in [attribute service identifier](#attribute-system)
+  * "`couchbase.service`": Same as in [service identifier attribute](#attribute-service-identifier)
   * "`db.operation.name`": Same as the "outer span names" - for example `"get"`, `"get_and_lock"` etc.
   * "`db.namespace`": The bucket name
   * "`couchbase.scope.name`". The scope name.
   * "`couchbase.collection.name`".  The collection name
   * "`error.type`". The error type, if the operation failed. This tag is omitted if the operation was successful. The [SDK3 error name](https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0058-error-handling.md) must be used \- e.g. `"DocumentLocked"`.  It must only be the SDK3 name \- not the SDK’s version of it (`"DocumentLockedException"`, `"ErrDocLocked"`, etc.) \- so we are consistent and the user can compare metrics across SDKs. If the error does not match any of the known types, `_OTHER` should be used.
   * "`couchbase.cluster.name`" and "`couchbase.cluster.uuid`" (see [Cluster Labels](#attribute-cluster-labels) section)
+  * "`db.system.name`": Same as in [system attribute](#attribute-system)
 
 The tags should only be present on operations where they make sense.  If the bucket, scope or collection tags do not apply for a given operation (such as unscoped queries), then do not send a tag.  (An exception is made for Micrometer, which mandates the same tags are used everywhere on the same metric.  In this situation the SDK can use a suitable default such as "\*")
 
@@ -981,6 +984,7 @@ Note that all Couchbase-specific attributes have now dropped the `db.` prefix.
 | System name | db.system | db.system.name | |
 | Cluster name | db.couchbase.cluster_name | couchbase.cluster.name | |
 | Cluster UUID | db.couchbase.cluster_uuid | couchbase.cluster.uuid | |
+| Service | db.couchbase.service | couchbase.service | |
 | Bucket name | db.name | db.namespace | |
 | Scope name | db.couchbase.scope | couchbase.scope.name | |
 | Collection name | db.couchbase.collection | couchbase.collection.name | |
@@ -998,6 +1002,7 @@ Note that all Couchbase-specific attributes have now dropped the `db.` prefix.
 | Peer port | Did not exist | network.peer.port | |
 | Local ID | db.couchbase.local_id | couchbase.local_id | |
 | Operation ID | db.couchbase.operation_id | couchbase.operation_id | |
+| Server duration | db.couchbase.server_duration | couchbase.server_duration | |
 
 **Notes:**
 
@@ -1064,6 +1069,9 @@ The document ID for kv operations might be useful to be included in the trace.
 
 # Changelog
 
+* 2025-12-03: Revision \#27 (Dimitris C.)
+  * Added requirement that `OpenTelemetryRequestTracer` must set `SpanKind` to `CLIENT` for all spans it creates.
+  * Added some missing attributes in the "Compatibility with older semantic conventions" section.
 * 2025-09-02: Revision \#26 (Dimitris C.)
   * Updated implementation details so they are consistent with the [OpenTelemetry Semantic Conventions v1.37](https://github.com/open-telemetry/semantic-conventions/blob/v1.37.0/docs/database/database-spans.md).
     * Updated span/metric attributes. See [table](#compatibility-with-older-semantic-conventions) for details on the changes. The `db.` prefix has been dropped from all Couchbase-specific attributes.
