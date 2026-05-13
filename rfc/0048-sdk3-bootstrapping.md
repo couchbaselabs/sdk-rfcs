@@ -5,7 +5,7 @@
 - Start Date: April 1, 2019
 - Owner: Brett Lawson \<brett@couchbase.com\>
 - Current Status: ACCEPTED
-- Revision: #4
+- Revision: #5
 - Relates To
   - [SDK-RFC#7 (Cluster Level Authentication)][sdk-rfc-0007]
   - [SDK-RFC#16 (RBAC)][sdk-rfc-0016]
@@ -154,13 +154,20 @@ interface Authenticator {
 }
 ```
 
-The SDK is expected to provide two default Authenticators, providing the ability to authenticate using Role-Based Access Control via a username and password, and the ability to authenticate using a client certificate.
+The SDK provides different Authenticators for different kinds of credentials:
 
-The RBAC Authenticator is expected to take a username and password as input from the user, and then use this information to perform SASL authentication on any KV connections, and to inject the HTTP Authorization header into HTTP requests. It does not provide any certificates for TLS connecting.
+* `PasswordAuthenticator` -- username and password
+* `CertificateAuthenticator` -- client certificate for TLS mutual authentication (mTLS)
+* `JwtAuthenticator` -- JSON Web Token (JWT)
 
-The Certificate Authenticator is expected to take a PrivateKey (or possibly simply a key name) from the user and use this information to provide a client-certificate for KV and HTTP connections alike.  It is also responsible for disabling the use of SASL_AUTH on connections as the server will already have authenticated the connection once its established using the provided client-certificate.
+`PasswordAuthenticator` takes a username and password as input from the user, and then uses this information to perform SASL authentication on any KV connections, and to inject the HTTP `Authorization` header into HTTP requests using the `Basic` authentication scheme.
 
-An example implementation for the above mentioned authenticators might be:
+`CertificateAuthenticator` takes a PrivateKey (or possibly simply a key name) from the user and uses this information to provide a client-certificate for KV and HTTP connections alike. It is also responsible for disabling the use of SASL_LIST_MECHS and SASL_AUTH on connections as the server will already have authenticated the connection once its established using the provided client-certificate.
+
+`JwtAuthenticator` takes a JSON Web Token as input from the user, and uses it to perform SASL authentication on KV connections using the `OAUTHBEARER` mechanism, and to inject the HTTP `Authorization` header into HTTP requests using the `Bearer` authentication scheme.
+
+
+#### Authenticator pseudocode
 
 ```typescript
 class CertificateAuthenticator {
@@ -188,7 +195,28 @@ class PasswordAuthenticator {
     return conn.SASL_AUTH(this.Username, this.Password)
   }
   authHttp(type: ServiceType, req: HttpRequest) {
-    req.headers['Authorization'] = this.Username + ':' + this.Password
+    byte[] usernameAndPasswordBytes = (this.Username + ':' + this.Password).getBytes(UTF_8)
+    req.headers['Authorization'] = "Basic " + base64Encode(usernameAndPasswordBytes)
+    return true
+  }
+}
+
+class JwtAuthenticator {
+  String Token;
+
+  supportsTls() { return true }
+  supportsNonTls() { return false }
+
+  getCertificate(ServiceType, Endpoint) { return nil }
+
+  authKv(conn: KvConnection) {
+    // SASL authentication using the OAUTHBEARER mechanism.
+    // This is a single-step mechanism, similar to PLAIN but with a different payload.
+    // Note that \1 represents a byte with value 1 (the ASCII "start of heading" character).
+    return conn.SASL_AUTH("n,,\1auth=Bearer " + this.Token + "\1\1")
+  }
+  authHttp(type: ServiceType, req: HttpRequest) {
+    req.headers['Authorization'] = "Bearer " + this.Token
     return true
   }
 }
@@ -203,9 +231,78 @@ The recommended way to support this is for `Cluster` to have an instance method 
 The `setAuthenticator` method should do the same validation as `Cluster.connect()`.
 Specifically, if the new authenticator requires TLS but TLS is not enabled, `setAuthenticator` should throw `InvalidArgumentException` or the idiomatic equivalent.
 
-The API reference documentation for `setAuthentictor` should clearly state that setting a new authenticator does not change the authentication status of existing connections.
+If practical, the SDK should prevent the user from switching authenticator types.
+If the new authenticator is of a different type than the previous authenticator, `setAuthenticator` should throw `InvalidArgumentException` or the idiomatic equivalent.
+This prevents errors that might otherwise occur when switching from an authenticator that applies headers to HTTP requests (`PasswordAuthenticator` and `JwtAuthenticator`) to an authenticator that does not (`CertificateAuthenticator`).
+For example, consider a connection created while a `PasswordAuthenticator` was active.
+Every HTTP request using this connection must include the credential in a header.
+The SDK gets this credential from the current authenticator.
+If the user were to switch to a `CertificateAuthenticator`, the new authenticator would say "Sorry, I don't apply HTTP headers," and requests on existing connections would fail as unauthenticated.
 
 SDK implementers must ensure it is safe to call `setAuthenticator` from any thread at any time, including concurrently with an authentication operation.
+
+Calling `setAuthenticator` might (or might not!) apply the new credential to existing connections.
+The behavior depends on the authenticator type, and the reauthentication strategy used by the SDK.
+The API reference documentation for `setAuthentictor` should describe what happens when it receives different kinds of authenticators.
+
+Implementors should select one of these reauthentication strategies:
+
+**a)** The SDK lets outstanding requests drain from existing connections and then closes those connections, while directing new requests to a new set of connections authenticated by the new authenticator.
+
+*OR*
+
+**b)** The SDK reauthenticates existing KV connections using the strategy described in the next section, but only if the new authenticator is a `JwtAuthenticator`; for all other authenticator types, calling `setAuthenticator` has no effect on existing KV connections.
+Subsequent HTTP requests use the new credential unless the authenticator is a `CertificateAuthenticator`, in which case new credential is applied only to new HTTP connections.
+
+> [!NOTE]
+> **Why not reauthenticate KV connections when using `PasswordAuthenticator`?**
+>
+> The first request of a multi-request mechanisms like `SCRAM-SHA` (used by `PasswordAuthenticator` when TLS is disabled) deauthenticates the connection.
+> This causes unrelated KV requests to fail until the SASL sequence completes.
+>
+> A single-request mechanism like `OAUTHBEARER` (used by `JwtAuthenticator`) does not interfere with unrelated requests.
+>
+> It might technically be possible to defer other KV requests while multi-request reauthentication is in progress.
+> However, as well as adding complexity, it might degrade performance, at least in Java where we don't want to acquire a mutex for every request.
+>
+> It would also be technically possible to reauthenticate when using `PasswordAuthenticator` with TLS, since `PLAIN` is a single-request mechanism.
+> However, having the reauthentication behavior of `PasswordAuthenticator` depend on whether TLS is enabled would be one more surprise in a feature that already has too many surprises.
+
+
+##### Reauthenticating a existing KV connection
+
+The SDK reauthenticates a KV connection by sending a single `SASL_AUTH` request, just like during the initial handshake.
+If the response has a status code other than `SUCCESS`, the SDK should drop the connection.
+
+If the SDK has a request queue that supports queue barging, the `SASL_AUTH` request should barge to the head of the queue.
+
+If the SDK normally uses a backpressure mechanism to limit the flow of requests, the SDK should send the `SASL_AUTH` request without honoring backpressure.
+The rationale is that ignoring backpressure is more reliable than retrying; we don't expect more than one such request per minute, and such a low request rate is unlikely to cause resource exhaustion.
+
+If the SDK is temporarily unable to send the request (for example, due to a full request queue), the SDK should make a reasonable attempt to retry the request, where "reasonable" may depend on SDK internals and is left to the implementor's discretion.
+A suggested strategy is to retry every 10 milliseconds; if the SDK is still unable to send the request after one minute has elapsed, log a warning and close the connection as a last resort.
+
+
+#### Stale credentials
+
+The server may respond to any KV request with status code `0x1f (AUTH_STALE)`.
+This code indicates the user's credential has expired.
+To see it happen:
+
+1. Authenticate using a valid JWT, then open a bucket.
+2. Wait for the JWT to expire.
+3. Try to get a document from the bucket.
+
+The SDK must respond to this status code by closing the connection that received the response.
+Any outstanding requests associated with the connection should fail as if the server had dropped the connection.
+
+The request associated the `AUTH_STALE` response should fail with a generic `CouchbaseException` whose message and/or error context somehow indicates the user's credential is no longer valid.
+
+It is the developer's responsibility to ensure the SDK always has a fresh credential.
+Instead of reacting to stale credential errors, we encourage developers to proactively refresh the credential by periodically passing a new authenticator to `setAuthenticator`.
+The rationale for proactive refresh is that waiting until the credential expires before refreshing would add latency.
+Depending on how the new credential is obtained, this latency might be greater than the KV request timeout, leading to preventable timeouts.
+
 
 # Changelog
 
@@ -239,6 +336,14 @@ SDK implementers must ensure it is safe to call `setAuthenticator` from any thre
 - Aug 22, 2025 - Revision #4 (by David Nault)
 
   - Added "Credential rotation" section, which specifies a `setAuthenticator` method for updating the authenticator used by a `Cluster`.
+
+- Jan 21, 2026 - Revision #5 (by David Nault)
+
+  - Updated the "Credential rotation" section:
+    - SDK should prohibit user from switching authenticator types.
+    - `setAuthenticator()` either creates new connections, or reauthenticates existing connections (sometimes, depending on authenticator type; please re-read this section for all the gory details).
+
+  - Added a "Stale credentials" section that basically says, "If you get an `AUTH_STALE` response, close the connection and throw an exception."
 
 # Signoff
 
