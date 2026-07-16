@@ -50,6 +50,7 @@ The following index represents the RFC numbers in their natural order, but then 
 | 64    | [SDK3 Field-Level Encryption](rfc/0064-sdk3-field-level-encryption.md) | David N.     | ACCEPTED |
 | 67    | [SDK3 Extended SDK Observability (RTO v2)](rfc/0067-extended-sdk-observability-rto-v2.md) | Dimitris C. | ACCEPTED |
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
+| 74    | [Configuration Profiles](rfc/0074-config-profiles.md)                  | Mike R.      | ACCEPTED |
 | 76    | [KV Subdoc Replica Reads](rfc/0076-subdoc-replica-reads.md)            | Charles D.   | ACCEPTED |
 | 84    | [Application Service Level Telemetry](rfc/0084-app-service-level-telemetry.md) | Sergey | ACCEPTED |
 
@@ -71,7 +72,6 @@ The following index represents the RFC numbers in their natural order, but then 
 | 71    | HTTP Client [\[doc\]](https://docs.google.com/document/d/161XtCxl2S-aT3_kEHKQBpm3q89NjwUJPtu902BewbME)                                                                     | David N.              | DRAFT  |
 | 72    | Queues And Topics [\[doc\]](https://docs.google.com/document/d/1x-wn--F1Qg6y342pBerLLfpWnAGud2HQRA0YpEVMkqU)                                                               | Michael N.            | DRAFT  |
 | 73    | KV Range Scan [\[doc\]](https://docs.google.com/document/d/1ir4E9XRvVOncReuR_QgohyompgoIvnZ0De1ik0WkrYs)                                                                   | David N. & Michael N. | DRAFT  |
-| 74    | Configuration Profiles [\[doc\]](https://docs.google.com/document/d/1LNCYgV2Eqymp3pGmA8WKPQOLSpcRyv0P7NpMYHVcUM0/)                                                         | Mike R.               | DRAFT  |
 | 75    | [Faster Failover and Configuration Push](https://github.com/couchbaselabs/sdk-rfcs/pull/123)                                                                               | Sergey                | DRAFT  |
 | 77    | couchbase2 support [\[gdoc\]](https://docs.google.com/document/d/1BZe7m6cT5SqUO86W4si9gdNqBOGusYAOW0JLXoe47qU/edit)                                                        | Graham P.             | DRAFT  |
 | 78    | [Zone-Aware Replica Reads](https://github.com/couchbaselabs/sdk-rfcs/pull/136)                                                                                             | Sergey                | DRAFT  |

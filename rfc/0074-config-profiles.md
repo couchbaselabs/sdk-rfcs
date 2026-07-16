@@ -6,7 +6,7 @@
 * RFC ID: 0074-config-profiles
 * Start Date: 2022-08-24
 * Owner: Michael Reiche
-* Current Status: Draft
+* Current Status: ACCEPTED
 
 ## Summary
 
@@ -107,7 +107,7 @@ INFO - {"timestamp":"2022-08-17 04:15:57.143","severity":"INFO","thread":"cb-eve
 ```
 
 ## Profiles
-Configurable Properties - from  SDK 3 Foundation RFC https://github.com/couchbaselabs/sdk-rfcs/blob/master/rfc/0059-sdk3-foundation.md. Note that only properties that are changed in the profile are included in this list (timeouts).
+Configurable Properties - from [SDK 3 Foundation RFC](./0059-sdk3-foundation.md). Note that only properties that are changed in the profile are included in this list (timeouts).
 
 | name                      | type           | default (SDK3 Foundation)| wan-development |
 |---------------------------|----------------|--------------------------|-----------------|
@@ -135,16 +135,13 @@ For spring-boot applications, there is already a number of mechanisms to externa
 
 | Language     | Team Member        | Signoff Date | Revision |
 |--------------|--------------------|--------------|----------|
-| C            | Sergey Avseyev     | 2022-09-02   | #1       |
+| C++          | Sergey Avseyev     | 2022-09-02   | #1       |
 | Connectors   | David Nault        | 2022-09-01   | #1       |
-| Go           | Charles Dixon      |              |          |
+| Go           | Charles Dixon      | 2024-10-08   | #2       |
 | Java         | Michael Nitchinger | 2022-09-19   | #2       |
 | .NET         | Jeffry Morris      | 2022-09-08   | #1       |
-| Node.js      | Brett Lawson       |              |          |
+| Node.js      | Jared Casey        | 2022-09-02   | #1       |
 | PHP          | Sergey Avseyev     | 2022-09-02   | #1       |
 | Python       | Jared Casey        | 2022-09-02   | #1       |
 | Ruby         | Sergey Avseyev     | 2022-09-02   | #1       |
 | Scala        | Graham Pople       | 2022-09-08   | #1       |
-
-
-
