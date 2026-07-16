@@ -7,7 +7,7 @@
 | Start Date     | 2024-04-25               |
 | Owner          | Sergey Avseyev           |
 | Current Status | DRAFT                    |
-| Revision       | #1                       |
+| Revision       | #4                       |
 
 # Summary
 
@@ -35,7 +35,7 @@ ReadPreference::NO_PREFERENCE
 This is current behaviour, where the SDK does not take into account server
 groups.
 
-![No Prefrence](figures/0078-case-1-no-preference.svg)
+![No Preference](figures/0078-case-1-no-preference.svg)
 
 ## Selected Server Group
 
@@ -55,15 +55,14 @@ replicas (if the server groups are unbalanced).
 ReadPreference::SELECTED_SERVER_GROUP_OR_ALL_AVAILABLE
 ```
 
-This strategy that the user will be able to handle cases, when the replica
-cannot be read because selected group is empty. The selected server group might
-be empty in case the groups are not balanced properly on the cluster, or some
-nodes has been failed over. Or in the context of the
+This strategy allows the user to handle cases where the replica cannot be read because the selected server group is empty. The selected server group might
+be empty if the groups are not balanced properly on the cluster, or if some
+nodes have been failed over. Or, in the context of the
 `getMultiReplicasFromPreferredServerGroup` API of transactions when it is not
-possible to guarantee that all of the keys in the set live in the same group
+possible to guarantee that all of the keys in the set live in the same group.
 The previous strategy in this case would return `102 DocumentUnretrievable`
 error and refuse touching replicas from non-local group. The same error `102
-DocumentUnretrievable` must be returned if none of the responses is successful
+DocumentUnretrievable` must be returned if none of the responses are successful
 (according to "Replica Reads" section of the
 [RFC-0053](0053-sdk3-crud.md#replica-reads)).
 
@@ -77,7 +76,7 @@ try {
    return collection.getAnyReplica(docId,
                                    options()
                                     .timeout("20ms")
-                                    .read_preference(SELECTED_SERVER_GROUP))
+                                    .read_preference(SELECTED_SERVER_GROUP_OR_ALL_AVAILABLE))
 } catch DocumentUnretrievableException {
   return collection.get(docId)
   // or collection.getAnyReplica(docId)
@@ -90,7 +89,7 @@ try {
 ## Updates in Configuration Parser
 
 Each node in `nodesExt` array of cluster configuration will have new property
-`serverGroup`, which contains name of the group as it seen in Admin UI. For
+`serverGroup`, which contains the name of the group as seen in the Admin UI. For
 example:
 
 ```jsonc
@@ -132,11 +131,11 @@ example:
 Having this information, the SDK will be able to filter list of the node
 indexes in `vBucketMap` to get local server group members.
 
-For example, lets say the configured SDK to use `"group_1"` as its local server
-group. Then if some key is mapped to vBucket `0`, the SDK can filter vector if
-indexes `[0, 1]` to only `[0, -1]` (using `-1` here for illustration), because
-server with index `1` belongs to `"group_2"`. In the result, the SDK only need
-to send `GET` request to retrieve active copy of the document.
+For example, let's say the SDK is configured to use `"group_1"` as its local server
+group. If some key is mapped to vBucket `0`, the SDK can filter the vector of
+indexes `[0, 1]` down to `[0, -1]` (using `-1` here for illustration), because
+the server with index `1` belongs to `"group_2"`. As a result, the SDK only needs
+to send a `GET` request to retrieve the active copy of the document.
 
 ## Selecting Server Group for Connection
 
@@ -236,7 +235,7 @@ class TransactionAttemptContext {
 
 The methods might throw the following errors:
 
-* `102 DocumentUnretrievable`, when the SDK finds that there are nodes in local
+* `102 DocumentUnretrievable`, when the SDK finds that there are no nodes in the local
   group, or there is no group available with the name selected in connection
   options.
 
@@ -321,7 +320,7 @@ capability flags, we could support mixed mode.
 > data. The user might forget to trigger rebalance, and the SDK will try to do
 > `Selected-Server-Group` strategy, while the operations are still expensive.
 
-The sever generates notice in UI warning the user that rebalance is necessary.
+The server generates notice in UI warning the user that rebalance is necessary.
 The SDK should not detect whether the vBucket moved or not, and just trust the
 vBucketMap in the configuration.
 
