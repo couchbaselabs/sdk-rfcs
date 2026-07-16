@@ -26,6 +26,7 @@ interface ICollection{
 
   IGetResult Get(string id, GetOptions options = null);
   [IGetResult] GetOrNull(string id, GetOptions options = null);
+  [IGetReplicaResult] GetReplica(string id, GetReplicaStrategy strategy, GetReplicaOptions options = null);
   IMutationResult Upsert(string id, T value, UpsertOptions options = null);
   IMutationResult Insert(string id, T value, InsertOptions options = null);
   IMutationResult Replace(string id, T value, ReplaceOptions options = null);
@@ -629,6 +630,81 @@ The SDK can then detect the marker interface, fetch the string value, set the Xa
 
 ### Replica Reads
 
+#### GetReplica
+Allows fetching a document via a replica read strategy. [Design notes](https://github.com/couchbaselabs/sdk-design/blob/main/2026/get-replica) (private to Couchbase employees) are available for optional background context.
+
+todo: There will also be a LookupInReplica, but as it will largely duplicate this interface, to avoid churn it will be added later following initial review.
+
+Signature
+
+```csharp
+IGetReplicaResult GetReplica(string id, GetReplicaStrategy strategy, [GetReplicaOptions options])
+```
+
+Parameters
+
+- Required
+
+  - Id: string - the primary key.
+
+- Optional
+  
+  - Timeout - the time allowed for the operation to be terminated.  Defaults to the same as regular Gets.
+  - Transcoder - a custom transcoder.
+  - Unlike regular KV gets, `WithExpiry` and projections are not supported (to reduce scope).
+
+- Throws
+  - Documented
+    - DocumentNotFoundOnReplicaException
+      - A new exception for this feature.  It should extend/inherit from DocumentNotFoundException.
+    - RequestTimeoutException
+    - CouchbaseException
+  - Undocumented
+    - InvalidArgumentException
+
+  - Explicitly not thrown: `DocumentUnretrievableException`.
+
+Returns
+
+- The same `IGetReplicaResult` documented elsewhere.
+
+##### GetReplica Strategies
+`GetReplica` is a forward-looking API designed to:
+
+a) provide the user with a fundamental building block in `GetReplicaStrategy.fromIndex` upon which they can build any strategy they choose.
+b) the flexibility for Couchbase to add new strategies in the future without adding another Collection-level API.
+c) fix the issues of the existing replica read methods.
+
+The strategy is free to use any approach it chooses, which is not limited to reading a single replica.  Multiple replicas and the active may be targeted.
+
+Future strategies could include one that replaces `GetAnyReplica` (at which point that method will be deprecated).
+
+###### `GetReplicaStrategy.fromIndex`
+The initially supported strategy is:
+
+```
+GetReplicaStrategy.fromIndex(ReplicaIndex.FIRST, [GetReplicaStrategyFromIndexOptions options])
+```
+
+Where `ReplicaIndex` is an enum of `FIRST`, `SECOND`, `THIRD`.  
+Not supported until there is a concrete use-case for it is `ACTIVE`:  the user should use regular `Get`, and can use `GetReplica` on exceptions.
+
+GetReplicaStrategyFromIndexOptions options:
+
+- `Boolean wrap` - whether to wrap around the available replicas, rather than throwing `ReplicaIndexOutOfBoundsException`.  Defaults to false.   
+  Design note: `wrap` is intended to somewhat bridge the gap between operational (in which the SDK has full access to cluster topology) and couchbase2://, and specifically for the use-case that the user wants a random replica.
+
+Implementation: the SDK will use the vbucket map from the most recent bucket config, to send a KV get replica request (0x83) to a specific replica.  `ReplicaIndex.FIRST` is the 0-th element in the replica chain for that vbucket.
+Retries and timeouts should be handled as with any other operation.  Timeouts will raise a regular `UnambiguousTimeoutException`, not `DocumentUnretrievableException` (the latter must not be raised in any path).
+If the config is unavailable the SDK will block until it is, raising an `UnambiguousTimeoutException` if required.
+
+Operational specific: if the replica index is higher than the current replica chain for that vbucket, the SDK will fast-fail with a `ReplicaIndexOutOfBoundsException` exception (new for this feature) without hitting the network.
+Unless the `wrap` option is true, in which case the replica index should be used modulo the length of the replica array.  E.g. if vbucket 493 has replica chain [7, 3] and user requests ReplicaIndex.THIRD, it will wrap around to use the replica at position 0 (node ).
+
+couchbase2:// specific: the SDK does not have the cluster topology, and each `GetReplica` call will result in a network call to CNG.  
+When the feature is added to CNG, the SDK will push down the strategy, including the `wrap` option, to allow the gateway to implement the above operational behaviour.
+The user-facing result will be the same as operational, including `ReplicaIndexOutOfBoundsException`.
+
 #### GetAnyReplica
 
 Gets a document for a given id, leveraging both the active and all available replicas. This method follows the same semantics of GetAllReplicas (including the fetch from ACTIVE), but returns the first response as opposed to returning all responses.
@@ -1226,8 +1302,8 @@ public interface ILookupInResult : IResult {
 - ContentAs
   1. Throws InvalidIndexException if the index is < 0 or >= the number of lookups.
   2. Gets the value at the index, in one of two ways depending on the lookup type:
-     1. If the result came from an `exists` lookup, calls Exists to get a boolean, and uses the JSON representation of that boolean as the "value" in the next step. Propagates any exceptions thrown by `Exists`.
-     2. Otherwise, uses the value returned by the server as the "value" in the next step. If the status code at the index is not `SUCCESS`, throws an exception matching the status code. See [RFC-0058](0058-error-handling.md) for error definitions. 
+  1. If the result came from an `exists` lookup, calls Exists to get a boolean, and uses the JSON representation of that boolean as the "value" in the next step. Propagates any exceptions thrown by `Exists`.
+  2. Otherwise, uses the value returned by the server as the "value" in the next step. If the status code at the index is not `SUCCESS`, throws an exception matching the status code. See [RFC-0058](0058-error-handling.md) for error definitions.
   3. Returns the value at the index, converted to the requested type.
 
 #### IMutationResult Interface
@@ -1708,7 +1784,7 @@ Invalid operation
 - June 17, 2025 - Revision #20 (by Matt Wozakowski)
 
   - Fix Touch signature return type from `IMutationResult` to `IResult`
-  
+
 - March, 2026 - Revision #21 (by Graham Pople)
 
   - Added `getOrNull`.
