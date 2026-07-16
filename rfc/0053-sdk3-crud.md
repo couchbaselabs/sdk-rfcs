@@ -631,7 +631,7 @@ The SDK can then detect the marker interface, fetch the string value, set the Xa
 ### Replica Reads
 
 #### GetReplica
-Allows fetching a document via a replica read strategy. [Design notes](https://github.com/couchbaselabs/sdk-design/blob/main/2026/get-replica) (private to Couchbase employees) are available for optional background context.
+Allows fetching a document via a replica read strategy. 
 
 todo: There will also be a LookupInReplica, but as it will largely duplicate this interface, to avoid churn it will be added later following initial review.
 
@@ -651,7 +651,6 @@ Parameters
   
   - Timeout - the time allowed for the operation to be terminated.  Defaults to the same as regular Gets.
   - Transcoder - a custom transcoder.
-  - Unlike regular KV gets, `WithExpiry` and projections are not supported (to reduce scope).
 
 - Throws
   - Documented
@@ -672,12 +671,15 @@ Returns
 `GetReplica` is a forward-looking API designed to:
 
 a) provide the user with a fundamental building block in `GetReplicaStrategy.fromIndex` upon which they can build any strategy they choose.
-b) the flexibility for Couchbase to add new strategies in the future without adding another Collection-level API.
-c) fix the issues of the existing replica read methods.
+b) a plugin-based flexible approach that allows Couchbase to add new single-replica strategies in the future without adding another Collection-level API.
+c) solve the issues of the existing `GetAnyReplica` method.
 
-The strategy is free to use any approach it chooses, which is not limited to reading a single replica.  Multiple replicas and the active may be targeted.
+[Design notes](https://github.com/couchbaselabs/sdk-design/blob/main/2026/get-replica) (private to Couchbase employees) are available for optional further context.
 
-Future strategies could include one that replaces `GetAnyReplica` (at which point that method will be deprecated).
+Strategies can read multiple replicas, and the active, though of course per the API must ultimately return a single `GetReplicaResult`.   
+Future strategies could include one that replaces `GetAnyReplica` (at which point that method will be deprecated) such as `GetReplicaStrategy.fastest()`.
+
+The door is also open to a future `GetReplicas` which could replace `GetAllReplicas`, but that design is not in this scope.
 
 ###### `GetReplicaStrategy.fromIndex`
 The initially supported strategy is:
@@ -694,16 +696,17 @@ GetReplicaStrategyFromIndexOptions options:
 - `Boolean wrap` - whether to wrap around the available replicas, rather than throwing `ReplicaIndexOutOfBoundsException`.  Defaults to false.   
   Design note: `wrap` is intended to somewhat bridge the gap between operational (in which the SDK has full access to cluster topology) and couchbase2://, and specifically for the use-case that the user wants a random replica.
 
-Implementation: the SDK will use the vbucket map from the most recent bucket config, to send a KV get replica request (0x83) to a specific replica.  `ReplicaIndex.FIRST` is the 0-th element in the replica chain for that vbucket.
+**Implementation:** the SDK will use the vbucket map from the most recent bucket config, to send a KV get replica request (0x83) to a specific replica.  `ReplicaIndex.FIRST` is the 0-th element in the replica chain for that vbucket.
 Retries and timeouts should be handled as with any other operation.  Timeouts will raise a regular `UnambiguousTimeoutException`, not `DocumentUnretrievableException` (the latter must not be raised in any path).
+If during retry the specified replica is now out of bounds in the vbucket map (e.g. the replica chain has reduced during a rebalance), then follow the guidance below on `ReplicaIndexOutOfBoundsException` and `wrap`.
 If the config is unavailable the SDK will block until it is, raising an `UnambiguousTimeoutException` if required.
 
-Operational specific: if the replica index is higher than the current replica chain for that vbucket, the SDK will fast-fail with a `ReplicaIndexOutOfBoundsException` exception (new for this feature) without hitting the network.
+**Operational specific:** if the replica index is higher than the current replica chain for that vbucket, the SDK will fast-fail with a `ReplicaIndexOutOfBoundsException` exception (new for this feature) without hitting the network.
 Unless the `wrap` option is true, in which case the replica index should be used modulo the length of the replica array.  E.g. if vbucket 493 has replica chain [7, 3] and user requests ReplicaIndex.THIRD, it will wrap around to use the replica at position 0 (node ).
 
-couchbase2:// specific: the SDK does not have the cluster topology, and each `GetReplica` call will result in a network call to CNG.  
-When the feature is added to CNG, the SDK will push down the strategy, including the `wrap` option, to allow the gateway to implement the above operational behaviour.
-The user-facing result will be the same as operational, including `ReplicaIndexOutOfBoundsException`.
+**couchbase2:// specific:** the SDK does not have the cluster topology, and each `GetReplica` call will result in a network call to CNG.  
+The CNG side is not implemented at time of this design.  This design proposes that the GRPC will allow pushing down the strategy, including the `wrap` option, to allow the gateway to implement the above operational behaviour.
+This results in the same user-facing result being the same between operational and couchbase2://, including `ReplicaIndexOutOfBoundsException`.
 
 #### GetAnyReplica
 
