@@ -1792,6 +1792,10 @@ Invalid operation
 
   - Added `getOrNull`.
 
+- July, 2026 - Revision #22 (by Graham Pople)
+
+  - Added `GetReplica`.
+
   # Signoff
 
 | Language   | Team Member         | Signoff Date | Revision |
