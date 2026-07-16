@@ -52,7 +52,7 @@ The following index represents the RFC numbers in their natural order, but then 
 | 69    | [KV Error Map V2](rfc/0069-kv-error-map-v2.md)                         | Brett L.     | ACCEPTED |
 | 74    | [Configuration Profiles](rfc/0074-config-profiles.md)                  | Mike R.      | ACCEPTED |
 | 76    | [KV Subdoc Replica Reads](rfc/0076-subdoc-replica-reads.md)            | Charles D.   | ACCEPTED |
-| 81    | [Columnar API Streaming](rfc/0081-columnar-api-streaming.md)           | Dimitris & Matt W. | ACCEPTED  |
+| 81    | [Columnar API Streaming](rfc/0081-columnar-api-streaming.md)           | Dimitris & Matt W. | ACCEPTED |
 | 84    | [Application Service Level Telemetry](rfc/0084-app-service-level-telemetry.md) | Sergey | ACCEPTED |
 
 ### Draft & Review RFCs

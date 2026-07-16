@@ -29,7 +29,7 @@ Accessing iterator objects may or may not return instantly and may or may not pe
 Accessing an iterator object from the active cluster object:
 
 ```
-QueryResult result = cluster.executeQuery(“SELECT 1=1”)
+QueryResult result = cluster.executeQuery("SELECT 1=1")
 ```
 
 This operation can raise a pre-stream error if the SDK performs any initial network operations at this stage.
@@ -348,7 +348,7 @@ The timeout should apply to the whole stream. This is similar to the approach in
 
 | Language | Team Member | Signoff Date | Revision |
 | :---- | :---- | :---- | :---- |
-|| Node.js | Jared Casey | 2025-02-03 | 4 |
+| Node.js | Jared Casey | 2025-02-03 | 4 |
 | Go | Charles Dixon | 2025-04-03 | 4  |
 | PHP | Sergey Avseyev | 2025-04-02 | 4 |
 | Python | Jared Casey |  2025-02-03 | 4 |
