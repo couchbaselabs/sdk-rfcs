@@ -249,9 +249,9 @@ extension of it.
 The user must be aware of the following topics when dealing with
 Zone-Aware-Replica-Reads:
 
-- Regardless the fact that the Couchbase supports Server Groups for a long time
-  already, the SDK can see them in configuration since 7.6.2 release only, which
-  make Zone-Aware-Replica-Reads to be available only in most recent releases.
+- Regardless of the fact that Couchbase has supported Server Groups for a long time
+  already, the SDK can see them in configuration since the 7.6.2 release only, which
+  makes Zone-Aware-Replica-Reads available only in most recent releases.
 
 - It is crucial to perform rebalance after setting up server groups, as only
   after this process the data will be physically moved.
@@ -278,7 +278,7 @@ Zone-Aware-Replica-Reads:
 > Shall we warn users when locality restriction turns request into just GET,
 > because only active node is in local group?
 
-The SDK should just implement two strategy, described in the body of the RFC.
+The SDK should just implement two strategies described in the body of the RFC.
 Although future editions might add more strategies with retrying with full
 replica-set or performing extra validations.
 
@@ -295,7 +295,7 @@ used
 ## Q3
 
 > All currently supported server versions allow to configure server groups, but
-> only 7.6.1 announce this information in configuration.
+> only 7.6.2 announces this information in configuration.
 > [MB-60835](https://issues.couchbase.com/browse/MB-60835) How the SDK should
 > behave with older server? Do we need to fail fast or silently fall back to
 > current behavior?
@@ -308,7 +308,7 @@ see the fall back snippet in the RFC body.
 ## Q4
 
 > Is there explicit statement from the server team that mixed-version cluster will
-> not announce feature until all nodes migrated to 7.6.1?
+> not announce feature until all nodes migrated to 7.6.2?
 
 No expectation of mixed mode support. The feature requires all nodes to be on
 server 7.6.2+, otherwise behavior left undefined. In 7.7, when we have
