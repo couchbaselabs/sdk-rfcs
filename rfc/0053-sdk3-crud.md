@@ -26,7 +26,7 @@ interface ICollection{
 
   IGetResult Get(string id, GetOptions options = null);
   [IGetResult] GetOrNull(string id, GetOptions options = null);
-  [IGetReplicaResult] GetReplica(string id, GetReplicaStrategy strategy, GetReplicaOptions options = null);
+  IGetReplicaResult GetReplica(string id, GetReplicaStrategy strategy, GetReplicaOptions options = null);
   IMutationResult Upsert(string id, T value, UpsertOptions options = null);
   IMutationResult Insert(string id, T value, InsertOptions options = null);
   IMutationResult Replace(string id, T value, ReplaceOptions options = null);
@@ -656,10 +656,9 @@ Parameters
   - Documented
     - DocumentNotFoundOnReplicaException
       - A new exception for this feature.  It should extend/inherit from DocumentNotFoundException.
-    - RequestTimeoutException
+    - UnambiguousTimeoutException
+      - Will always be unambiguous since this operation can never mutate state. 
     - CouchbaseException
-  - Undocumented
-    - InvalidArgumentException
 
   - Explicitly not thrown: `DocumentUnretrievableException`.
 
