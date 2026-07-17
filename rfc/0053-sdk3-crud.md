@@ -646,6 +646,7 @@ Parameters
 - Required
 
   - Id: string - the primary key.
+  - Strategy: GetReplicaStrategy - documented below.
 
 - Optional
   
@@ -658,6 +659,8 @@ Parameters
       - A new exception for this feature.  It should extend/inherit from DocumentNotFoundException.
     - UnambiguousTimeoutException
       - Will always be unambiguous since this operation can never mutate state. 
+    - ReplicaIndexOutOfBoundsException
+    - ReplicaIndexCurrentlyUnavailableException
     - CouchbaseException
 
   - Explicitly not thrown: `DocumentUnretrievableException`.
@@ -701,7 +704,7 @@ If during retry the specified replica is now out of bounds in the vbucket map (e
 If the config is unavailable the SDK will block until it is, raising an `UnambiguousTimeoutException` if required.
 
 **Operational specific:** if the replica index is higher than the current replica chain for that vbucket, the SDK will fast-fail with a `ReplicaIndexOutOfBoundsException` exception (new for this feature) without hitting the network.
-Unless the `wrap` option is true, in which case the replica index should be used modulo the length of the replica array.  E.g. if vbucket 493 has replica chain [7, 3] and user requests ReplicaIndex.THIRD, it will wrap around to use the replica at position 0 (node ).
+Unless the `wrap` option is true, in which case the replica index should be used modulo the length of the replica array.  E.g. if vbucket 493 has replica chain [7, 3] and user requests ReplicaIndex.THIRD, it will wrap around to use the replica at position 0 (node 7).
 If the given replica has a -1 entry in the vbucket map indicating the node is currently unavailable, raise a `ReplicaIndexCurrentlyUnavailableException` (new for this feature).  Unless `wrap` is set, in which case, automatically move to the next replica (wrapping around if necessary).
 `wrap` edge-case: if the SDK somehow wraps all the way around to the starting point in the same loop (e.g. if the replica chain somehow contains all -1 entries), then raise a `ReplicaIndexCurrentlyUnavailableException`.
 
