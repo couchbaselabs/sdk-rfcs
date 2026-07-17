@@ -703,6 +703,8 @@ If the config is unavailable the SDK will block until it is, raising an `Unambig
 
 **Operational specific:** if the replica index is higher than the current replica chain for that vbucket, the SDK will fast-fail with a `ReplicaIndexOutOfBoundsException` exception (new for this feature) without hitting the network.
 Unless the `wrap` option is true, in which case the replica index should be used modulo the length of the replica array.  E.g. if vbucket 493 has replica chain [7, 3] and user requests ReplicaIndex.THIRD, it will wrap around to use the replica at position 0 (node ).
+If the given replica has a -1 entry in the vbucket map indicating the node is currently unavailable, raise a `ReplicaIndexCurrentlyUnavailableException` (new for this feature).  Unless `wrap` is set, in which case, automatically move to the next replica (wrapping around if necessary).
+`wrap` edge-case: if the SDK somehow wraps all the way around to the starting point in the same loop (e.g. if the replica chain somehow contains all -1 entries), then raise a `ReplicaIndexCurrentlyUnavailableException`.
 
 **couchbase2:// specific:** the SDK does not have the cluster topology, and each `GetReplica` call will result in a network call to CNG.  
 The CNG side is not implemented at time of this design.  This design proposes that the GRPC will allow pushing down the strategy, including the `wrap` option, to allow the gateway to implement the above operational behaviour.
