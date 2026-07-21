@@ -909,7 +909,7 @@ The SDK will wait for at least the GCCCP config.  To simplify implementations, a
 ## Score fusion
 This is a feature being added to Couchbase Server 8.1 in the FTS service. It extends hybrid search, where a traditional FTS query is combined with one or more vector queries.
 
-For its initial release, all SDK additions for score fusion should be annotated with the platform equivalent of @Stability.Volatile, as changes may be required following user feedback.
+As with vector search, all SDK additions in this section should initially be annotated with the platform equivalent of @Stability.Volatile, as changes may be required following user feedback.
 
 References:
 * [Server design document: Hybrid Search Score Fusion](https://docs.google.com/document/d/12Y1txZ6C0gU2v_U9Sicg-7Jsy-ISoZm5VA79rz4kfNw/edit)
@@ -917,7 +917,7 @@ References:
 
 Score fusion controls how the FTS and vector result sets are merged into a single ranked list. It is only meaningful for a hybrid request (both an FTS query and a vector search); when applied to a single result set, it re-scores the hits but leaves their ordering unchanged.
 
-On the wire, the top-level `score` field already exists (`disableScoring` sets it to `"none"`), and score fusion adds two new values to it, `"rrf"` and `"rsf"`, plus a new top-level `params` object for their tuning. The `query`, the `knn` array, and the `boost` on each are unchanged.
+On the wire, the top-level `score` field already exists (the `disableScoring` boolean option sets it to `"none"`), and score fusion adds two new values to it, `"rrf"` and `"rsf"`, plus a new top-level `params` object for their tuning. The `query`, the `knn` array, and the `boost` on each are unchanged.
 
 ```
 {
@@ -935,31 +935,34 @@ On the wire, the top-level `score` field already exists (`disableScoring` sets i
 ### Fusion strategies
 Score fusion supports two strategies:
 * Reciprocal Rank Fusion (`"rrf"`). Merges by rank rather than raw score, and works well with the server defaults. The recommended strategy.
-* Relative Score Fusion (`"rsf"`). Merges by normalised score rather than rank.
+* Relative Score Fusion (`"rsf"`). Merges by normalized score rather than rank.
 
 The score on each returned `SearchRow` is the fused score, not the original FTS or vector score; its magnitude depends on the strategy.
 
-### SearchScoreFusion
-The strategy is selected through a new `SearchScoreFusion` object. `SearchScoreFusion` creation is platform-idiomatic:
+### SearchScoring
+The scoring mode is selected through a new `SearchScoring` object. `SearchScoring` creation is platform-idiomatic:
 
 ```
-SearchScoreFusion.reciprocalRank()
-SearchScoreFusion.relativeScore()
+SearchScoring.reciprocalRankFusion()
+SearchScoring.relativeScoreFusion()
+SearchScoring.none()
 ```
 
-Each strategy is its own type and only exposes its own parameters, the same shape the SDK already uses for `SearchSort` and `SearchFacet`. The parameters follow the SDK's existing convention for FTS query parameters (fluent-style methods on the object, or an options block):
+`reciprocalRankFusion()` and `relativeScoreFusion()` are the two fusion strategies; the names keep "fusion" since `SearchScoring` itself is not fusion-specific. `none()` disables scoring, sending the same `"none"` that `disableScoring(true)` sends today; it is not a fusion strategy and works on any server version.
 
-* `rankConstant` (`uint32`). Sent as `params.score_rank_constant`. The server defaults it to `60`. Exists only on `reciprocalRank()`; `relativeScore()` has no way to set it.
+Each mode is its own type and only exposes its own parameters, the same shape the SDK already uses for `SearchSort` and `SearchFacet`. The parameters follow the SDK's existing convention for FTS query parameters (fluent-style methods on the object, or an options block):
+
+* `rankConstant` (`uint32`). Sent as `params.score_rank_constant`. The server defaults it to `60`. Exists only on `reciprocalRankFusion()`; `relativeScoreFusion()` has no way to set it.
 * `windowSize` (`uint32`). Sent as `params.score_window_size`. How many results per list are considered for fusion. The server defaults it to the request `size` (`limit`). Common to both strategies.
 
-As with `numCandidates` (`k`) and `knn_operator`, the SDK names differ from the JSON field names; the wire values stay `"rrf"` and `"rsf"`.
+As with `numCandidates` (`k`) and `knn_operator`, the SDK names differ from the JSON field names.
 
 Encoding to JSON:
-* `score` is `"rrf"` or `"rsf"` for the chosen strategy, `"none"` for `disableScoring(true)`, and omitted when neither is set.
+* `score` is `"rrf"`, `"rsf"` or `"none"` for the chosen `SearchScoring`, `"none"` for `disableScoring(true)`, and omitted otherwise.
 * `params` holds `score_rank_constant` and `score_window_size`, each omitted when its parameter is unset, and is dropped entirely when both are unset.
 
-### SearchOptions.scoreFusion
-Score fusion is a request-level setting, so it goes on `SearchOptions`, next to the existing `disableScoring` option:
+### SearchOptions.scoring
+Scoring is a request-level setting, so it goes on `SearchOptions`:
 
 ```java
 SearchRequest request = SearchRequest
@@ -968,14 +971,18 @@ SearchRequest request = SearchRequest
                 VectorQuery.create("emb", vector).numCandidates(200).boost(1.0)));
 
 cluster.search("products_index", request,
-        SearchOptions.searchOptions().scoreFusion(SearchScoreFusion.reciprocalRank()));
+        SearchOptions.searchOptions().scoring(SearchScoring.reciprocalRankFusion()));
 ```
 
-`scoreFusion` and `disableScoring(true)` both write the top-level `score` field, so they cannot be set together.
+The setter is deliberately `scoring(...)` rather than a fusion-specific `scoreFusion(...)`: anything the server adds to the `score` field in future becomes a new `SearchScoring` value, instead of another top-level option on `SearchOptions`.
+
+For the same reason `disableScoring` is deprecated in favour of `scoring(SearchScoring.none())`: it gets the platform equivalent of a `@Deprecated` annotation.
+
+`scoring` and `disableScoring(true)` both write the top-level `score` field, so they cannot be set together.
 
 If neither is set, the SDK sends no `score` field and the server keeps its existing additive-boost behaviour, so existing queries are unaffected.
 
-A unified `scoring(...)` setter was rejected: `disableScoring` is already shipped across the SDKs, so unifying would force a deprecation everywhere.
+The original `cluster.searchQuery()` API takes the same `SearchOptions`, so all of this, including the capability check, applies there too.
 
 ### The boost field as a fusion weight
 Under score fusion, a query's *top-level* `boost` is its weight. A `boost` of `2.0` on the FTS query and `1.0` on the vector query counts the FTS side twice as much as the vector side.
@@ -996,27 +1003,29 @@ SearchRequest.create(fts)
 There is no separate weight field on the wire; a distinct `fusionWeight` field was considered and rejected as more confusing than reusing `boost`.
 
 ### Errors and failure states
-The SDK keeps client-side validation minimal: before sending, it checks that `disableScoring(true)` and `scoreFusion` are not both set, and that the cluster supports fusion (see FeatureNotAvailable handling). The server validates everything else, including parameter ranges and disallowed sorts. The failure states, with the error each produces:
+The SDK keeps client-side validation minimal: before sending, it checks that `disableScoring(true)` and `scoring` are not both set, and that the cluster supports fusion when a fusion strategy is set (see FeatureNotAvailable handling). The server validates everything else, including parameter ranges and disallowed sorts. The failure states, with the error each produces:
 
-* `disableScoring(true)` and `scoreFusion(...)` both set. The SDK raises `InvalidArgumentException` before sending; this is the only combination it validates.
+* `disableScoring(true)` and `scoring(...)` both set. The SDK raises `InvalidArgumentException` before sending, even when the two agree (`scoring(none())` with `disableScoring(true)`); this is the only combination it validates. The check runs before the capability check, so it raises the same error on any cluster version.
 * `sort` other than the default `"-_score"` under fusion. The SDK does not check this; the server returns a 400 and a `CouchbaseException` is raised.
-* Cluster does not support fusion. Setting `scoreFusion` makes the SDK check for the `scoreFusion` capability before sending and raise `FeatureNotAvailableException` if it is missing. `disableScoring` on its own never triggers the check (see FeatureNotAvailable handling).
-* Non-hybrid request (only an FTS query, or only a vector search). The SDK does not check for this; it sends the `score` field regardless. The server accepts it and fuses the single list. The ordering is unchanged, the returned scores are fused values, and no error is raised.
+* Cluster does not support fusion. Setting a fusion strategy makes the SDK check for the `scoreFusion` capability before sending and raise `FeatureNotAvailableException` if it is missing (see FeatureNotAvailable handling).
+* Non-hybrid request (only an FTS query, or only a vector search). The SDK does not check for this; it sends the `score` field regardless. The server accepts it and fuses the single list; the ordering is unchanged and no error is raised.
 * Out-of-range `rankConstant` or `windowSize`. The SDK does not validate parameter ranges; it forwards the value, the server returns a 400, and a `CouchbaseException` is raised.
 
 For transport, a score-fusion request is an ordinary search: timeouts and service failures surface as `TimeoutException` or `CouchbaseException`, exactly as they do for `cluster/scope.search()`.
 
 ### couchbase2
-Score fusion is not available over couchbase2: its protocol has no score-fusion fields. If `scoreFusion` is set on a couchbase2 request, the SDK raises `FeatureNotAvailableException`.
+Score fusion is not available over couchbase2: its protocol has no score-fusion fields. If a fusion strategy is set on a couchbase2 request, the SDK raises `FeatureNotAvailableException`. `scoring(none())` maps to the protocol's existing `disable_scoring` field and keeps working.
 
 ### FeatureNotAvailable handling
-When `scoreFusion` is set, the SDK checks for the score fusion cluster capability before sending, which clusters advertise only from Couchbase Server 8.1 and above:
+When a fusion strategy is set, the SDK checks for the score fusion cluster capability before sending, which clusters advertise only from Couchbase Server 8.1 and above:
 ```
   "clusterCapabilities": {
    "search": ["scoreFusion"]
   }
 ```
-If it is not present the SDK raises `FeatureNotAvailableException`, with a message along the lines of "Score fusion is available from Couchbase Server 8.1 and above". Without the check the request would reach an older server, which silently ignores the `score` value and falls back to additive scoring with no error.
+If it is not present the SDK raises `FeatureNotAvailableException`, with a message along the lines of "Score fusion is available from Couchbase Server 8.1 and above".
+
+`scoring(none())` and `disableScoring` never trigger the check; `"none"` predates fusion and works on any server version.
 
 The capability is checked the same way as the vector search one, against the most recent config the SDK has, waiting for a config if it does not yet have one. See the vector search FeatureNotAvailable handling above.
 
@@ -1188,8 +1197,9 @@ interface SearchMetrics {
 * April 2nd, 2025 - Revision #13 (by Jared Casey)
     * Added prefilter option to vector search.
 
-* TBD, 2026 - Revision #14 (by Anirudh Lakhotia)
-    * Added score fusion for hybrid search: the `SearchScoreFusion` type and the `SearchOptions.scoreFusion()` option.
+* July 22nd, 2026 - Revision #14 (by Anirudh Lakhotia)
+    * Added score fusion for hybrid search.
+    * Deprecated `disableScoring` in favour of the new `SearchOptions.scoring()` option.
 
 # Signoff
 
