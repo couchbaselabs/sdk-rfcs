@@ -231,7 +231,7 @@ A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST
 ### 6 AuthenticationFailure
 
 * Raised When
-  * Query: Error range 10xxx
+  * Query: Error range 10xxx, code 2120
   * Analytics: Error range 20xxx
   * View: HTTP status 401
   * KV: error code ERR_ACCESS (0x24), ERR_AUTH_ERROR (0x20), AUTH_STALE (0x1f)
@@ -760,6 +760,8 @@ KV Code 0xc1
 * March 25, 2025 - Revision #20 (by Dimitris Christodoulou)
   * ns-server management operations should raise `InvalidArgument` when the server responds with 400 HTTP status, if there is no more specific error type that applies.
   * Clarify that `BucketExists` is raised in bucket manager when receiving 400 HTTP status and the response body contains `Bucket with given name already exists`, as is already prescribed by the [Management RFC](0054-sdk3-management-apis.md).
+* July 22, 2026 - Revision #21 (by Graham Pople)
+  * Added query code 2120.
 
 ## Signoff
 
