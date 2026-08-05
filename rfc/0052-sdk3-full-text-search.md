@@ -909,8 +909,6 @@ The SDK will wait for at least the GCCCP config.  To simplify implementations, a
 ## Score fusion
 This is a feature being added to Couchbase Server 8.1 in the FTS service. It extends hybrid search, where a traditional FTS query is combined with one or more vector queries.
 
-As with vector search, all SDK additions in this section should initially be annotated with the platform equivalent of @Stability.Volatile, as changes may be required following user feedback.
-
 References:
 * [Server design document: Hybrid Search Score Fusion](https://docs.google.com/document/d/12Y1txZ6C0gU2v_U9Sicg-7Jsy-ISoZm5VA79rz4kfNw/edit)
 * [MB-60401](https://issues.couchbase.com/browse/MB-60401)
@@ -948,7 +946,7 @@ SearchScoring.relativeScoreFusion()
 SearchScoring.none()
 ```
 
-`reciprocalRankFusion()` and `relativeScoreFusion()` are the two fusion strategies; the names keep "fusion" since `SearchScoring` itself is not fusion-specific. `none()` disables scoring, sending the same `"none"` that `disableScoring(true)` sends today; it is not a fusion strategy and works on any server version.
+`reciprocalRankFusion()` and `relativeScoreFusion()` are the two fusion strategies. `none()` disables scoring, sending the same `"none"` that `disableScoring(true)` sends today; it is not a fusion strategy and works on any server version.
 
 Each mode is its own type and only exposes its own parameters, the same shape the SDK already uses for `SearchSort` and `SearchFacet`. The parameters follow the SDK's existing convention for FTS query parameters (fluent-style methods on the object, or an options block):
 
