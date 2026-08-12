@@ -193,7 +193,7 @@ An index that doesn't exist is ignored. `watchIndexes` returns the `List<IndexIn
 
 Thus it can be empty if indexes were all "pending"/"deferred"/"building" and failed to be built during the watch timeframe, or if no index in the provided list exists.
 
-If this is easy to implement, `watchIndexes` should rely on a polling with a linearly augmenting delay (50ms to 1000ms by steps of 500ms is deemed a good retry pattern). In such a case, each poll cycle may rely on a `IndexesNotReadyException` internally to signal that current cycle didn't observe all requested indexes.
+If this is easy to implement, `watchIndexes` should rely on polling with a linearly augmenting delay (50ms to 1000ms by steps of 50ms is deemed a good retry pattern). If it is not easy to implement, a default delay of 200ms is to be used. In such a case, each poll cycle may rely on a `IndexesNotReadyException` internally to signal that current cycle didn't observe all requested indexes.
 
 For SDKs with an idiomatic asynchronous API (eg. Java with RxJava), an asynchronous version of the polling should be implemented, allowing to avoid blocking the rest of the code if an index takes a long time to become online.
 
@@ -443,3 +443,8 @@ If signed off, each representative agrees both the API and the behavior will be 
 | C        | Mark Nunberg   | 2016/05/12              |
 | Python   | Mark Nunberg   | 2016/05/12              |
 | PHP      | Sergey Avseyev | 2016/05/17              |
+
+# Errata
+1. 18th April 2017
+- Update index watch retry increment from 500ms to 50ms
+- Add static watch index retry interval of 200ms if linear retry increments is not available
