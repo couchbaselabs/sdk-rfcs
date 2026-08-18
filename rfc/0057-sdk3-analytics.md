@@ -191,6 +191,19 @@ class AnalyticsWarning {
 }
 ```
 
+## Cluster compatibility
+With the upcoming release of Enterprise Analytics, and the risk of users accidentally using operational SDKs against it, a compatibility check is being added.
+
+[MB-67581](https://jira.issues.couchbase.com/browse/MB-67581) adds to the cluster and bucket configs a `prod` string field identifying the cluster type.
+
+Before performing each analytics operation, check the cluster config, and iff the `prod` field is present, check if it is `"analytics"`.  If it is, fast-fail the request with a generic `CouchbaseException`.  A suitable error message could be:
+
+> This 'analytics' cluster cannot be used with this SDK, which is intended for use with operational clusters. For this cluster, an Enterprise Analytics SDK should be used.
+
+If the cluster config is not yet available, wait for it using the request timeout.  On timeout follow standard timeout rules.
+
+An SDK-specific 'backdoor' needs to be added to disable the error.  This should not be exposed through the public API, but instead handled via a platform/SDK-specific path - System properties, envvars, undocumented connection string params, or similar.  This is to ease migration of Couchbase tools and drivers that will continue to use the operational SDKs for a time.  This mechanism is not user-facing and should not be documented externally.
+
 # Changelog
 
 * Sept 27, 2019 - Revision #1 (by Michael Nitschinger)
@@ -201,6 +214,8 @@ class AnalyticsWarning {
   * Correct `AnalyticsStatus` enum values.
 * April 30, 2025 - Revision #3 (by Dimitris Christodoulou)
   * Allow setting both positional and named parameters.
+* June 19, 2025 - Revision #4 (by Graham Pople)
+  * Add check for operational cluster.
 
 # Signoff
 
