@@ -587,18 +587,22 @@ A query that matches nothing.
 JSON paths:
 * `match_none` = `null`: The JSON representation of a `MatchNoneQuery` is simply a `"match_none": null` entry in the query JSON Object.
 
-### CustomScoreQuery
+### Custom Script Queries
+
+Custom script queries are search queries that use a custom user-defined scoring or filtering function, provided as a JavaScript function.
+
+#### CustomScoreQuery
 
 A query that uses a custom user-defined scoring function. The results are assigned scores according to the custom scoring function.
 
 JSON paths:
 
-* `custom_score.query` (`string`): The inner query whose results are passed through the user-defined scoring function. _Required_.
+* `custom_score.query` (`JSONObject`): The encoded inner query whose results are passed through the user-defined scoring function. _Required_.
 * `custom_score.source` (`string`): A JavaScript function defining the user-defined scoring function. _Required_.
 * `custom_score.fields` (`array[string]`): A list of document fields that are made available to the user-defined scoring function. _Optional_, omit if not set.
 * `custom_score.params` (`JSONObject`): Parameters made available to the user-defined scoring function, given as key-value pairs. _Optional_, omit if not set.
 
-#### API Example
+API Example:
 
 ```java
 class SearchQuery {
@@ -618,22 +622,33 @@ class CustomScoreQuery implements SearchQuery {
 }
 ```
 
-#### Compatibility
+A scoring function that is set as the `source` is a JavaScript function that takes two parameters and returns a number. For example:
 
-Awaiting cluster cap ([MB-73982](https://jira.issues.couchbase.com/browse/MB-73982)).
+```javascript
+function hotel_score(doc, params) {
+  const maxDistanceKm = params.max_distance_km || 1.0;
+  const f = doc.fields || {};
+  const distance = (f.distanceFromCenterKm !== undefined) ? f.distanceFromCenterKm : maxDistanceKm;
+  const price = (f.price_per_night !== undefined) ? f.price_per_night : 9999;
+  const distanceFactor = 1.0 - Math.min(distance / maxDistanceKm, 1.0);
+  const priceFactor = 1.0 / (1.0 + price / 200.0);
+  const boost = 1.0 + distanceFactor + priceFactor;
+  return doc.score * boost;
+}
+```
 
-### CustomFilterQuery
+#### CustomFilterQuery
 
-A query that uses a custom user-defined filtering function. The result set includes a documents if and only if it satisfies the filtering function.
+A query that uses a custom user-defined filtering function. The result set includes a documents if it satisfies the filtering function.
 
 JSON paths:
 
-* `custom_filter.query` (`string`): The inner query whose results are passed through the user-defined filtering function. _Required_.
+* `custom_filter.query` (`JSONObject`): The encoded inner query whose results are passed through the user-defined filtering function. _Required_.
 * `custom_filter.source` (`string`): A JavaScript function defining the user-defined filtering function. _Required_.
 * `custom_filter.fields` (`array[string]`): A list of document fields that are made available to the user-defined filtering function. _Optional_, omit if not set.
 * `custom_filter.params` (`JSONObject`): Parameters made available to the user-defined filtering function, given as key-value pairs. _Optional_, omit if not set.
 
-#### API Example
+API Example:
 
 ```java
 class SearchQuery {
@@ -653,9 +668,32 @@ class CustomFilterQuery implements SearchQuery {
 }
 ```
 
+A filtering function that is set as the `source` is a JavaScript function that takes two parameters and returns a boolean. For example:
+
+```javascript
+function hotel_filter(doc, params) {
+  const f = doc.fields || {};
+  const price = f.price_per_night;
+  if (price === undefined) return false;
+  const nights = params.stay_nights || 1;
+  const budget = params.budget;
+  if (budget === undefined) return true;
+  return (price * nights) <= budget;
+}
+```
+
 #### Compatibility
 
+This is a feature exclusive to Enterprise Edition.
+
 Awaiting cluster cap ([MB-73982](https://jira.issues.couchbase.com/browse/MB-73982)).
+
+#### Notes
+
+* The `parameters` setting has type `JSONObject` in the API examples. However, it should be consistent with how SDKs expose JSON Objects elsewhere on their APIs. For example, this would be a `Dict[str, Any]` in Python or a `map[string]any` in Go. The values of the JSON object can be any valid JSON value, which might be arbitrarily nested.
+* Most functions will typically need access to some document fields. The function does not have access to any document fields, unless the query's `fields` setting is set. If `"*"` is passed to the `fields` setting, all fields of the document will be available.
+* This feature is disabled on the server by default. Users have to enable it on the UI or via a `PUT /api/managerOptions` HTTP request on an FTS instance with JSON body `{"customScriptQueriesEnabled": "true"}`. When disabled, the FTS responds with 400 HTTP status, which is mapped to an SDK error following the rules specified in the [Error Handling RFC](0058-error-handling.md).
+* [Design notes](https://github.com/couchbaselabs/sdk-design/tree/main/server-aligned/totoro/fts-udf) (private to Couchbase employees) are available for optional further context.
 
 ## Vector search
 This is a feature being added to Couchbase Server 7.6 in the FTS service.
