@@ -692,8 +692,18 @@ Awaiting cluster cap ([MB-73982](https://jira.issues.couchbase.com/browse/MB-739
 
 * The `parameters` setting has type `JSONObject` in the API examples. However, it should be consistent with how SDKs expose JSON Objects elsewhere on their APIs. For example, this would be a `Dict[str, Any]` in Python or a `map[string]any` in Go. The values of the JSON object can be any valid JSON value, which might be arbitrarily nested.
 * Most functions will typically need access to some document fields. The function does not have access to any document fields, unless the query's `fields` setting is set. If `"*"` is passed to the `fields` setting, all fields of the document will be available.
-* This feature is disabled on the server by default. Users have to enable it on the UI or via a `PUT /api/managerOptions` HTTP request on an FTS instance with JSON body `{"customScriptQueriesEnabled": "true"}`. When disabled, the FTS responds with 400 HTTP status, which is mapped to an SDK error following the rules specified in the [Error Handling RFC](0058-error-handling.md).
+* This feature is disabled on the server by default. Users have to enable it on the UI or via a `PUT /api/managerOptions` HTTP request on an FTS instance with JSON body `{"customScriptQueriesEnabled": "true"}`.
 * [Design notes](https://github.com/couchbaselabs/sdk-design/tree/main/server-aligned/totoro/fts-udf) (private to Couchbase employees) are available for optional further context.
+
+#### Errors
+
+Some common error scenarios are:
+
+* When the feature is disabled, FTS responds with 400 HTTP status.
+* Any syntax errors in the JavaScript function are returned with a 400 HTTP status.
+* If any runtime errors are encountered in the JavaScript function for a document, no rows are included in the result for the partition that contains that document. If not all partitions failed, FTS returns a 200 HTTP status, and the SDK will return a partial result and entries for the failed partitions in `SearchResult.MetaData.Errors`. If all partitions failed, FTS returns a 400 HTTP status and the SDK will raise an error according to the [Error Handling RFC](0058-error-handling.md).
+
+No special error handling is needed for errors specific to this feature. Errors should be converted according to the rules specified in the [Error Handling RFC](0058-error-handling.md). When receiving partial results, any per-partition errors are included in `SearchResult.MetaData.Errors`.
 
 ## Vector search
 This is a feature being added to Couchbase Server 7.6 in the FTS service.
