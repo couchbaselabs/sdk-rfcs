@@ -682,11 +682,16 @@ function hotel_filter(doc, params) {
 }
 ```
 
-#### Compatibility
+#### FeatureNotAvailable handling
 
-This is a feature exclusive to Enterprise Edition.
+If a search query includes `CustomScoreQuery` or `CustomFilterQuery` either as the top-level query, or as part of a compound query (`ConjunctionQuery`, `DisjunctionQuery` or `BooleanQuery`), before sending anything to the server, the SDK should check for the presence of this cluster capability:
+```json
+"clusterCapabilities": {
+  "search": ["udfQuery"]
+}
+```
 
-Awaiting cluster cap ([MB-73982](https://jira.issues.couchbase.com/browse/MB-73982)).
+If it is not present, the SDK will raise `FeatureNotAvailableException` with a message along the lines of "Custom score or filter queries are not available on this server version.".
 
 #### Notes
 
