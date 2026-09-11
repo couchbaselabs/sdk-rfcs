@@ -587,6 +587,76 @@ A query that matches nothing.
 JSON paths:
 * `match_none` = `null`: The JSON representation of a `MatchNoneQuery` is simply a `"match_none": null` entry in the query JSON Object.
 
+### CustomScoreQuery
+
+A query that uses a custom user-defined scoring function. The results are assigned scores according to the custom scoring function.
+
+JSON paths:
+
+* `custom_score.query` (`string`): The inner query whose results are passed through the user-defined scoring function. _Required_.
+* `custom_score.source` (`string`): A JavaScript function defining the user-defined scoring function. _Required_.
+* `custom_score.fields` (`array[string]`): A list of document fields that are made available to the user-defined scoring function. _Optional_, omit if not set.
+* `custom_score.params` (`JSONObject`): Parameters made available to the user-defined scoring function, given as key-value pairs. _Optional_, omit if not set.
+
+#### API Example
+
+```java
+class SearchQuery {
+  ...
+  static CustomScoreQuery customScore(
+      SearchQuery query,
+      String source
+  );
+  ...
+}
+```
+
+```java
+class CustomScoreQuery implements SearchQuery {
+  CustomScoreQuery fields(String... fields);
+  CustomScoreQuery parameters(JSONObject p);
+}
+```
+
+#### Compatibility
+
+Awaiting cluster cap ([MB-73982](https://jira.issues.couchbase.com/browse/MB-73982)).
+
+### CustomFilterQuery
+
+A query that uses a custom user-defined filtering function. The result set includes a documents if and only if it satisfies the filtering function.
+
+JSON paths:
+
+* `custom_filter.query` (`string`): The inner query whose results are passed through the user-defined filtering function. _Required_.
+* `custom_filter.source` (`string`): A JavaScript function defining the user-defined filtering function. _Required_.
+* `custom_filter.fields` (`array[string]`): A list of document fields that are made available to the user-defined filtering function. _Optional_, omit if not set.
+* `custom_filter.params` (`JSONObject`): Parameters made available to the user-defined filtering function, given as key-value pairs. _Optional_, omit if not set.
+
+#### API Example
+
+```java
+class SearchQuery {
+  ...
+  static CustomFilterQuery customFilter(
+      SearchQuery query,
+      String source
+  );
+  ...
+}
+```
+
+```java
+class CustomFilterQuery implements SearchQuery {
+  CustomFilterQuery fields(String... fields);
+  CustomFilterQuery parameters(JSONObject p);
+}
+```
+
+#### Compatibility
+
+Awaiting cluster cap ([MB-73982](https://jira.issues.couchbase.com/browse/MB-73982)).
+
 ## Vector search
 This is a feature being added to Couchbase Server 7.6 in the FTS service.
 
@@ -1198,6 +1268,9 @@ interface SearchMetrics {
 * July 22nd, 2026 - Revision #14 (by Anirudh Lakhotia)
     * Added score fusion for hybrid search.
     * Deprecated `disableScoring` in favour of the new `SearchOptions.scoring()` option.
+
+* September 16th, 2026 - Revision #15 (by Dimitris Christodoulou)
+    * Added `CustomScoreQuery` and `CustomFilterQuery` search query types.
 
 # Signoff
 
