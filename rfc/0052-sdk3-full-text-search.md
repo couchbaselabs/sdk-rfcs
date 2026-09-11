@@ -700,8 +700,8 @@ Awaiting cluster cap ([MB-73982](https://jira.issues.couchbase.com/browse/MB-739
 Some common error scenarios are:
 
 * When the feature is disabled, FTS responds with 400 HTTP status.
-* Any syntax errors in the JavaScript function are returned with a 400 HTTP status.
-* If any runtime errors are encountered in the JavaScript function for a document, no rows are included in the result for the partition that contains that document. If not all partitions failed, FTS returns a 200 HTTP status, and the SDK will return a partial result and entries for the failed partitions in `SearchResult.MetaData.Errors`. If all partitions failed, FTS returns a 400 HTTP status and the SDK will raise an error according to the [Error Handling RFC](0058-error-handling.md).
+* Any syntax or type errors in the JavaScript function are returned with a 400 HTTP status.
+* If any runtime errors are encountered in the function for a document, no rows are included in the result for the partition that contains that document. FTS returns a 200 HTTP status, partial results from the partitions that succeeded (if any), and entries for the per-partition errors in `status.errors`.
 
 No special error handling is needed for errors specific to this feature. Errors should be converted according to the rules specified in the [Error Handling RFC](0058-error-handling.md). When receiving partial results, any per-partition errors are included in `SearchResult.MetaData.Errors`.
 
