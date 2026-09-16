@@ -704,6 +704,9 @@ If the config is unavailable the SDK will block until it is, raising an `Unambig
 The SDK will use the vbucket map from the most recent bucket config, to send a KV get replica request (0x83) to a specific replica.  `ReplicaIndex.FIRST` is the 0-th element in the replica chain for that vbucket.
 "Replica chain" here refers to the array _only_ of replicas; not including the active.  E.g. if the vbucket map contains `[0, 1, -1, 2]`, the replica chain should be taken as `[1, -1, 2]`.  Include any -1 entries.
 
+Whether `wrap` is specified or not:
+1. If `numReplicas` (the bucket's configured replica count): raise `ReplicaIndexOutOfBoundsException`, without hitting the network.
+
 If `wrap` is not specified, execute these decision rules in order:
 1. If the user's requested index is >= `numReplicas` (the bucket's configured replica count): raise `ReplicaIndexOutOfBoundsException`, without hitting the network.
 2. If the user's requested index is >= the replica chain array count: raise `ReplicaIndexCurrentlyUnavailableException`.
@@ -712,7 +715,7 @@ If `wrap` is not specified, execute these decision rules in order:
 
 If `wrap` is specified, execute these decision rules in order:
 1. Set `position` to the requested index, modulo `numReplicas`.
-2. While `position` has no entry in the replica chain, or its entry is -1: advance `position` to `(position + 1) % numReplicas`. If this brings `position` back to the index from step 1, raise `ReplicaIndexCurrentlyUnavailableException`.
+2. While `position` is >= the replica chain length, or its entry is -1: advance `position` to `(position + 1) % numReplicas`. If this brings `position` back to the index from step 1, raise `ReplicaIndexCurrentlyUnavailableException`.
 3. Use the replica at `position` for the get replica request.
 
 **Worked examples:**
