@@ -705,7 +705,7 @@ The SDK will use the vbucket map from the most recent bucket config, to send a K
 "Replica chain" here refers to the array _only_ of replicas; not including the active.  E.g. if the vbucket map contains `[0, 1, -1, 2]`, the replica chain should be taken as `[1, -1, 2]`.  Include any -1 entries.
 
 Whether `wrap` is specified or not:
-1. If `numReplicas` (the bucket's configured replica count): raise `ReplicaIndexOutOfBoundsException`, without hitting the network.
+1. If `numReplicas` (the bucket's configured replica count) is zero: raise `ReplicaIndexOutOfBoundsException`, without hitting the network.
 
 If `wrap` is not specified, execute these decision rules in order:
 1. If the user's requested index is >= `numReplicas` (the bucket's configured replica count): raise `ReplicaIndexOutOfBoundsException`, without hitting the network.
