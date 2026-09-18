@@ -80,7 +80,7 @@ The following index represents the RFC numbers in their natural order, but then 
 | 80    | [Columnar API Connection Management](https://docs.google.com/document/d/11LRvVUGt3fEZt2K3CmxwtQQ0QHYW6hZO733cXPtxHVE)                                                                                             | David N                | DRAFT  |
 | 82    | [Columnar API Error Handling and Retries](https://docs.google.com/document/d/12WJ4i-B9CcNjIq5NnaFXbxZQfaaNm_tzemrmlRl5YcE)                                                                                             | David N                | DRAFT  |
 | 83    | [API Versioning](https://docs.google.com/document/d/1GFp25bBHMg6kuFhaz0OEA0kQl_gY9ysNOeTK3M-K2Sc)                                                                                             | Jared                | DRAFT  |
-| 86    | [Conversational Query](rfc/0086-conversational-query.md)                                                                                                  | Jared                | DRAFT  |
+| 86    | [Conversational Query](rfc/0086-conversational-query.md)                                                                                                  | Anirudh                | DRAFT  |
 
 ### Identified RFCs
 
