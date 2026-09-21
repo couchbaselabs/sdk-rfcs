@@ -10,7 +10,7 @@
 
 # Summary
 
-Conversational Query allows applications to submit natural-language prompts to the Query service and receive generated SQL++ statements and Query results. This RFC defines one-shot queries, multi-turn chats, model credentials, Knowledge management, and the SDK behavior required to continue or persist a chat across application requests.
+Conversational Query allows applications to submit natural-language prompts to the Query service and receive generated SQL++ statements and Query results. This RFC defines one-shot queries, multi-turn chats, model credentials, and the SDK behavior required to continue or persist a chat across application requests.
 
 # Motivation
 
@@ -24,7 +24,7 @@ A live chat resides in memory on one Query node. The SDK retains that node's log
 
 PAUSE persists the chat in Query-managed storage and releases its live slot. RESUME restores a persisted chat to live server state.
 
-This RFC does not define SDK APIs for chat discovery, model-provider discovery, typed EXPLAIN/ADVISE actions, a public chat-id accessor, single-entry Knowledge lookup, or changing a chat's inactivity timeout after BEGIN.
+This RFC does not define SDK APIs for chat discovery, model-provider discovery, typed EXPLAIN/ADVISE actions, a public chat-id accessor, Knowledge management, or changing a chat's inactivity timeout after BEGIN.
 
 ## API
 
@@ -33,8 +33,6 @@ Keyspaces = list<string>  // SQL++ keyspace paths
 
 Cluster.conversationalQuery([credential ModelCredential], [model ModelOptions])
     -> ConversationalQuery
-
-Cluster.knowledge() -> KnowledgeManager
 
 ConversationalQuery
     query(prompt string,
@@ -49,18 +47,6 @@ ConversationalQuery
     attachChat(handle ChatHandle,
                [options AttachChatOptions])
         -> Chat                       // local operation; performs no server I/O
-
-KnowledgeManager
-    upsert(name string, keyspace string, value string)   // CREATE OR REPLACE
-    create(name string, keyspace string, value string)   // CREATE; fails if it exists
-    drop(name string, keyspace string)
-    getAll([keyspace string]) -> KnowledgeEntry[]
-
-KnowledgeEntry {
-    name string
-    keyspace string
-    value string
-}
 
 Chat
     ask(prompt string, [options AskOptions])   -> ConversationalQueryResult
@@ -379,13 +365,11 @@ A handle must not contain Couchbase or model credentials, model configuration, a
 
 ## Knowledge
 
-`KnowledgeManager` is obtained from `Cluster` and uses the cluster's Couchbase identity. Knowledge operations do not use model configuration, model credentials, or chat routing.
-
-`getAll` returns the full text of every readable entry, optionally filtered by keyspace. It is not paginated.
-
-`ConversationalQueryOptions.knowledge` controls one-shot use. `BeginChatOptions.knowledge` controls chat use. Both default to `false`.
+Conversational Query can use Knowledge entries configured in Query. `ConversationalQueryOptions.knowledge` controls one-shot use and `BeginChatOptions.knowledge` controls chat use. Both default to `false`.
 
 For a chat, the SDK stores the Knowledge choice in the handle and sends the same value with every ASK. A summarizing PAUSE causes the model prompt to be rebuilt on the next ASK, and the SDK cannot know when such a rebuild is required.
+
+Knowledge entries are created and managed through ordinary Query statements. This RFC does not define a separate SDK management API for them.
 
 # Implementation Details
 
@@ -456,7 +440,7 @@ The SDK must use the `WITH` fields below for `hint`, `execute`, and `output`. It
 | `timeout`   | Inactivity timeout as a JSON integer number of seconds, separate from the Query request timeout; round a sub-second `Duration` up. Omit when unset. |
 | `summarize` | JSON boolean when explicitly `true` or `false`; omit when unset.                                                                                   |
 
-Keyspaces use SQL++ path notation. Pass `Keyspaces` entries verbatim. The Knowledge rules below do not apply.
+Keyspaces use SQL++ path notation. Pass `Keyspaces` entries verbatim.
 
 ### Model Options
 
@@ -471,66 +455,6 @@ Credential parameters are defined under [Model Credentials](#model-credentials).
 | `outputTokenLimit` | Unsupported      | `natural_config.output_token_limit`           |
 | `moderation`       | Unsupported      | `natural_config.moderation`                   |
 | `raw`              | Unsupported      | Additional top-level `natural_config` entries |
-
-### Knowledge Statements
-
-Knowledge operations use ordinary Query requests and normal Query routing. They do not use chat routing or model configuration.
-
-For `create` and `upsert`, the SDK sends the Knowledge text as the named Query parameter `$value` rather than embedding it in the statement.
-
-```text
-create: CREATE KNOWLEDGE <name> FOR <keyspace> AS $value
-upsert: CREATE OR REPLACE KNOWLEDGE <name> FOR <keyspace> AS $value
-drop:   DROP KNOWLEDGE <name> FOR <keyspace>
-
-getAll:
-SELECT k.name, k.`bucket`, k.`scope`, k.`collection`, k.`value`
-FROM system:natural_knowledge AS k
-```
-
-#### Name and keyspace encoding
-
-Knowledge names and keyspaces are logical identifiers, not SQL++ expressions. The API accepts them in unquoted form.
-
-The SDK must reject an empty Knowledge name with `InvalidArgumentException` (RFC 0058, #3). It must also reject any name or keyspace component whose first character is a backtick.
-
-For accepted identifiers, the SDK wraps each identifier in backticks and escapes embedded backticks by doubling them.
-
-`keyspace` is either a bucket name, such as `travel-sample`, or a three-part `bucket.scope.collection` path, such as `travel-sample.inventory.hotel`.
-
-The SDK must reject empty components, any other number of components, and namespace prefixes. Dots are component separators, so this API cannot address a bucket whose name contains a dot.
-
-For DDL, escape each keyspace component separately, for example:
-
-```text
-`travel-sample`.`inventory`.`hotel`
-```
-
-If the caller supplies only a bucket name, it refers to that bucket's `_default._default` collection, but the DDL contains only the escaped bucket name.
-
-#### Listing entries
-
-`getAll()` uses the projection above. Construct `KnowledgeEntry.keyspace` by joining `bucket`, `scope`, and `collection` with dots.
-
-If the caller specifies only a bucket name, such as `travel-sample`, `getAll()` returns `travel-sample._default._default`. Both forms identify the same entry.
-
-Any `KnowledgeEntry.keyspace` returned by `getAll()` must be accepted unchanged by other `KnowledgeManager` operations. The only exception is a keyspace whose bucket name contains a dot, which this string form cannot represent unambiguously.
-
-When `getAll(keyspace)` includes a keyspace filter, add:
-
-```text
-WHERE k.`bucket` = $bucket
-  AND k.`scope` = $scope
-  AND k.`collection` = $collection
-```
-
-When filtering `getAll()` by keyspace, the SDK binds the bucket, scope, and collection as separate Query parameters. If the caller supplies only a bucket name, the SDK uses `_default` for the scope and collection.
-
-#### Create and drop behavior
-
-`create` must not add `IF NOT EXISTS`, and `drop` must not add `IF EXISTS`. Failures use ordinary Query error handling; this RFC adds no typed exception.
-
-Other server-supported Knowledge grammar is outside this SDK API.
 
 ## Results
 
@@ -593,7 +517,7 @@ Invalid arguments, closed wrappers, and incompatible or foreign-cluster handles 
 
 ## Retries
 
-The SDK must not automatically retry a `USING AI` request or chat lifecycle request once it may have reached Query. Knowledge operations continue to use normal Query retry handling.
+The SDK must not automatically retry a `USING AI` request or chat lifecycle request once it may have reached Query.
 
 A failed request may already have called the model, changed chat history, or executed generated SQL++. Replaying it may therefore repeat work or state changes. This remains true with `execute(false)`, since model calls or chat changes may already have occurred.
 
@@ -609,7 +533,7 @@ The SDK must preserve the server's `retry` flag in error context when present. T
 
 Chat support is advertised by `conversationalQuery` in `clusterCapabilities.n1ql`. If that capability is absent, `beginChat` and any `Chat` operation that would contact Query must fail locally with `FeatureNotAvailableException`.
 
-The capability check does not apply to local operations (`attachChat`, handle parsing, or handle serialization), one-shot `query`, or Knowledge operations. Unsupported Knowledge operations use normal Query error handling.
+The capability check does not apply to local operations (`attachChat`, handle parsing, or handle serialization) or to one-shot `query`.
 
 The SDK must not add a separate version check for the direct-provider path.
 
@@ -619,7 +543,7 @@ The advertised capability does not guarantee that every Query node will accept n
 
 SDK documentation should explain `ChatHandle` persistence, stale routing information, lost responses, chat expiry and live-chat limits, and generation without execution. It should tell applications to save a new handle after routing changes and to serialize lifecycle operations when their order matters.
 
-Documentation should warn against using Knowledge to store secrets and describe the Couchbase authorization boundary and what request, chat, and Knowledge content may be sent to model providers. It should link to authoritative server documentation for Capella authentication, credential-store prerequisites, direct-provider configuration, and provider-specific data handling.
+Documentation should warn against using Knowledge to store secrets and describe the Couchbase authorization boundary and what request, chat, and Knowledge content may be sent to model providers. It should state that Knowledge entries are managed through ordinary Query statements. It should link to authoritative server documentation for Capella authentication, credential-store prerequisites, direct-provider configuration, and provider-specific data handling.
 
 
 # Changelog
