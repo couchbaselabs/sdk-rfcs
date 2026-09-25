@@ -633,8 +633,6 @@ The SDK can then detect the marker interface, fetch the string value, set the Xa
 #### GetReplica
 Allows fetching a document via a replica read strategy. 
 
-todo: There will also be a LookupInReplica, but as it will largely duplicate this interface, to avoid churn it will be added later following initial review.
-
 Signature
 
 ```csharp
@@ -698,19 +696,54 @@ GetReplicaStrategyFromIndexOptions options:
 - `Boolean wrap` - whether to wrap around the available replicas, rather than throwing `ReplicaIndexOutOfBoundsException`.  Defaults to false.   
   Design note: `wrap` is intended to somewhat bridge the gap between operational (in which the SDK has full access to cluster topology) and couchbase2://, and specifically for the use-case that the user wants a random replica.
 
-**Implementation:** the SDK will use the vbucket map from the most recent bucket config, to send a KV get replica request (0x83) to a specific replica.  `ReplicaIndex.FIRST` is the 0-th element in the replica chain for that vbucket.
+**Implementation:** 
 Retries and timeouts should be handled as with any other operation.  Timeouts will raise a regular `UnambiguousTimeoutException`, not `DocumentUnretrievableException` (the latter must not be raised in any path).
-If during retry the specified replica is now out of bounds in the vbucket map (e.g. the replica chain has reduced during a rebalance), then follow the guidance below on `ReplicaIndexOutOfBoundsException` and `wrap`.
+Each retry should apply the implementation logic afresh, with the latest available bucket config and vbucket map.
 If the config is unavailable the SDK will block until it is, raising an `UnambiguousTimeoutException` if required.
 
-**Operational specific:** if the replica index is higher than the current replica chain for that vbucket, the SDK will fast-fail with a `ReplicaIndexOutOfBoundsException` exception (new for this feature) without hitting the network.
-Unless the `wrap` option is true, in which case the replica index should be used modulo the length of the replica array.  E.g. if vbucket 493 has replica chain [7, 3] and user requests ReplicaIndex.THIRD, it will wrap around to use the replica at position 0 (node 7).
-If the given replica has a -1 entry in the vbucket map indicating the node is currently unavailable, raise a `ReplicaIndexCurrentlyUnavailableException` (new for this feature).  Unless `wrap` is set, in which case, automatically move to the next replica (wrapping around if necessary).
-`wrap` edge-case: if the SDK somehow wraps all the way around to the starting point in the same loop (e.g. if the replica chain somehow contains all -1 entries), then raise a `ReplicaIndexCurrentlyUnavailableException`.
+The SDK will use the vbucket map from the most recent bucket config, to send a KV get replica request (0x83) to a specific replica.  `ReplicaIndex.FIRST` is the 0-th element in the replica chain for that vbucket.
+"Replica chain" here refers to the array _only_ of replicas; not including the active.  E.g. if the vbucket map contains `[0, 1, -1, 2]`, the replica chain should be taken as `[1, -1, 2]`.  Include any -1 entries.
+
+Whether `wrap` is specified or not:
+1. If `numReplicas` (the bucket's configured replica count) is zero: raise `ReplicaIndexOutOfBoundsException`, without hitting the network.
+
+If `wrap` is not specified, execute these decision rules in order:
+1. If the user's requested index is >= `numReplicas` (the bucket's configured replica count): raise `ReplicaIndexOutOfBoundsException`, without hitting the network.
+2. If the user's requested index is >= the replica chain array count: raise `ReplicaIndexCurrentlyUnavailableException`.
+3. If the user's requested index's entry is -1: raise `ReplicaIndexCurrentlyUnavailableException`.
+4. Else: use that replica for the get replica request.
+
+If `wrap` is specified, execute these decision rules in order:
+1. Set `position` to the requested index, modulo `numReplicas`.
+2. While `position` is >= the replica chain length, or its entry is -1: advance `position` to `(position + 1) % numReplicas`. If this brings `position` back to the index from step 1, raise `ReplicaIndexCurrentlyUnavailableException`.
+3. Use the replica at `position` for the get replica request.
+
+**Worked examples:**
+
+| Replica chain (excl. active) | `numReplicas` | Requested | `wrap` | Result |
+|---|---|---|---|---|
+| `[1, 2]` | 2 | SECOND | false | node 2 |
+| `[1, -1]` | 2 | SECOND | false | `ReplicaIndexCurrentlyUnavailable` |
+| `[1, 2]` | 2 | THIRD | false | `ReplicaIndexOutOfBounds` |
+| `[7, 3, 9]` | 1 | SECOND | false | `ReplicaIndexOutOfBounds` |
+| `[7]` | 3 | SECOND | false | `ReplicaIndexCurrentlyUnavailable` |
+| `[7, 3]` | 2 | THIRD | true | node 7 |
+| `[1, -1, 2]` | 3 | THIRD | true | node 2 |
+| `[-1, 1, 2]` | 3 | FIRST | true | node 1 |
+| `[-1, -1, -1]` | 3 | FIRST | true | `ReplicaIndexCurrentlyUnavailable` |
+| `[7, 3, 9]` | 1 | SECOND | true | node 7 |
+| `[7]` | 3 | SECOND | true | node 7 |
 
 **couchbase2:// specific:** the SDK does not have the cluster topology, and each `GetReplica` call will result in a network call to CNG.  
 The CNG side is not implemented at time of this design.  This design proposes that the GRPC will allow pushing down the strategy, including the `wrap` option, to allow the gateway to implement the above operational behaviour.
 This results in the same user-facing result being the same between operational and couchbase2://, including `ReplicaIndexOutOfBoundsException`.
+
+New exceptions:
+
+* `ReplicaIndexOutOfBoundsException` indicates a replica index has been selected that is not in the cluster config. 
+* `ReplicaIndexCurrentlyUnavailableException` indicates the replica is _currently_ not available.
+
+The difference between the two is subtle, with the latter indicating there are hints available to the SDK that the replica might be available in the near future.
 
 #### GetAnyReplica
 
@@ -1799,6 +1832,10 @@ Invalid operation
 - July, 2026 - Revision #22 (by Graham Pople)
 
   - Added `GetReplica`.
+
+- September, 2026 - Revision #23 (by Graham Pople)
+
+  - Adjustments to `GetReplica`.
 
   # Signoff
 
