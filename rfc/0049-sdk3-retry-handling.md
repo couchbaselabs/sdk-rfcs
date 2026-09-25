@@ -181,9 +181,13 @@ Future<RetryAction> retryAfter(Request request, RetryReason reason) {
 
 A reference backoff calculator implementation can be found in the java source code [here](https://github.com/couchbase/couchbase-jvm-clients/blob/colossus-sr-4/core-io/src/main/java/com/couchbase/client/core/retry/reactor/Backoff.java).
 
-### Fail Fast
+
+### Fail Fast (Strict)
+For the first several years of SDK3, a fast fail strategy was not provided out-of-the-box.
 
 While the implementation of a fail fast strategy is rather simple, we made a conscious decision to NOT include it by default.
+
+(The rest of this section is left verbatim for historical context, but note that a targeted fast-fail strategy that fails only on the most useful errors is now defined below.)
 
 The reasoning goes as follows:
 
@@ -201,6 +205,51 @@ Future<RetryAction> retryAfter(Request request, RetryReason reason) {
 ```
 
 Finally, SDKs itself might include an internal version of the FailFast retry strategy to use it for their commands where it makes sense (i.e. cccp config polling). If such a strategy is present, it must be marked as Internal
+
+### Fail Fast (Terminal Errors)
+A `FastFailOnTerminalErrorRetryStrategy` is provided by the SDKs as an opt-in alternative to `BestEffortRetryStrategy`, and intended to provide a significantly improved developer experience.
+
+It was created after multiple years of end-user experience with SDK3, and as a result for most users it is likely the better option.  Any new SDKs should default to it, and our documentation should reflect this as a standard part of SDK usage.
+
+There are four goals:
+
+* To be a better experience for most users, by providing immediate clear feedback on basic problems such as bad credentials or resources not existing, rather than timeouts.
+* To fast-fail only on "terminal errors", as very few users truly want a strategy that fast-fails on literally everything including NOT_MY_VBUCKET errors.  Although the notion of terminality is hard to pin down since it depends greatly on application context, we can informally define it as "errors where a fast-failure will be more useful than a timeout to the majority of users, and where an immediate-term retry is unlikely to make any progress".
+* To permit improving `FastFailOnTerminalErrorRetryStrategy` over time, so that it always fulfils its remit of providing the best possible user experience including when new server functionality is added.  To this end it will intentionally be marked as `@Stability.Volatile` indefinitely, and it will be documented that users wishing to hardcode specific retry and error behaviours should copy the class.
+* To provide clearer and more user-facing RetryReasons.
+
+To achieve these goals, the following RetryReasons are added.  The first two apply to all operations, KV or HTTP:
+
+* AUTHENTICATION_ERROR: if any current topology-tracking connection (*) has previously received a 0x2 error at the memcached SASL auth step.  This per-connection state gets cleared if authentication subsequently succeeds for that connection.  Any generic SASL problem that is not an explicit 0x2 server error does not result in AUTHENTICATION_ERROR, so it is reserved for an explicit indication that the user's credentials are incorrect.
+* TLS_ERROR: if any current topology-tracking connection has previously received any form of explicitly TLS-related failure from the underlying SSL library.  The most common scenario will be that the server's certificate is not trusted.  In the unlikely scenario that a connection subsequently passes the TLS handshake, then this per-connection state is cleared.
+
+(*) a 'topology tracking connection' being one that is used for cluster config push/poll purposes, whether over memcached (GCCCP) or ns-server.
+
+These three apply only to KV operations, and are not used for any HTTP services, which return their own error messages and codes:
+
+* BUCKET_ACCESS_ERROR: for a given bucket, if any connection has previously received a NO_ACCESS at the memcached SELECT BUCKET step for that bucket.  This global state gets cleared if SELECT BUCKET succeeds for that bucket, which could happen if the bucket subsequently gets created or RBACs added.  Note that the server returns NO_ACCESS both for the bucket not existing, and for the user not having relevant RBACs.
+** todo: SELECT BUCKET can also return NOT_FOUND, but the situations in which it does so are currently unclear.
+* SCOPE_NOT_FOUND: used if at point of requiring collection map (e.g. to encode document key) for a given KV operation, the map does not have the required scope, AND a map has previously been successfully fetched.
+* COLLECTION_NOT_FOUND: used if at point of requiring collection map (e.g. to encode document key) for a given KV operation, the map does not have the required collection, AND a map has previously been successfully fetched.
+
+And `FastFailOnTerminalErrorRetryStrategy` will handle these by mapping:
+
+| RetryReason              | Behaviour |
+| -------------------------| -------------------- |
+| AUTHENTICATION_ERROR     | Fast fails with AuthenticationFailureException |
+| TLS_ERROR                | Fast fails with CouchbaseException |
+| BUCKET_ACCESS_ERROR      | Fast fails with CouchbaseException |
+| SCOPE_NOT_FOUND          | Fast fails with ScopeNotFoundException |
+| COLLECTION_NOT_FOUND     | Fast fails with CollectionNotFoundException |
+| Any other                | The same behaviour as BestEffortRetryStrategy |
+
+While it should not matter, for completeness of specification the mapping should be applied in that order e.g. `if AUTHENTICATION_ERROR .. else if TLS ERROR .. else if BUCKET_ACCESS_ERROR..`.
+
+Open questions left to resolve during pathfinding:
+
+* Handling mTLS failures.
+* Handling JWT failures.
+* Checking handling & failures align with couchbase2.
 
 ## RetryReason
 
@@ -237,6 +286,11 @@ enum RetryReason {
 | SEARCH_TOO_MANY_REQUESTS            | true                 | false        |
 | VIEWS_TEMPORARY_FAILURE             | true                 | false        |
 | VIEWS_NO_ACTIVE_PARTITION           | true                 | true         |
+| AUTHENTICATION_ERROR                | todo                 | todo         |
+| TLS_ERROR                           | todo                 | todo         |
+| BUCKET_ACCESS_ERROR                 | todo                 | todo         |
+| SCOPE_NOT_FOUND                     | todo                 | todo         |
+| COLLECTION_NOT_FOUND                | todo                 | todo         |
 
 - UNKNOWN: All unexpected/unknown retry errors must not be retried to avoid accidental data loss and non-deterministic behavior.
 - SOCKET_NOT_AVAILABLE: The socket is not available into which the operation should've been written.
@@ -486,13 +540,17 @@ By default, once a complete, known response is received it should not be retried
 
   - Added a note clarifying on the best effort retry backoff calculator (with link to example implementation in java)
 
-- April 30, 2020 (by Michael Nitchinger)
+- April 30, 2020 - Revision #14 (by Michael Nitchinger)
 
   - Moved RFC to ACCEPTED state.
 
-- Sept 17, 2021 (by Brett Lawson)
+- Sept 17, 2021 - Revision #15 (by Brett Lawson)
 
   - Converted to Markdown
+
+- Nov, 2025 - Revision #16 (by Graham Pople)
+
+  - Added `FastFailOnTerminalErrorRetryStrategy`.
 
 # Signoff
 
