@@ -208,8 +208,8 @@ A Note on IDs: The IDs in this RFC are only for organisational purposes and MUST
   * It is unambiguously determined that the error was caused because of invalid arguments from the user
   * KV Subdoc:
     * 0xcb
-  * Management (ns_server):
-    * HTTP status 400 – if no more specific error type applies (e.g. BucketExists).
+  * Any HTTP-based service (Search, Views, Query, Analytics, Eventing, Management):
+    * HTTP status 400 – if no more specific error type applies (e.g. BucketExists, or a Query/Analytics error code that has its own mapping).
   * Notes
     * Usually only thrown directly when doing request arg validation
     * Also commonly used as a parent class for many service-specific exceptions (see below)
@@ -762,6 +762,8 @@ KV Code 0xc1
   * Clarify that `BucketExists` is raised in bucket manager when receiving 400 HTTP status and the response body contains `Bucket with given name already exists`, as is already prescribed by the [Management RFC](0054-sdk3-management-apis.md).
 * July 22, 2026 - Revision #21 (by Graham Pople)
   * Added query code 2120.
+* October 1, 2026 - Revision #22 (by Anirudh Lakhotia)
+  * All HTTP-based services should raise `InvalidArgument` for HTTP 400 responses when no more specific error applies.
 
 ## Signoff
 
