@@ -1123,14 +1123,14 @@ The server does not provide a practical way to detect whether eventing function 
 
 | SDK | Representative | Date | Revision |
 | :---- | :---- | :---- | :---- |
-| C++ | Sergey Avseyev | 2026-05-06 | 16 |
-| Ruby | Sergey Avseyev | 2026-05-06 | 16 |
-| Go | Dimitris Christodoulou | 2026-04-28 | 16 |
-| Rust | Charles Dixon | 2026-04-27 | 14 |
-| Java  | David Nault | 2026-04-28 | 16 |
-| Kotlin | David Nault | 2026-04-28 | 16 |
+| C++ | Sergey Avseyev | 2026-10-21 | 17 |
+| Ruby | Sergey Avseyev | 2026-10-21 | 17 |
+| Go | Dimitris Christodoulou | 2026-10-20 | 17 |
+| Rust | Matt Wozakowski | 2026-10-20 | 17 |
+| Java  | David Nault | 2026-10-20 | 17 |
+| Kotlin | David Nault | 2026-10-20 | 17 |
 | .NET | Jeffry Morris | 2026-05-06 | 16 |
 | NodeJS | Jared Casey | 2026-05-06 | 16 |
-| PHP | Sergey Avseyev | 2026-05-06 | 16 |
+| PHP | Sergey Avseyev | 2026-10-21 | 17 |
 | Python | Jared Casey | 2026-05-06 | 16 |
-| Scala | Graham Pople | 2026-04-30 | 16 |
+| Scala | Graham Pople | 2026-10-20 | 17 |
