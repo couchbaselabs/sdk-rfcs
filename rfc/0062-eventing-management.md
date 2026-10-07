@@ -973,7 +973,7 @@ Note that the “info” block can also be an object, so the deserialization at 
 
 The following list enumerates all errors which are uniquely numbered (and are going to be cross referenced from the error handling RFC once accepted).
 
-* 608 `EventingFunctionNotFound`: name is ERR\_APP\_NOT\_FOUND\_TS  
+* 608 `EventingFunctionNotFound`: name is ERR\_APP\_NOT\_FOUND\_TS or ERR\_APP\_NOT\_FOUND
   * Occurs if the function is not found  
 * 609 `EventingFunctionNotDeployed`: name is ERR\_APP\_NOT\_DEPLOYED  
   * Occurs if the function is not deployed, but the action expects it to  
@@ -1059,6 +1059,8 @@ The server does not provide a practical way to detect whether eventing function 
 
 # Changes
 
+* Revision \#17 (2026-10-20 \- Dimitris Christodoulou):
+  * Mapped ERR\_APP\_NOT\_FOUND to `EventingFunctionNotFound`.
 * Revision \#16 (2026-04-28 \- Dimitris Christodoulou):
   * Added `Resuming` enum value for `EventingFunctionStatus`.
 * Revision \#15 (2026-04-28 \- Dimitris Christodoulou):
