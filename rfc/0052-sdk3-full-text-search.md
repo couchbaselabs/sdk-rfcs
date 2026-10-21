@@ -941,7 +941,7 @@ Usage on a version (after 7.6.0 and) prior to 7.6.2 will yield a 400 status code
 ```
 rest_index: Query, indexName: global_vector_index_989008, err: bleve: QueryBleve parsing searchRequest, err: k must be greater than 0 and vector must be non-empty
 ```
-For this a CouchbaseException will be raised as usual.
+This 400 has no more specific mapping in the [Error Handling RFC](0058-error-handling.md), so an `InvalidArgumentException` is raised.
 
 Converting the base64 encoding to float[] on the client-side was considered and rejected due to the partial intention of base64 encoding being to reduce network usage.
 
@@ -1127,10 +1127,10 @@ There is no separate weight field on the wire; a distinct `fusionWeight` field w
 The SDK keeps client-side validation minimal: before sending, it checks that `disableScoring(true)` and `scoring` are not both set, and that the cluster supports fusion when a fusion strategy is set (see FeatureNotAvailable handling). The server validates everything else, including parameter ranges and disallowed sorts. The failure states, with the error each produces:
 
 * `disableScoring(true)` and `scoring(...)` both set. The SDK raises `InvalidArgumentException` before sending, even when the two agree (`scoring(none())` with `disableScoring(true)`); this is the only combination it validates. The check runs before the capability check, so it raises the same error on any cluster version.
-* `sort` other than the default `"-_score"` under fusion. The SDK does not check this; the server returns a 400 and a `CouchbaseException` is raised.
+* `sort` other than the default `"-_score"` under fusion. The SDK does not check this; the server returns a 400 and an `InvalidArgumentException` is raised.
 * Cluster does not support fusion. Setting a fusion strategy makes the SDK check for the `scoreFusion` capability before sending and raise `FeatureNotAvailableException` if it is missing (see FeatureNotAvailable handling).
 * Non-hybrid request (only an FTS query, or only a vector search). The SDK does not check for this; it sends the `score` field regardless. The server accepts it and fuses the single list; the ordering is unchanged and no error is raised.
-* Out-of-range `rankConstant` or `windowSize`. The SDK does not validate parameter ranges; it forwards the value, the server returns a 400, and a `CouchbaseException` is raised.
+* Out-of-range `rankConstant` or `windowSize`. The SDK does not validate parameter ranges; it forwards the value, the server returns a 400, and an `InvalidArgumentException` is raised.
 
 For transport, a score-fusion request is an ordinary search: timeouts and service failures surface as `TimeoutException` or `CouchbaseException`, exactly as they do for `cluster/scope.search()`.
 
@@ -1246,7 +1246,7 @@ interface SearchMetaData {
 
 Sample request/response payloads: [sdk-testcases/search](https://github.com/couchbaselabs/sdk-testcases/tree/master/search)
 
-If top-level `"error"` property exists, then SDK should build and throw `CouchbaseException` with its content.
+If a top-level `"error"` property exists, the SDK raises the error that the [Error Handling RFC](0058-error-handling.md) specifies for the response, with the property's content in the message.
 
 ### SearchMetrics
 
@@ -1324,6 +1324,9 @@ interface SearchMetrics {
 
 * September 16th, 2026 - Revision #15 (by Dimitris Christodoulou)
     * Added `CustomScoreQuery` and `CustomFilterQuery` search query types.
+
+* October 7th, 2026 - Revision #16 (by Anirudh Lakhotia)
+    * A search request rejected with an HTTP 400 that has no more specific mapping raises `InvalidArgumentException`, per the [Error Handling RFC](0058-error-handling.md). Updated the score fusion and base64 vector search errors, and the handling of a top-level `"error"` property, to match.
 
 # Signoff
 
