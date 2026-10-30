@@ -6,7 +6,6 @@
 * Owner: Anirudh Lakhotia, Jared Casey
 * Current Status: DRAFT
 * Revision: 3
-* API Stability: Volatile
 * Supporting Material: [sdk-design](https://github.com/couchbaselabs/sdk-design/tree/main/server-aligned/totoro/query-begin-chat)
 
 # Summary
@@ -100,6 +99,7 @@ ConversationalQueryOptions {
     execute optional<bool>
     output ConversationalQueryOutput
     useKnowledge bool
+    // plus the shared fields below
 }
 
 BeginChatOptions {
@@ -119,6 +119,7 @@ AskOptions {
     hint string
     execute optional<bool>
     output ConversationalQueryOutput
+    // plus the shared fields below
 }
 
 Fields shared by ConversationalQueryOptions and AskOptions {
@@ -153,7 +154,7 @@ ConversationalQueryOutput {
 }
 ```
 
-All option fields are optional. Fields declared `optional<T>` must distinguish unset from an explicit value. For other Conversational Query-specific option fields, empty strings, numeric zero, and empty maps are treated as unset. Unless this RFC specifies otherwise, unset Conversational Query-specific fields are omitted from requests. Normal Query defaults and generated parameters still apply to every request the SDK sends to Query, including `metrics: false` and `client_context_id`.
+All option fields are optional. Unless this RFC specifies otherwise, unset Conversational Query-specific fields are omitted from requests. Normal Query defaults and generated parameters still apply to every request the SDK sends to Query, including `metrics: false` and `client_context_id`.
 
 Existing SDK controls for timeouts, retries, tracing, and cancellation also apply, subject to the rules in this RFC. `rawParameters` supplies Query request parameters, while `ModelOptions.raw` supplies additional model configuration.
 
@@ -201,9 +202,9 @@ Credentials are sent only as request parameters. The SDK must redact `natural_cr
 
 `raw` is a forward-compatibility mechanism for additional Query `natural_config` fields.
 
-If a supplied typed option and a `raw` entry map to the same `natural_config` key, the SDK must give the typed option precedence. An unset typed option must not overwrite a raw value.
+If a supplied typed option and a `raw` entry map to the same `natural_config` key, the SDK must give the typed option precedence.
 
-The SDK must reject `cred_id` and `api_key` in `raw`, compared case-insensitively. Credentials must use `ModelCredential`. The SDK copies the remaining `raw` entries to `natural_config` without filtering them.
+The SDK must reject `cred_id` and `api_key` in `raw`. Credentials must use `ModelCredential`. The SDK copies the remaining `raw` entries to `natural_config` without filtering them.
 
 The SDK must reject model options unsupported by the selected credential path. This check and the `cred_id`/`api_key` check above must be performed before sending a one-shot `query` request or BEGIN, and before `attachChat` returns a `Chat`. `ask` and `pause` use the configuration checked when the `Chat` was created. See [Model option mapping](#model-option-mapping).
 
@@ -386,17 +387,13 @@ The SDK reads the top-level string `chatId` from the BEGIN response and retains 
 
 `chatTokens` reports cumulative token usage for the chat and, when present, is also exposed in metadata returned by PAUSE, RESUME, and END.
 
-Each token counter is optional. If a counter is absent from the Query response, its accessor is absent.
-
-The SDK must preserve the returned counters exactly. It must not synthesize an all-zero `TokenUsage` when the object is absent, derive `totalTokens` from the other counters, or reject a response because the counters do not add up.
-
 ### Metrics
 
-The SDK exposes `metrics.naturalLanguageProcessingTime` through `ConversationalQueryMetaData.naturalLanguageProcessingTime()`, converting Query's duration string to a `Duration`. The accessor is absent when the field is not returned. Existing shared Query types, including `QueryMetrics`, remain unchanged.
+The SDK exposes `metrics.naturalLanguageProcessingTime` through `ConversationalQueryMetaData.naturalLanguageProcessingTime()`, converting Query's duration string to a `Duration`. Existing shared Query types, including `QueryMetrics`, remain unchanged.
 
 ### Execution
 
-When present, `metrics.generatedStatementExecuted` is exposed through `ConversationalQueryMetaData.generatedStatementExecuted()`. The accessor is absent when the field is not returned. The SDK must not infer execution status from the generated statement, result rows, or other metadata.
+When present, `metrics.generatedStatementExecuted` is exposed through `ConversationalQueryMetaData.generatedStatementExecuted()`. The SDK must not infer execution status from the generated statement, result rows, or other metadata.
 
 ## Errors
 
@@ -452,7 +449,7 @@ The SDK must not add a separate version check for the direct-provider path.
 
 # Documentation
 
-SDK documentation should explain how to save and restore a `ChatHandle`. The handle is a snapshot, so applications should save an updated handle after `beginChat`, `pause`, or `resume`. It does not contain model or credential configuration, so applications need to supply any configuration required by subsequent `ask` or `pause` operations when attaching. A `pause` that may summarize can fail if the required model inputs are missing; setting `summarize` to `false` avoids that requirement. `beginChat` and `attachChat` do not verify model availability or model-provider credentials; related errors may surface on a later `ask` or `pause`.
+SDK documentation should explain how to save and restore a `ChatHandle`. The handle is a snapshot, so applications should save an updated handle after `beginChat`, `pause`, or `resume`. A `ChatHandle` does not contain model or credential configuration, and Query does not retain it. Applications must supply any model and credential configuration needed when reattaching a chat. Otherwise, a later ASK or summarizing PAUSE may fail. `beginChat` and `attachChat` do not verify model availability or model-provider credentials; related errors may surface on a later `ask` or `pause`.
 
 Documentation must explain that applications must serialize PAUSE, RESUME, and END operations on the same chat, including across `Chat` instances, and any other operations whose order matters. It should explain that an explicit `resume()` may recover from `ChatCurrentlyUnavailableException`, but an ASK or lifecycle operation with an ambiguous outcome must not be blindly replayed. END does not delete a paused chat, so the application must resume it first. After END succeeds, previously serialized handles can still be attached, but they cannot continue the chat.
 
