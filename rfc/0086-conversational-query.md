@@ -156,7 +156,7 @@ ConversationalQueryOutput {
 
 All option fields are optional. Unless this RFC specifies otherwise, unset Conversational Query-specific fields are omitted from requests. Normal Query defaults and generated parameters still apply to every request the SDK sends to Query, including `metrics: false` and `client_context_id`.
 
-Existing SDK controls for timeouts, retries, tracing, and cancellation also apply, subject to the rules in this RFC. `rawParameters` supplies Query request parameters, while `ModelOptions.raw` supplies additional model configuration.
+`rawParameters` supplies Query request parameters, while `ModelOptions.raw` supplies additional model configuration.
 
 ### Model and credential
 
@@ -186,17 +186,11 @@ The **direct-provider path** sends model requests directly from Query to the con
 | `credentialStore(credentialName)` | `natural_config.cred_id` |
 | `apiKey(key)` | `natural_config.api_key` |
 
-The SDK must not fall back to another credential form after a failure.
-
-The SDK must not add provider-specific authentication rules or additional credential kinds, and must not validate whether a model credential is valid for a particular provider.
-
-The SDK must not inspect or modify cluster configuration to pre-validate model-credential prerequisites. Related failures use normal Query error handling.
-
-Credentials are sent only as request parameters. The SDK must redact `natural_cred` and `natural_config` from errors, error contexts, diagnostics, logs, and tracing. Provider and model names may be reported separately. Capella passwords, API keys, and `ModelOptions.raw` values must not appear in diagnostic output, including string representations of credentials and options.
+The SDK must redact `natural_cred` and `natural_config` from errors, error contexts, diagnostics, logs, and tracing. Capella passwords, API keys, and `ModelOptions.raw` values must not appear in diagnostic output, including string representations of credentials and options.
 
 ## Model Options
 
-`provider` and `name` are open strings, and `endpoint` is a provider-specific URL; all are sent as supplied. The SDK must not validate `provider` or `name` against a hard-coded list of providers or models, or check that the model exists. An explicit endpoint can be used without a model credential. `raw` values may be any JSON value.
+`provider` and `name` are open strings, and `endpoint` is a provider-specific URL; all are sent as supplied. An explicit endpoint can be used without a model credential.
 
 ### Raw model options
 
@@ -204,7 +198,7 @@ Credentials are sent only as request parameters. The SDK must redact `natural_cr
 
 If a supplied typed option and a `raw` entry map to the same `natural_config` key, the SDK must give the typed option precedence.
 
-The SDK must reject `cred_id` and `api_key` in `raw`. Credentials must use `ModelCredential`. The SDK copies the remaining `raw` entries to `natural_config` without filtering them.
+The SDK must reject `cred_id` and `api_key` in `raw`. The SDK copies the remaining `raw` entries to `natural_config` without filtering them.
 
 The SDK must reject model options unsupported by the selected credential path. This check and the `cred_id`/`api_key` check above must be performed before sending a one-shot `query` request or BEGIN, and before `attachChat` returns a `Chat`. `ask` and `pause` use the configuration checked when the `Chat` was created. See [Model option mapping](#model-option-mapping).
 
@@ -266,8 +260,6 @@ After END succeeds, the local `Chat` wrapper is closed. Further server operation
 
 `handle()` returns an immutable snapshot of the `Chat`'s current handle state.
 
-`attachChat(handle)` is local and must not issue RESUME.
-
 The handle's JSON form is an object with only these fields:
 
 | Field | Value |
@@ -277,9 +269,7 @@ The handle's JSON form is an object with only these fields:
 
 A `ChatHandle` must be used with the same Couchbase cluster where the chat was created. The SDK does not verify this.
 
-Each SDK must support JSON serialization and reconstruction of `ChatHandle` through `toJson()` and `fromJson()` or language-idiomatic equivalents. `fromJson()` must reject a malformed handle, a handle missing any field above, or a field of the wrong type (`owner` may be `null`) with `InvalidArgumentException`, and must ignore unrecognized fields.
-
-A `ChatHandle` must not contain Couchbase or model credentials or model configuration.
+`fromJson()` must reject a malformed handle, a handle missing any field above, or a field of the wrong type (`owner` may be `null`) with `InvalidArgumentException`, and must ignore unrecognized fields.
 
 ## Knowledge
 
@@ -332,7 +322,7 @@ USING AI WITH {"keyspaces":["`travel-sample`.`inventory`.`hotel`"],"knowledge":t
 
 `USING AI` always includes `WITH`, using `WITH {}` when there are no fields, so that Query does not parse prompt text as options. Other statements omit `WITH` when there are no fields.
 
-For every chat operation except BEGIN, the SDK must send the stored chat id as the string request parameter `natural_chatid`. It must not also include the chat id in the statement.
+For every chat operation except BEGIN, the SDK must send the stored chat id as the string request parameter `natural_chatid`.
 
 The SDK must use the `WITH` fields below for `hint`, `execute`, and `output`. It must not also send the corresponding `natural_*` request parameters.
 
@@ -350,7 +340,7 @@ The SDK must use the `WITH` fields below for `hint`, `execute`, and `output`. It
 
 ### Model option mapping
 
-Credential parameters are defined under [Model Credentials](#model-credentials). The SDK sends `natural_config` as a JSON object and omits it when it would be empty.
+The SDK sends `natural_config` as a JSON object and omits it when it would be empty.
 
 | `ModelOptions`     | Capella path     | Direct-provider path                          |
 | ------------------ | ---------------- | --------------------------------------------- |
@@ -365,7 +355,7 @@ Credential parameters are defined under [Model Credentials](#model-credentials).
 
 `ConversationalQueryResult` is a separate public result type with normal Query row semantics and the metadata defined below.
 
-`ConversationalQueryMetaData.profile()` exposes the Query response's `profile` object when present, using the same representation and optionality as ordinary Query metadata. Profiling is controlled by the existing `QueryProfile` option and uses its normal Query request mapping.
+`ConversationalQueryMetaData.profile()` exposes the Query response's `profile` object when present, using the same representation and optionality as ordinary Query metadata.
 
 ### Generated statement
 
@@ -373,7 +363,7 @@ When present, the top-level `generated_statement` field contains the generated s
 
 The generated statement must be available without iterating over result rows.
 
-If both `generated_statement` and `results` are present, `generated_statement` precedes `results`. The SDK must not depend on a fixed order for the other fields.
+If both `generated_statement` and `results` are present, `generated_statement` precedes `results`.
 
 The SDK must accept responses without `results` or `signature`, including generation without execution and lifecycle responses.
 
@@ -393,7 +383,7 @@ The SDK exposes `metrics.naturalLanguageProcessingTime` through `ConversationalQ
 
 ### Execution
 
-When present, `metrics.generatedStatementExecuted` is exposed through `ConversationalQueryMetaData.generatedStatementExecuted()`. The SDK must not infer execution status from the generated statement, result rows, or other metadata.
+When present, `metrics.generatedStatementExecuted` is exposed through `ConversationalQueryMetaData.generatedStatementExecuted()`.
 
 ## Errors
 
@@ -413,8 +403,8 @@ The mappings below apply only to Conversational Query operations. When a respons
 | 19236 | On ASK, PAUSE, or END, the receiving node has no live chat with that id. `ChatCurrentlyUnavailableException`. |
 | 19240 | The node has no available live-chat slots. `TemporaryFailureException`, including when nested in a 19243 `reason`; preserve both codes. |
 | 19241 | The Couchbase identity failed the chat ownership check. `AuthenticationFailureException`. |
-| 19243 | RESUME could not restore the chat on the receiving node. Except for nested 19240, no new typed exception is defined for this code: use the SDK's existing handling for an unmapped Query error and preserve the server code and error context. It does not prove that the persisted chat is missing. Routing follows [Routing](#routing). |
-| 19255 | RESUME found the chat already live on the receiving node. No new typed exception is defined for this code: use the SDK's existing handling for an unmapped Query error, and preserve the server code and error context. Routing follows [Routing](#routing). |
+| 19243 | RESUME could not restore the chat on the receiving node. Except for nested 19240, no new typed exception is defined for this code: use the SDK's existing handling for an unmapped Query error. It does not prove that the persisted chat is missing. Routing follows [Routing](#routing). |
+| 19255 | RESUME found the chat already live on the receiving node. No new typed exception is defined for this code: use the SDK's existing handling for an unmapped Query error. Routing follows [Routing](#routing). |
 
 `ChatCurrentlyUnavailableException` is new for this feature and derives directly from `CouchbaseException`. It is raised for ASK, PAUSE, and END when no owner is retained, the retained owner is unresolvable, or Query returns error 19236. Routing information is retained. The error does not establish that the chat has ended, expired, or lacks persisted state.
 
