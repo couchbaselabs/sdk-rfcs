@@ -297,7 +297,7 @@ A complete, successfully parsed Query response is treated as a returned server r
 
 For BEGIN, or RESUME without a resolvable retained owner, the SDK selects a Query node with a `nodeUUID` and a usable Query endpoint for the selected network and TLS setting in its current cluster configuration, and sends the request there. The SDK must record the owner before completing a successful BEGIN or RESUME.
 
-Chats are not supported on Capella Private Link. Over `couchbase2://`, or when the current cluster configuration maps different Query `nodeUUID`s to the same Query host and port for the selected network and TLS setting, `beginChat` and any `Chat` operation that would contact Query must fail locally with `FeatureNotAvailableException`.
+Chats are not supported on Capella Private Link. When the current cluster configuration maps different Query `nodeUUID`s to the same Query host and port for the selected network and TLS setting, `beginChat` and any `Chat` operation that would contact Query must fail locally with `FeatureNotAvailableException`.
 
 ## Wire Mapping
 
@@ -433,7 +433,7 @@ Chat support is advertised by `conversationalQuery` in `clusterCapabilities.n1ql
 
 The capability check does not apply to local operations (`attachChat`, handle parsing, or handle serialization) or to one-shot `query`.
 
-Over `couchbase2://`, `ConversationalQuery.query` must fail locally with `FeatureNotAvailableException`.
+Over `couchbase2://`, `Cluster.conversationalQuery()` must fail locally with `FeatureNotAvailableException`.
 
 The SDK must not add a separate version check for the direct-provider path.
 
