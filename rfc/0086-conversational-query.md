@@ -170,7 +170,7 @@ The listed Query controls retain their existing types, semantics, and wire mappi
 
 BEGIN, PAUSE, RESUME, and END use their operation's `timeout` when set. Otherwise, the SDK's normal Query operation timeout applies.
 
-`rawParameters` follows RFC 0056. The SDK must reject raw parameters whose names begin with `natural` (case-insensitively), to avoid conflicts with Conversational Query request parameters.
+`rawParameters` follows RFC 0056.
 
 The SDK does not expose prepared statements, named or positional parameters, `readonly`, or `preserveExpiry` for Conversational Query, and must send these requests as adhoc.
 
