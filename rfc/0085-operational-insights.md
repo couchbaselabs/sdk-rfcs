@@ -5,7 +5,7 @@
 * Start Date: 2025-04-02
 * Owners: Jared Casey
 * Current Status: DRAFT
-* Revision: #4
+* Revision: #5
 * Relates to:
     * [SDK-RFC#79 (Columnar API Foundation)][sdk-rfc-0079]
     * [SDK-RFC#80 (Columnar API Connection Management)][sdk-rfc-0080]
@@ -561,8 +561,14 @@ type QueryHandle {
     // Methods
     FetchStatus([options FetchStatusOptions]) QueryStatus
     Cancel([options CancelOptions])
+    ToSerialized() string
+
+    // Static methods
+    FromSerialized(cluster Cluster, serialized string) QueryHandle
 }
 ```
+
+The SDK must use any handle only as a path on the cluster endpoint, never as a URL, so the credentials of the `Cluster` are only sent to the cluster's own endpoint.
 
 ### FetchStatus
 
@@ -735,6 +741,62 @@ A server response with a JSON body is not expected. The SDK should handle the fo
 If the HTTP request times out, the SDK should raise a `TimeoutException`.
 
 For any other error scenario, the SDK should raise an `OperationalInsightsException`.
+
+### Serialization
+
+Serialization lets an application continue a query in a different process from the one that started it. For example, one worker starts a query and another worker fetches its results. Only the `QueryHandle` is serialized.
+
+#### Serialized Form
+
+The serialized form is a JSON object with the `requestID` and `handle` properties of the `QueryHandle`, using the same names as the server's response to [StartQuery](#startquery):
+
+```json
+{
+  "requestID": "8fb94489-dcd7-466d-8639-cb02144c3f79",
+  "handle": "/api/v1/request/status/8fb94489-dcd7-466d-8639-cb02144c3f79/12-0"
+}
+```
+
+All SDKs must use this form, so a handle serialized by one SDK can be deserialized by another. Applications should treat the serialized string as opaque.
+
+The serialized form is part of the public API. Later SDK versions must accept handles serialized by earlier versions. New properties may be added in later revisions of this RFC, but `requestID` and `handle` must not be renamed or removed, and a new property must not be required to deserialize a handle.
+
+#### ToSerialized
+
+##### Signature
+
+`ToSerialized() string`
+
+##### Implementation
+
+Returns the serialized form of the `QueryHandle`. Must not perform network calls.
+
+#### FromSerialized
+
+##### Signature
+
+`FromSerialized(cluster Cluster, serialized string) QueryHandle`
+
+The signature above is a static method on `QueryHandle`. An SDK may use the platform idiomatic equivalent instead (e.g. a method on `Cluster`).
+
+##### Implementation
+
+Returns a new `QueryHandle` that uses the given `Cluster` for all requests. Must not perform network calls.
+
+The `Cluster` is required, and a `Scope` must not be accepted in its place. The handle path is absolute and does not depend on the scope that started the query, so a handle started from a `Scope` works from the `Cluster`.
+
+The SDK must raise a platform idiomatic invalid argument exception if any of the following is true:
+
+* `serialized` is not a JSON object.
+* `requestID` or `handle` is missing, is not a string, or is empty.
+
+The SDK must ignore any other properties in the JSON object.
+
+##### Using a Deserialized Handle
+
+The server ties a query to the user who started it. A `Cluster` with credentials for a different user receives `404 Not Found` from `FetchStatus`, which raises a `QueryNotFoundException`. Applications must deserialize the handle with a `Cluster` that has credentials for the user who started the query.
+
+A deserialized handle can be used from any node in the cluster. The query's results can be fetched more than once until `DiscardResults` is called or the server's result TTL expires, so a process may fetch results that another process has already fetched.
 
 ## QueryStatus
 
@@ -933,8 +995,7 @@ The following topics are considered to be out of scope until future iterations o
 
 * Tunable `resultTTL`
 * A client-side timeout on the stream as a whole for `FetchResults`
-* Serialization and result partitions
-    * NOTE: We should think through serialized scope-level query handles that are then deserialized on the cluster (and vice-versa)
+* Result partitions
 
 # Changelog
 
@@ -949,6 +1010,10 @@ The following topics are considered to be out of scope until future iterations o
     * Added `Timeout` to `FetchResultsOptions`. It bounds the time to first byte when starting to stream rows in the server async query requests API.
     * Clarified that `StartQueryOptions.Timeout` is the server-side execution timeout only.
     * Added a client-side timeout for the whole `FetchResults` stream to Out of Scope.
+* 2026-11-07 - Revision #5 (Jared Casey)
+    * Added `QueryHandle.ToSerialized` and `QueryHandle.FromSerialized` with a JSON serialized form shared by all SDKs.
+    * Removed serialization of `QueryHandle` from Out of Scope.
+    * Required SDKs to use every handle only as a path on the cluster endpoint, never as a URL.
 
 # Signoff
 
