@@ -5,7 +5,7 @@
 * Start Date: 2025-04-02
 * Owners: Jared Casey
 * Current Status: DRAFT
-* Revision: #3
+* Revision: #4
 * Relates to:
     * [SDK-RFC#79 (Columnar API Foundation)][sdk-rfc-0079]
     * [SDK-RFC#80 (Columnar API Connection Management)][sdk-rfc-0080]
@@ -157,8 +157,9 @@ type TimeoutOptions {
     /// Default = 10 seconds
     ConnectTimeout(Duration) TimeoutOptions
 
-    /// Timeout applied to all HTTP requests in the server async query
-    /// requests API.
+    /// Timeout applied to HTTP requests in the server async query
+    /// requests API. For FetchResults, this is the default for
+    /// FetchResultsOptions.Timeout.
     /// Default = 10 seconds
     HandleRequestTimeout(Duration) TimeoutOptions
 
@@ -501,6 +502,8 @@ type StartQueryOptions {
 }
 ```
 
+`StartQueryOptions.Timeout` is the server-side execution timeout for the query. It does not change client-side timeouts for any server async API operation. Client-side timeouts are set by `TimeoutOptions.HandleRequestTimeout` and, for FetchResults, `FetchResultsOptions.Timeout`.
+
 **Response**
 
 The SDK should use the `requestID` and the `handle` properties in the response when creating the `QueryHandle` object to return.
@@ -819,12 +822,23 @@ Sends an HTTP request to the server.
 ```
 type FetchResultsOptions {
     Deserializer(Deserializer) FetchResultsOptions
+
+    /// Maximum time to wait for the server to begin responding.
+    /// See Timeouts below.
+    /// Default = TimeoutOptions.HandleRequestTimeout (10 seconds)
+    Timeout(Duration) FetchResultsOptions
 }
 ```
 
 **Response**
 
-The SDK should return a `QueryResult` which is the mechanism the application will use to stream query rows. The behavior of the `QueryResult` (and the response from the server) should be the same as in the synchronous query API.
+The SDK should return a `QueryResult` which is the mechanism the application will use to stream query rows. The behavior of the `QueryResult` (and the response from the server) should be the same as in the synchronous query API, except for timeouts (see below).
+
+**Timeouts**
+
+`FetchResultsOptions.Timeout` applies from sending the request until the SDK receives the start of the response. If the response has not started within `Timeout`, the SDK should raise a `TimeoutException`. Retries during this phase count toward the same `Timeout`. After the response starts, each SDK should rely on its HTTP client's idle or read timeout so a stalled server does not block the application indefinitely.
+
+Unlike the synchronous query API, the stream as a whole is not bounded by a client-side timeout. The query has already completed on the server, and the application controls how quickly results are consumed. This is an intentional exception to the Timeout section of the [Columnar API Streaming RFC][sdk-rfc-0081]. Applications must close or cancel the `QueryResult` when they stop consuming it, and SDKs should release the underlying connection when this happens. An application that keeps an open `QueryResult` without consuming or closing it holds its connection indefinitely. A client-side limit on the whole stream may be added later if users need one (see Out of Scope).
 
 **Errors and Retries**
 
@@ -918,6 +932,7 @@ The following topics are considered to be out of scope until future iterations o
 ## Server Async Query Requests
 
 * Tunable `resultTTL`
+* A client-side timeout on the stream as a whole for `FetchResults`
 * Serialization and result partitions
     * NOTE: We should think through serialized scope-level query handles that are then deserialized on the cluster (and vice-versa)
 
@@ -930,6 +945,10 @@ The following topics are considered to be out of scope until future iterations o
     * Converted from Google Doc to Markdown.
     * Renamed from Enterprise Analytics to Operational Insights (October 2026 name change).
     * Base exception now uses the "OperationalInsights" or "Insights" prefix instead of "Analytics".
+* 2026-11-06 - Revision #4 (Jared Casey)
+    * Added `Timeout` to `FetchResultsOptions`. It bounds the time to first byte when starting to stream rows in the server async query requests API.
+    * Clarified that `StartQueryOptions.Timeout` is the server-side execution timeout only.
+    * Added a client-side timeout for the whole `FetchResults` stream to Out of Scope.
 
 # Signoff
 
