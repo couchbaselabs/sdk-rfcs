@@ -411,7 +411,7 @@ The mappings below apply only to Conversational Query operations. When a respons
 | 19221 | A natural-language request waited too long for admission on the receiving node. `RateLimitedException`. |
 | 19222 | Natural-language processing is disabled on the receiving node. `FeatureNotAvailableException`. |
 | 19236 | On ASK, PAUSE, or END, the receiving node has no live chat with that id. `ChatCurrentlyUnavailableException`. |
-| 19240 | The node has no available live-chat slots. `TemporaryFailureException`, including when nested in a 19243 `reason`; preserve both codes. |
+| 19240 | The node has no available live-chat slots. `RateLimitedException`, including when nested in a 19243 `reason`; preserve both codes. |
 | 19241 | The Couchbase identity failed the chat ownership check. `AuthenticationFailureException`. |
 | 19243 | RESUME could not restore the chat on the receiving node. Except for nested 19240, no new typed exception is defined for this code: use the SDK's existing handling for an unmapped Query error. It does not prove that the persisted chat is missing. Routing follows [Routing](#routing). |
 | 19255 | RESUME found the chat already live on the receiving node. No new typed exception is defined for this code: use the SDK's existing handling for an unmapped Query error. Routing follows [Routing](#routing). |
