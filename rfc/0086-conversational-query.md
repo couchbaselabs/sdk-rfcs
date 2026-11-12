@@ -108,6 +108,8 @@ BeginChatOptions {
     inactivityTimeout Duration
     useKnowledge bool
     timeout Duration
+    retryStrategy RetryStrategy
+    parentSpan RequestSpan
 }
 
 AttachChatOptions {
@@ -131,20 +133,28 @@ Fields shared by ConversationalQueryOptions and AskOptions {
     metrics bool
     profile QueryProfile
     timeout Duration
+    retryStrategy RetryStrategy
+    parentSpan RequestSpan
     rawParameters map<string, JsonValue>
 }
 
 PauseOptions {
     summarize optional<bool>
     timeout Duration
+    retryStrategy RetryStrategy
+    parentSpan RequestSpan
 }
 
 ResumeOptions {
     timeout Duration
+    retryStrategy RetryStrategy
+    parentSpan RequestSpan
 }
 
 EndOptions {
     timeout Duration
+    retryStrategy RetryStrategy
+    parentSpan RequestSpan
 }
 
 ConversationalQueryOutput {
@@ -426,6 +436,8 @@ Each server-facing operation uses its own outer request span name, following RFC
 | `pause` | `conversational_query_pause` |
 | `resume` | `conversational_query_resume` |
 | `end` | `conversational_query_end` |
+
+The SDK must not set `db.statement` on these spans, since the statement can contain the prompt.
 
 ## Feature Detection
 
