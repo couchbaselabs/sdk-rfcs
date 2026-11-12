@@ -555,6 +555,11 @@ KV Code 0xc1
 * Query
   * Raised when code 12009 AND message does not contain `CAS mismatch`
 
+### 205 ChatCurrentlyUnavailable
+
+* Query
+  * Raised on ASK, PAUSE, or END when code 19236 is returned, no owner is retained, or the retained owner is unresolvable
+
 ## Analytics Error Definitions (ID Range 300 - 399)
 
 ## 301 CompilationFailure
@@ -764,6 +769,8 @@ KV Code 0xc1
   * Added query code 2120.
 * October 1, 2026 - Revision #22 (by Anirudh Lakhotia)
   * All HTTP-based services should raise `InvalidArgument` for HTTP 400 responses when no more specific error applies.
+* November 12, 2026 - Revision #23 (by Anirudh Lakhotia)
+  * Added ChatCurrentlyUnavailable.
 
 ## Signoff
 
