@@ -98,7 +98,7 @@ ConversationalQueryOptions {
     hint string
     execute optional<bool>
     output ConversationalQueryOutput
-    useKnowledge bool
+    useKnowledge optional<bool>
     // plus the shared fields below
 }
 
@@ -106,7 +106,7 @@ BeginChatOptions {
     model ModelOptions
     credential ModelCredential
     inactivityTimeout Duration
-    useKnowledge bool
+    useKnowledge optional<bool>
     timeout Duration
     retryStrategy RetryStrategy
     parentSpan RequestSpan
@@ -323,8 +323,8 @@ USING AI WITH {"keyspaces":["`travel-sample`.`inventory`.`hotel`"],"knowledge":t
 
 | Operation   | Statement                          | `WITH` fields                                                  | Model inputs                                                                    |
 | ----------- | ---------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `query`     | `USING AI WITH <options> <prompt>` | `keyspaces`, `knowledge`; optional `hint`, `execute`, `output` | Send the supplied model and credential, if any.                                 |
-| `beginChat` | `BEGIN CHAT WITH <options>`        | `keyspaces`, `knowledge`; optional `timeout`                   | Do not send the model or credential; the returned `Chat` retains them.          |
+| `query`     | `USING AI WITH <options> <prompt>` | `keyspaces`; optional `knowledge`, `hint`, `execute`, `output` | Send the supplied model and credential, if any.                                 |
+| `beginChat` | `BEGIN CHAT WITH <options>`        | `keyspaces`; optional `knowledge`, `timeout`                   | Do not send the model or credential; the returned `Chat` retains them.          |
 | `ask`       | `USING AI WITH <options> <prompt>` | Optional `hint`, `execute`, `output`                           | Send the `Chat`'s model and credential, if any.                                 |
 | `pause`     | `PAUSE CHAT [WITH <options>]`      | Optional `summarize`                                           | Send the `Chat`'s model and credential, if any, unless `summarize` is `false`.  |
 | `resume`    | `RESUME CHAT`                      | None                                                           | None.                                                                           |
@@ -341,7 +341,7 @@ The SDK must use the `WITH` fields below for `hint`, `execute`, and `output`. It
 | Field       | Encoding                                                                                                                                           |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `keyspaces` | An array of fully qualified SQL++ keyspace paths, one per `Collection`, for example ``["`travel-sample`.`inventory`.`hotel`"]``. |
-| `knowledge` | `useKnowledge` as a JSON boolean, defaulting to `false`. Send on `query` and `beginChat`; omit on `ask`. |
+| `knowledge` | `useKnowledge` as a JSON boolean. Omit when unset; the server default is `false`. Send on `query` and `beginChat`; omit on `ask`. |
 | `hint`      | JSON string when supplied; otherwise omit.                                                                                                         |
 | `execute`   | JSON boolean. Omit when unset; the server default is `true`.                                                                                        |
 | `output`    | `Sqlpp` maps to `"SQL"`, `FtsSqlpp` to `"FTSSQL"`, and `JsUdf` to `"JSUDF"`. Omit when unset; the default is SQL output.                                             |
