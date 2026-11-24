@@ -44,10 +44,10 @@ ConversationalQuery
         -> Chat                       // local operation; performs no server I/O
 
 Chat
-    ask(prompt string, [options AskOptions])   -> ConversationalQueryResult
-    pause([options PauseOptions])              -> ConversationalQueryMetaData
-    resume([options ResumeOptions])            -> ConversationalQueryMetaData
-    end([options EndOptions])                  -> ConversationalQueryMetaData
+    ask(prompt string, [options ChatAskOptions])   -> ConversationalQueryResult
+    pause([options ChatPauseOptions])              -> ConversationalQueryMetaData
+    resume([options ChatResumeOptions])            -> ConversationalQueryMetaData
+    end([options ChatEndOptions])                  -> ConversationalQueryMetaData
 
     handle() -> ChatHandle
 
@@ -67,23 +67,23 @@ ConversationalQueryMetaData
     warnings() -> list<QueryWarning>
     metrics() -> optional<QueryMetrics>
     profile() -> optional<JsonObject>
-    requestTokens() -> optional<TokenUsage>
-    chatTokens() -> optional<TokenUsage>
+    requestTokens() -> optional<ConversationalQueryTokenUsage>
+    chatTokens() -> optional<ConversationalQueryTokenUsage>
     naturalLanguageProcessingTime() -> optional<Duration>
     generatedStatementExecuted() -> optional<bool>
 
-TokenUsage {
+ConversationalQueryTokenUsage {
     promptTokens optional<int>
     completionTokens optional<int>
     totalTokens optional<int>
 }
 
-ModelCredential
+ConversationalQueryModelCredential
     capella(email string, password string, organizationId string)
     credentialStore(credentialName string)
     apiKey(key string)
 
-ModelOptions {
+ConversationalQueryModelOptions {
     provider string
     name string
     endpoint string
@@ -93,8 +93,8 @@ ModelOptions {
 }
 
 ConversationalQueryOptions {
-    model ModelOptions
-    credential ModelCredential
+    model ConversationalQueryModelOptions
+    credential ConversationalQueryModelCredential
     hint string
     execute optional<bool>
     output ConversationalQueryOutput
@@ -103,8 +103,8 @@ ConversationalQueryOptions {
 }
 
 BeginChatOptions {
-    model ModelOptions
-    credential ModelCredential
+    model ConversationalQueryModelOptions
+    credential ConversationalQueryModelCredential
     inactivityTimeout Duration
     useKnowledge optional<bool>
     timeout Duration
@@ -113,18 +113,18 @@ BeginChatOptions {
 }
 
 AttachChatOptions {
-    model ModelOptions
-    credential ModelCredential
+    model ConversationalQueryModelOptions
+    credential ConversationalQueryModelCredential
 }
 
-AskOptions {
+ChatAskOptions {
     hint string
     execute optional<bool>
     output ConversationalQueryOutput
     // plus the shared fields below
 }
 
-Fields shared by ConversationalQueryOptions and AskOptions {
+Fields shared by ConversationalQueryOptions and ChatAskOptions {
     scanConsistency QueryScanConsistency
     consistentWith MutationState
     scanWait Duration
@@ -138,20 +138,20 @@ Fields shared by ConversationalQueryOptions and AskOptions {
     rawParameters map<string, JsonValue>
 }
 
-PauseOptions {
+ChatPauseOptions {
     summarize optional<bool>
     timeout Duration
     retryStrategy RetryStrategy
     parentSpan RequestSpan
 }
 
-ResumeOptions {
+ChatResumeOptions {
     timeout Duration
     retryStrategy RetryStrategy
     parentSpan RequestSpan
 }
 
-EndOptions {
+ChatEndOptions {
     timeout Duration
     retryStrategy RetryStrategy
     parentSpan RequestSpan
@@ -166,13 +166,13 @@ ConversationalQueryOutput {
 
 All option fields are optional. Unless this RFC specifies otherwise, unset Conversational Query-specific fields are omitted from requests. Normal Query defaults and generated parameters still apply to every request the SDK sends to Query, including `metrics: false` and `client_context_id`.
 
-`rawParameters` supplies Query request parameters, while `ModelOptions.raw` supplies additional model configuration.
+`rawParameters` supplies Query request parameters, while `ConversationalQueryModelOptions.raw` supplies additional model configuration.
 
 ### Model and credential
 
 A one-shot `query` sends the model and credential supplied in `ConversationalQueryOptions`. `beginChat` and `attachChat` keep them in the returned `Chat`, without sending them to Query. Each `ask` sends the `Chat`'s model and credential, if supplied. `pause` does the same unless `summarize` is `false`.
 
-The SDK captures the model and credential, including the contents of `ModelOptions.raw`, when `beginChat` or `attachChat` is called. Later changes to the supplied options do not affect the returned `Chat`, and its model and credential cannot be changed on that instance. To use a different model or credential with the same server-side chat, the application creates a new `Chat` using `attachChat(chat.handle(), options)`. The new instance uses only the model and credential supplied in `AttachChatOptions` and does not inherit either from the original `Chat`. The two instances maintain routing state independently.
+The SDK captures the model and credential, including the contents of `ConversationalQueryModelOptions.raw`, when `beginChat` or `attachChat` is called. Later changes to the supplied options do not affect the returned `Chat`, and its model and credential cannot be changed on that instance. To use a different model or credential with the same server-side chat, the application creates a new `Chat` using `attachChat(chat.handle(), options)`. The new instance uses only the model and credential supplied in `AttachChatOptions` and does not inherit either from the original `Chat`. The two instances maintain routing state independently.
 
 ### Ordinary Query controls
 
@@ -186,7 +186,7 @@ The SDK does not expose prepared statements, named or positional parameters, `re
 
 ## Model Credentials
 
-`ModelCredential` authenticates Query's calls to the model provider and is separate from Couchbase authentication. It is not accepted in `ClusterOptions`.
+`ConversationalQueryModelCredential` authenticates Query's calls to the model provider and is separate from Couchbase authentication. It is not accepted in `ClusterOptions`.
 
 The **direct-provider path** sends model requests directly from Query to the configured provider instead of through the Capella iQ intermediary. The Capella path is selected when the credential is `capella`. `credentialStore`, `apiKey`, or no credential use the direct-provider mapping.
 
@@ -196,7 +196,7 @@ The **direct-provider path** sends model requests directly from Query to the con
 | `credentialStore(credentialName)` | `natural_config.cred_id` |
 | `apiKey(key)` | `natural_config.api_key` |
 
-The SDK must redact `natural_cred` and `natural_config` from errors, error contexts, diagnostics, logs, and tracing. Capella passwords, API keys, and `ModelOptions.raw` values must not appear in diagnostic output, including string representations of credentials and options.
+The SDK must redact `natural_cred` and `natural_config` from errors, error contexts, diagnostics, logs, and tracing. Capella passwords, API keys, and `ConversationalQueryModelOptions.raw` values must not appear in diagnostic output, including string representations of credentials and options.
 
 ## Model Options
 
@@ -352,14 +352,14 @@ The SDK must use the `WITH` fields below for `hint`, `execute`, and `output`. It
 
 The SDK sends `natural_config` as a JSON object and omits it when it would be empty.
 
-| `ModelOptions`     | Capella path     | Direct-provider path                          |
-| ------------------ | ---------------- | --------------------------------------------- |
-| `provider`         | `natural_vendor` | `natural_config.provider`                     |
-| `name`             | `natural_model`  | `natural_config.model`                        |
-| `endpoint`         | Unsupported      | `natural_config.endpoint`                     |
-| `outputTokenLimit` | Unsupported      | `natural_config.output_token_limit`           |
-| `moderation`       | Unsupported      | `natural_config.moderation`                   |
-| `raw`              | Unsupported      | Additional top-level `natural_config` entries |
+| `ConversationalQueryModelOptions` | Capella path     | Direct-provider path                          |
+| --------------------------------- | ---------------- | --------------------------------------------- |
+| `provider`                        | `natural_vendor` | `natural_config.provider`                     |
+| `name`                            | `natural_model`  | `natural_config.model`                        |
+| `endpoint`                        | Unsupported      | `natural_config.endpoint`                     |
+| `outputTokenLimit`                | Unsupported      | `natural_config.output_token_limit`           |
+| `moderation`                      | Unsupported      | `natural_config.moderation`                   |
+| `raw`                             | Unsupported      | Additional top-level `natural_config` entries |
 
 ## Results
 
