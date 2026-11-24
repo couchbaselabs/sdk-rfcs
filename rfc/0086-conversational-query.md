@@ -124,7 +124,7 @@ ChatAskOptions {
     // plus the shared fields below
 }
 
-Fields shared by ConversationalQueryOptions and ChatAskOptions {
+QueryOptions fields shared by ConversationalQueryOptions and ChatAskOptions {
     scanConsistency QueryScanConsistency
     consistentWith MutationState
     scanWait Duration
@@ -174,15 +174,15 @@ A one-shot `query` sends the model and credential supplied in `ConversationalQue
 
 The SDK captures the model and credential, including the contents of `ConversationalQueryModelOptions.raw`, when `beginChat` or `attachChat` is called. Later changes to the supplied options do not affect the returned `Chat`, and its model and credential cannot be changed on that instance. To use a different model or credential with the same server-side chat, the application creates a new `Chat` using `attachChat(chat.handle(), options)`. The new instance uses only the model and credential supplied in `AttachChatOptions` and does not inherit either from the original `Chat`. The two instances maintain routing state independently.
 
-### Ordinary Query controls
+### QueryOptions fields
 
-The listed Query controls retain their existing types, semantics, and wire mappings.
+The listed QueryOptions fields retain their existing types, semantics, and wire mappings.
 
 BEGIN, PAUSE, RESUME, and END use their operation's `timeout` when set. Otherwise, the SDK's normal Query operation timeout applies.
 
 `rawParameters` follows RFC 0056.
 
-The SDK does not expose prepared statements, named or positional parameters, `readonly`, or `preserveExpiry` for Conversational Query, and must send these requests as adhoc.
+The SDK does not expose prepared statements, named or positional parameters, `readonly`, or `preserveExpiry` for Conversational Query, and must send these requests as adhoc. The SDK must send one-shot `query` with `readonly` set to `true`.
 
 ## Model Credentials
 
@@ -451,7 +451,9 @@ The SDK must not add a separate version check for the direct-provider path.
 
 # Documentation
 
-SDK documentation should explain how to save and restore a `ChatHandle`. The handle is a snapshot, so applications should save an updated handle after `beginChat`, `pause`, or `resume`. A `ChatHandle` does not contain model or credential configuration. Applications must supply any model and credential configuration needed when reattaching a chat. Otherwise, a later ASK or summarizing PAUSE may fail. `beginChat` and `attachChat` do not verify model availability or model-provider credentials; related errors may surface on a later `ask` or `pause`.
+SDK documentation should explain how to save and restore a `ChatHandle`. The handle is a snapshot, so applications should save an updated handle after `beginChat`, `pause`, or `resume`. A `ChatHandle` does not contain model or credential configuration. Applications must supply any model and credential configuration needed when reattaching a chat. Otherwise, a later ASK or summarizing PAUSE may fail. `beginChat` and `attachChat` do not verify model availability or model-provider credentials; related errors may surface on a later `ask` or `pause`. Documentation should explain that, on the Capella path, Query can reuse the chat's previous provider and model when both are omitted from a chat turn or summarizing PAUSE (see [MB-75056](https://jira.issues.couchbase.com/browse/MB-75056)).
+
+Documentation should state that Query's default and minimum inactivity timeouts are currently one hour. Query rejects values below this minimum with error 19246; the SDK does not enforce this minimum locally.
 
 Documentation must explain that applications must serialize PAUSE, RESUME, and END operations on the same chat, including across `Chat` instances, and any other operations whose order matters. It should explain that an explicit `resume()` may recover from `ChatCurrentlyUnavailableException`, but an ASK or lifecycle operation with an ambiguous outcome must not be blindly replayed. END does not delete a paused chat, so the application must resume it first. After END succeeds, previously serialized handles can still be attached, but they cannot continue the chat.
 
