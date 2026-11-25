@@ -20,7 +20,7 @@ A live chat resides on a single Query node, and Query does not forward chat requ
 
 One-shot queries are independent requests. Chats use explicit BEGIN, ASK, PAUSE, RESUME, and END operations. Query manages chat state and persists it while paused; the SDK retains the chat id and routing information needed to reach the owning node.
 
-A one-shot `query` uses the supplied model and credential for that request. A `Chat` uses the model and credential supplied to `beginChat` or `attachChat`; neither is stored in `ChatHandle`. Query generates SQL++ and executes eligible statements by default, subject to the `execute` option. Generated statements run under the caller's Couchbase identity, while model-provider access uses separate credentials.
+A one-shot `query` uses the supplied model and credential for that request. A `ConversationalQueryChat` uses the model and credential supplied to `beginChat` or `attachChat`; neither is stored in `ConversationalQueryChatHandle`. Query generates SQL++ and executes eligible statements by default, subject to the `execute` option. Generated statements run under the caller's Couchbase identity, while model-provider access uses separate credentials.
 
 ## API
 
@@ -33,57 +33,57 @@ ConversationalQuery
     query(prompt string,
           keyspaces Keyspaces,
           [options ConversationalQueryOptions])
-        -> ConversationalQueryResult
+        -> ConversationalResult
 
     beginChat(keyspaces Keyspaces,
-              [options BeginChatOptions])
-        -> Chat
+              [options ConversationalBeginChatOptions])
+        -> ConversationalQueryChat
 
-    attachChat(handle ChatHandle,
-               [options AttachChatOptions])
-        -> Chat                       // local operation; performs no server I/O
+    attachChat(handle ConversationalQueryChatHandle,
+               [options ConversationalAttachChatOptions])
+        -> ConversationalQueryChat    // local operation; performs no server I/O
 
-Chat
-    ask(prompt string, [options ChatAskOptions])   -> ConversationalQueryResult
-    pause([options ChatPauseOptions])              -> ConversationalQueryMetaData
-    resume([options ChatResumeOptions])            -> ConversationalQueryMetaData
-    end([options ChatEndOptions])                  -> ConversationalQueryMetaData
+ConversationalQueryChat
+    ask(prompt string, [options ConversationalAskOptions])   -> ConversationalResult
+    pause([options ConversationalPauseOptions])              -> ConversationalMetaData
+    resume([options ConversationalResumeOptions])            -> ConversationalMetaData
+    end([options ConversationalEndOptions])                  -> ConversationalMetaData
 
-    handle() -> ChatHandle
+    handle() -> ConversationalQueryChatHandle
 
-ChatHandle
+ConversationalQueryChatHandle
     toJson() -> string
-    fromJson(json string) -> ChatHandle   // static; local operation
+    fromJson(json string) -> ConversationalQueryChatHandle   // static; local operation
 
-ConversationalQueryResult
+ConversationalResult
     rows                                          // normal Query row handling
-    metaData() -> ConversationalQueryMetaData
+    metaData() -> ConversationalMetaData
     generatedStatement() -> optional<string>
 
-ConversationalQueryMetaData
+ConversationalMetaData
     requestId() -> string
     clientContextId() -> string
     status() -> QueryStatus
     warnings() -> list<QueryWarning>
     metrics() -> optional<QueryMetrics>
     profile() -> optional<JsonObject>
-    requestTokens() -> optional<ConversationalQueryTokenUsage>
-    chatTokens() -> optional<ConversationalQueryTokenUsage>
+    requestTokens() -> optional<ConversationalTokenUsage>
+    chatTokens() -> optional<ConversationalTokenUsage>
     naturalLanguageProcessingTime() -> optional<Duration>
     generatedStatementExecuted() -> optional<bool>
 
-ConversationalQueryTokenUsage {
+ConversationalTokenUsage {
     promptTokens optional<int>
     completionTokens optional<int>
     totalTokens optional<int>
 }
 
-ConversationalQueryModelCredential
+ConversationalModelCredential
     capella(email string, password string, organizationId string)
     credentialStore(credentialName string)
     apiKey(key string)
 
-ConversationalQueryModelOptions {
+ConversationalModelOptions {
     provider string
     name string
     endpoint string
@@ -93,18 +93,18 @@ ConversationalQueryModelOptions {
 }
 
 ConversationalQueryOptions {
-    model ConversationalQueryModelOptions
-    credential ConversationalQueryModelCredential
+    model ConversationalModelOptions
+    credential ConversationalModelCredential
     hint string
     execute optional<bool>
-    output ConversationalQueryOutput
+    output ConversationalOutput
     useKnowledge optional<bool>
     // plus the shared fields below
 }
 
-BeginChatOptions {
-    model ConversationalQueryModelOptions
-    credential ConversationalQueryModelCredential
+ConversationalBeginChatOptions {
+    model ConversationalModelOptions
+    credential ConversationalModelCredential
     inactivityTimeout Duration
     useKnowledge optional<bool>
     timeout Duration
@@ -112,19 +112,19 @@ BeginChatOptions {
     parentSpan RequestSpan
 }
 
-AttachChatOptions {
-    model ConversationalQueryModelOptions
-    credential ConversationalQueryModelCredential
+ConversationalAttachChatOptions {
+    model ConversationalModelOptions
+    credential ConversationalModelCredential
 }
 
-ChatAskOptions {
+ConversationalAskOptions {
     hint string
     execute optional<bool>
-    output ConversationalQueryOutput
+    output ConversationalOutput
     // plus the shared fields below
 }
 
-QueryOptions fields shared by ConversationalQueryOptions and ChatAskOptions {
+QueryOptions fields shared by ConversationalQueryOptions and ConversationalAskOptions {
     scanConsistency QueryScanConsistency
     consistentWith MutationState
     scanWait Duration
@@ -138,26 +138,26 @@ QueryOptions fields shared by ConversationalQueryOptions and ChatAskOptions {
     rawParameters map<string, JsonValue>
 }
 
-ChatPauseOptions {
+ConversationalPauseOptions {
     summarize optional<bool>
     timeout Duration
     retryStrategy RetryStrategy
     parentSpan RequestSpan
 }
 
-ChatResumeOptions {
+ConversationalResumeOptions {
     timeout Duration
     retryStrategy RetryStrategy
     parentSpan RequestSpan
 }
 
-ChatEndOptions {
+ConversationalEndOptions {
     timeout Duration
     retryStrategy RetryStrategy
     parentSpan RequestSpan
 }
 
-ConversationalQueryOutput {
+ConversationalOutput {
     Sqlpp
     FtsSqlpp
     JsUdf
@@ -166,13 +166,25 @@ ConversationalQueryOutput {
 
 All option fields are optional. Unless this RFC specifies otherwise, unset Conversational Query-specific fields are omitted from requests. Normal Query defaults and generated parameters still apply to every request the SDK sends to Query, including `metrics: false` and `client_context_id`.
 
-`rawParameters` supplies Query request parameters, while `ConversationalQueryModelOptions.raw` supplies additional model configuration.
+`rawParameters` supplies Query request parameters, while `ConversationalModelOptions.raw` supplies additional model configuration.
+
+### Naming
+
+SDKs may use a flat or namespaced API, as appropriate for the language.
+
+For a flat API, types introduced by this RFC use the `Conversational` prefix, except for `ConversationalQuery`, `ConversationalQueryChat`, and `ConversationalQueryChatHandle`.
+
+A namespaced API groups these types, for example as `ConversationalQuery.BeginChatOptions` and `ConversationalQuery.Chat.AskOptions`.
+
+SDKs may use flat exception names in their existing error namespace even when the rest of the API is namespaced.
+
+This RFC uses flat names.
 
 ### Model and credential
 
-A one-shot `query` sends the model and credential supplied in `ConversationalQueryOptions`. `beginChat` and `attachChat` keep them in the returned `Chat`, without sending them to Query. Each `ask` sends the `Chat`'s model and credential, if supplied. `pause` does the same unless `summarize` is `false`.
+A one-shot `query` sends the model and credential supplied in `ConversationalQueryOptions`. `beginChat` and `attachChat` keep them in the returned `ConversationalQueryChat`, without sending them to Query. Each `ask` sends the `ConversationalQueryChat`'s model and credential, if supplied. `pause` does the same unless `summarize` is `false`.
 
-The SDK captures the model and credential, including the contents of `ConversationalQueryModelOptions.raw`, when `beginChat` or `attachChat` is called. Later changes to the supplied options do not affect the returned `Chat`, and its model and credential cannot be changed on that instance. To use a different model or credential with the same server-side chat, the application creates a new `Chat` using `attachChat(chat.handle(), options)`. The new instance uses only the model and credential supplied in `AttachChatOptions` and does not inherit either from the original `Chat`. The two instances maintain routing state independently.
+The SDK captures the model and credential, including the contents of `ConversationalModelOptions.raw`, when `beginChat` or `attachChat` is called. Later changes to the supplied options do not affect the returned `ConversationalQueryChat`, and its model and credential cannot be changed on that instance. To use a different model or credential with the same server-side chat, the application creates a new `ConversationalQueryChat` using `attachChat(chat.handle(), options)`. The new instance uses only the model and credential supplied in `ConversationalAttachChatOptions` and does not inherit either from the original `ConversationalQueryChat`. The two instances maintain routing state independently.
 
 ### QueryOptions fields
 
@@ -186,7 +198,7 @@ The SDK does not expose prepared statements, named or positional parameters, `re
 
 ## Model Credentials
 
-`ConversationalQueryModelCredential` authenticates Query's calls to the model provider and is separate from Couchbase authentication. It is not accepted in `ClusterOptions`.
+`ConversationalModelCredential` authenticates Query's calls to the model provider and is separate from Couchbase authentication. It is not accepted in `ClusterOptions`.
 
 The **direct-provider path** sends model requests directly from Query to the configured provider instead of through the Capella iQ intermediary. The Capella path is selected when the credential is `capella`. `credentialStore`, `apiKey`, or no credential use the direct-provider mapping.
 
@@ -196,7 +208,7 @@ The **direct-provider path** sends model requests directly from Query to the con
 | `credentialStore(credentialName)` | `natural_config.cred_id` |
 | `apiKey(key)` | `natural_config.api_key` |
 
-The SDK must redact `natural_cred` and `natural_config` from errors, error contexts, diagnostics, logs, and tracing. Capella passwords, API keys, and `ConversationalQueryModelOptions.raw` values must not appear in diagnostic output, including string representations of credentials and options.
+The SDK must redact `natural_cred` and `natural_config` from errors, error contexts, diagnostics, logs, and tracing. Capella passwords, API keys, and `ConversationalModelOptions.raw` values must not appear in diagnostic output, including string representations of credentials and options.
 
 ## Model Options
 
@@ -210,7 +222,7 @@ If a supplied typed option and a `raw` entry map to the same `natural_config` ke
 
 The SDK must reject `cred_id` and `api_key` in `raw`. The SDK copies the remaining `raw` entries to `natural_config` without filtering them.
 
-The SDK must reject model options unsupported by the selected credential path. This check and the `cred_id`/`api_key` check above must be performed before sending a one-shot `query` request or BEGIN, and before `attachChat` returns a `Chat`. `ask` and `pause` use the configuration checked when the `Chat` was created. See [Model option mapping](#model-option-mapping).
+The SDK must reject model options unsupported by the selected credential path. This check and the `cred_id`/`api_key` check above must be performed before sending a one-shot `query` request or BEGIN, and before `attachChat` returns a `ConversationalQueryChat`. `ask` and `pause` use the configuration checked when the `ConversationalQueryChat` was created. See [Model option mapping](#model-option-mapping).
 
 ## One-shot Query
 
@@ -220,13 +232,13 @@ The SDK must reject model options unsupported by the selected credential path. T
 
 A live chat exists only on its owning Query node and may be lost if that node becomes unavailable or the chat expires. Query persists chat state only while the chat is paused, and a paused chat has a server-controlled expiry. The SDK must not predict that expiry or reject requests using hard-coded limits.
 
-SDK implementations must support concurrent operations on a `Chat` without corrupting local state, but do not guarantee their order. Applications must serialize PAUSE, RESUME, and END operations on the same chat, including across `Chat` instances, and any other operations whose order matters.
+SDK implementations must support concurrent operations on a `ConversationalQueryChat` without corrupting local state, but do not guarantee their order. Applications must serialize PAUSE, RESUME, and END operations on the same chat, including across `ConversationalQueryChat` instances, and any other operations whose order matters.
 
 ### Routing
 
 The SDK retains routing information, not server lifecycle state. A retained owner identifies the Query node to which chat operations are routed; it does not guarantee that the chat is still live on that node.
 
-Routing information may become stale if another `Chat` instance or an ordinary Query request changes the same chat, the chat expires, or a PAUSE or RESUME response is lost.
+Routing information may become stale if another `ConversationalQueryChat` instance or an ordinary Query request changes the same chat, the chat expires, or a PAUSE or RESUME response is lost.
 
 The retained owner is unchanged unless one of the following occurs:
 
@@ -262,13 +274,13 @@ If the retained owner is resolvable, the SDK sends RESUME to that node. Otherwis
 
 `end` sends END to the retained owner.
 
-After END succeeds, the local `Chat` wrapper is closed. Further server operations and `handle()` on that object fail locally with `InvalidArgumentException`.
+After END succeeds, the local `ConversationalQueryChat` wrapper is closed. Further server operations and `handle()` on that object fail locally with `InvalidArgumentException`.
 
 ## Chat Handle
 
-`ChatHandle` is an opaque, serializable representation of the client state needed to continue and route a chat.
+`ConversationalQueryChatHandle` is an opaque, serializable representation of the client state needed to continue and route a chat.
 
-`handle()` returns an immutable snapshot of the `Chat`'s current handle state.
+`handle()` returns an immutable snapshot of the `ConversationalQueryChat`'s current handle state.
 
 The handle's JSON form is an object with only these fields:
 
@@ -277,13 +289,13 @@ The handle's JSON form is an object with only these fields:
 | `chatId` | The chat id, as a string. |
 | `owner` | The retained owner's `nodeUUID` (see [Node Affinity](#node-affinity)), or `null` when no owner is retained. |
 
-A `ChatHandle` must be used with the same Couchbase cluster where the chat was created. The SDK does not verify this.
+A `ConversationalQueryChatHandle` must be used with the same Couchbase cluster where the chat was created. The SDK does not verify this.
 
 `fromJson()` must reject a malformed handle, a handle missing any field above, or a field of the wrong type (`owner` may be `null`) with `InvalidArgumentException`, and must ignore unrecognized fields.
 
 ## Knowledge
 
-Conversational Query can use Knowledge entries configured in Query. `ConversationalQueryOptions.useKnowledge` controls one-shot use. `BeginChatOptions.useKnowledge` sets chat use at BEGIN, and Query retains it for the chat. Both default to `false`.
+Conversational Query can use Knowledge entries configured in Query. `ConversationalQueryOptions.useKnowledge` controls one-shot use. `ConversationalBeginChatOptions.useKnowledge` sets chat use at BEGIN, and Query retains it for the chat. Both default to `false`.
 
 # Implementation Details
 
@@ -299,7 +311,7 @@ A retained owner is unresolvable if its `nodeUUID` is absent from the current cl
 
 The SDK does not trigger an additional configuration refresh beyond normal topology handling.
 
-For ASK, PAUSE, and END, no retained owner or an unresolvable owner causes `ChatCurrentlyUnavailableException`.
+For ASK, PAUSE, and END, no retained owner or an unresolvable owner causes `ConversationalChatCurrentlyUnavailableException`.
 
 The SDK fails locally with this error, keeps the routing information, and does not automatically retry or reroute the request.
 
@@ -307,7 +319,7 @@ A complete, successfully parsed Query response is treated as a returned server r
 
 For BEGIN, or RESUME without a resolvable retained owner, the SDK selects a Query node with a `nodeUUID` and a usable Query endpoint for the selected network and TLS setting in its current cluster configuration, and sends the request there. The SDK must record the owner before completing a successful BEGIN or RESUME.
 
-Chats are not supported on Capella Private Link. When the current cluster configuration maps different Query `nodeUUID`s to the same Query host and port for the selected network and TLS setting, `beginChat` and any `Chat` operation that would contact Query must fail locally with `FeatureNotAvailableException`.
+Chats are not supported on Capella Private Link. When the current cluster configuration maps different Query `nodeUUID`s to the same Query host and port for the selected network and TLS setting, `beginChat` and any `ConversationalQueryChat` operation that would contact Query must fail locally with `FeatureNotAvailableException`.
 
 ## Wire Mapping
 
@@ -321,14 +333,14 @@ USING AI WITH {"keyspaces":["`travel-sample`.`inventory`.`hotel`"],"knowledge":t
 
 ### Operations
 
-| Operation   | Statement                          | `WITH` fields                                                  | Model inputs                                                                    |
-| ----------- | ---------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `query`     | `USING AI WITH <options> <prompt>` | `keyspaces`; optional `knowledge`, `hint`, `execute`, `output` | Send the supplied model and credential, if any.                                 |
-| `beginChat` | `BEGIN CHAT WITH <options>`        | `keyspaces`; optional `knowledge`, `timeout`                   | Do not send the model or credential; the returned `Chat` retains them.          |
-| `ask`       | `USING AI WITH <options> <prompt>` | Optional `hint`, `execute`, `output`                           | Send the `Chat`'s model and credential, if any.                                 |
-| `pause`     | `PAUSE CHAT [WITH <options>]`      | Optional `summarize`                                           | Send the `Chat`'s model and credential, if any, unless `summarize` is `false`.  |
-| `resume`    | `RESUME CHAT`                      | None                                                           | None.                                                                           |
-| `end`       | `END CHAT`                         | None                                                           | None.                                                                           |
+| Operation   | Statement                          | `WITH` fields                                                  | Model inputs                                                                                      |
+| ----------- | ---------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `query`     | `USING AI WITH <options> <prompt>` | `keyspaces`; optional `knowledge`, `hint`, `execute`, `output` | Send the supplied model and credential, if any.                                                   |
+| `beginChat` | `BEGIN CHAT WITH <options>`        | `keyspaces`; optional `knowledge`, `timeout`                   | Do not send the model or credential; the returned `ConversationalQueryChat` retains them.         |
+| `ask`       | `USING AI WITH <options> <prompt>` | Optional `hint`, `execute`, `output`                           | Send the `ConversationalQueryChat`'s model and credential, if any.                                |
+| `pause`     | `PAUSE CHAT [WITH <options>]`      | Optional `summarize`                                           | Send the `ConversationalQueryChat`'s model and credential, if any, unless `summarize` is `false`. |
+| `resume`    | `RESUME CHAT`                      | None                                                           | None.                                                                                             |
+| `end`       | `END CHAT`                         | None                                                           | None.                                                                                             |
 
 `USING AI` always includes `WITH`, using `WITH {}` when there are no fields, so that Query does not parse prompt text as options. Other statements omit `WITH` when there are no fields.
 
@@ -345,27 +357,27 @@ The SDK must use the `WITH` fields below for `hint`, `execute`, and `output`. It
 | `hint`      | JSON string when supplied; otherwise omit.                                                                                                         |
 | `execute`   | JSON boolean. Omit when unset; the server default is `true`.                                                                                        |
 | `output`    | `Sqlpp` maps to `"SQL"`, `FtsSqlpp` to `"FTSSQL"`, and `JsUdf` to `"JSUDF"`. Omit when unset; the default is SQL output.                                             |
-| `timeout`   | `BeginChatOptions.inactivityTimeout`, encoded as an integer number of seconds, rounded up. Omit when unset. |
+| `timeout`   | `ConversationalBeginChatOptions.inactivityTimeout`, encoded as an integer number of seconds, rounded up. Omit when unset. |
 | `summarize` | JSON boolean when explicitly `true` or `false`; omit when unset.                                                                                   |
 
 ### Model option mapping
 
 The SDK sends `natural_config` as a JSON object and omits it when it would be empty.
 
-| `ConversationalQueryModelOptions` | Capella path     | Direct-provider path                          |
-| --------------------------------- | ---------------- | --------------------------------------------- |
-| `provider`                        | `natural_vendor` | `natural_config.provider`                     |
-| `name`                            | `natural_model`  | `natural_config.model`                        |
-| `endpoint`                        | Unsupported      | `natural_config.endpoint`                     |
-| `outputTokenLimit`                | Unsupported      | `natural_config.output_token_limit`           |
-| `moderation`                      | Unsupported      | `natural_config.moderation`                   |
-| `raw`                             | Unsupported      | Additional top-level `natural_config` entries |
+| `ConversationalModelOptions` | Capella path     | Direct-provider path                          |
+| ---------------------------- | ---------------- | --------------------------------------------- |
+| `provider`                   | `natural_vendor` | `natural_config.provider`                     |
+| `name`                       | `natural_model`  | `natural_config.model`                        |
+| `endpoint`                   | Unsupported      | `natural_config.endpoint`                     |
+| `outputTokenLimit`           | Unsupported      | `natural_config.output_token_limit`           |
+| `moderation`                 | Unsupported      | `natural_config.moderation`                   |
+| `raw`                        | Unsupported      | Additional top-level `natural_config` entries |
 
 ## Results
 
-`ConversationalQueryResult` is a separate public result type with normal Query row semantics and the metadata defined below.
+`ConversationalResult` is a separate public result type with normal Query row semantics and the metadata defined below.
 
-`ConversationalQueryMetaData.profile()` exposes the Query response's `profile` object when present, using the same representation and optionality as ordinary Query metadata.
+`ConversationalMetaData.profile()` exposes the Query response's `profile` object when present, using the same representation and optionality as ordinary Query metadata.
 
 ### Generated statement
 
@@ -379,21 +391,21 @@ The SDK must accept responses without `results` or `signature`, including genera
 
 ### Chat ID
 
-The SDK reads the top-level string `chatId` from the BEGIN response and retains it in the returned `Chat`.
+The SDK reads the top-level string `chatId` from the BEGIN response and retains it in the returned `ConversationalQueryChat`.
 
 ### Token usage
 
-`requestTokens` and `chatTokens` are optional top-level response fields that map to `ConversationalQueryMetaData.requestTokens()` and `chatTokens()`. `requestTokens` reports token usage for the current request. The recognized token counter fields are `promptTokens`, `completionTokens`, and `totalTokens`.
+`requestTokens` and `chatTokens` are optional top-level response fields that map to `ConversationalMetaData.requestTokens()` and `chatTokens()`. `requestTokens` reports token usage for the current request. The recognized token counter fields are `promptTokens`, `completionTokens`, and `totalTokens`.
 
 `chatTokens` reports cumulative token usage for the chat and, when present, is also exposed in metadata returned by PAUSE, RESUME, and END.
 
 ### Metrics
 
-The SDK exposes `metrics.naturalLanguageProcessingTime` through `ConversationalQueryMetaData.naturalLanguageProcessingTime()`, converting Query's duration string to a `Duration`. Existing shared Query types, including `QueryMetrics`, remain unchanged.
+The SDK exposes `metrics.naturalLanguageProcessingTime` through `ConversationalMetaData.naturalLanguageProcessingTime()`, converting Query's duration string to a `Duration`. Existing shared Query types, including `QueryMetrics`, remain unchanged.
 
 ### Execution
 
-When present, `metrics.generatedStatementExecuted` is exposed through `ConversationalQueryMetaData.generatedStatementExecuted()`.
+When present, `metrics.generatedStatementExecuted` is exposed through `ConversationalMetaData.generatedStatementExecuted()`.
 
 ## Errors
 
@@ -410,15 +422,15 @@ The mappings below apply only to Conversational Query operations. When a respons
 | 19220 | Too many natural-language requests are waiting on the receiving node. `RateLimitedException`. |
 | 19221 | A natural-language request waited too long for admission on the receiving node. `RateLimitedException`. |
 | 19222 | Natural-language processing is disabled on the receiving node. `FeatureNotAvailableException`. |
-| 19236 | On ASK, PAUSE, or END, the receiving node has no live chat with that id. `ChatCurrentlyUnavailableException`. |
+| 19236 | On ASK, PAUSE, or END, the receiving node has no live chat with that id. `ConversationalChatCurrentlyUnavailableException`. |
 | 19240 | The node has no available live-chat slots. `RateLimitedException`, including when nested in a 19243 `reason`; preserve both codes. |
 | 19241 | The Couchbase identity failed the chat ownership check. `AuthenticationFailureException`. |
 | 19243 | RESUME could not restore the chat on the receiving node. Except for nested 19240, no new typed exception is defined for this code: use the SDK's existing handling for an unmapped Query error. It does not prove that the persisted chat is missing. Routing follows [Routing](#routing). |
 | 19255 | RESUME found the chat already live on the receiving node. No new typed exception is defined for this code: use the SDK's existing handling for an unmapped Query error. Routing follows [Routing](#routing). |
 
-`ChatCurrentlyUnavailableException` is new for this feature and derives directly from `CouchbaseException`. It is raised for ASK, PAUSE, and END when no owner is retained, the retained owner is unresolvable, or Query returns error 19236. Routing information is retained. The error does not establish that the chat has ended, expired, or lacks persisted state.
+`ConversationalChatCurrentlyUnavailableException` is new for this feature and derives directly from `CouchbaseException`. It is raised for ASK, PAUSE, and END when no owner is retained, the retained owner is unresolvable, or Query returns error 19236. Routing information is retained. The error does not establish that the chat has ended, expired, or lacks persisted state.
 
-The `ChatCurrentlyUnavailableException` error context includes the chat id, the retained owner's `nodeUUID` when one is retained, and the operation.
+The `ConversationalChatCurrentlyUnavailableException` error context includes the chat id, the retained owner's `nodeUUID` when one is retained, and the operation.
 
 ## Retries and Timeouts
 
@@ -441,7 +453,7 @@ The SDK must not set `db.statement` on these spans, since the statement can cont
 
 ## Feature Detection
 
-Chat support is advertised by `conversationalQuery` in `clusterCapabilities.n1ql`. If that capability is absent, `beginChat` and any `Chat` operation that would contact Query must fail locally with `FeatureNotAvailableException`. Normal Query service readiness handling applies until capability information is available. If the capability is known to be absent, `FeatureNotAvailableException` takes precedence over `ChatCurrentlyUnavailableException` for a missing or unresolvable retained owner.
+Chat support is advertised by `conversationalQuery` in `clusterCapabilities.n1ql`. If that capability is absent, `beginChat` and any `ConversationalQueryChat` operation that would contact Query must fail locally with `FeatureNotAvailableException`. Normal Query service readiness handling applies until capability information is available. If the capability is known to be absent, `FeatureNotAvailableException` takes precedence over `ConversationalChatCurrentlyUnavailableException` for a missing or unresolvable retained owner.
 
 The capability check does not apply to local operations (`attachChat`, handle parsing, or handle serialization) or to one-shot `query`.
 
@@ -451,11 +463,11 @@ The SDK must not add a separate version check for the direct-provider path.
 
 # Documentation
 
-SDK documentation should explain how to save and restore a `ChatHandle`. The handle is a snapshot, so applications should save an updated handle after `beginChat`, `pause`, or `resume`. A `ChatHandle` does not contain model or credential configuration. Applications must supply any model and credential configuration needed when reattaching a chat. Otherwise, a later ASK or summarizing PAUSE may fail. `beginChat` and `attachChat` do not verify model availability or model-provider credentials; related errors may surface on a later `ask` or `pause`. Documentation should explain that, on the Capella path, Query can reuse the chat's previous provider and model when both are omitted from a chat turn or summarizing PAUSE (see [MB-75056](https://jira.issues.couchbase.com/browse/MB-75056)).
+SDK documentation should explain how to save and restore a `ConversationalQueryChatHandle`. The handle is a snapshot, so applications should save an updated handle after `beginChat`, `pause`, or `resume`. A `ConversationalQueryChatHandle` does not contain model or credential configuration. Applications must supply any model and credential configuration needed when reattaching a chat. Otherwise, a later ASK or summarizing PAUSE may fail. `beginChat` and `attachChat` do not verify model availability or model-provider credentials; related errors may surface on a later `ask` or `pause`. Documentation should explain that, on the Capella path, Query can reuse the chat's previous provider and model when both are omitted from a chat turn or summarizing PAUSE (see [MB-75056](https://jira.issues.couchbase.com/browse/MB-75056)).
 
 Documentation should state that Query's default and minimum inactivity timeouts are currently one hour. Query rejects values below this minimum with error 19246; the SDK does not enforce this minimum locally.
 
-Documentation must explain that applications must serialize PAUSE, RESUME, and END operations on the same chat, including across `Chat` instances, and any other operations whose order matters. It should explain that an explicit `resume()` may recover from `ChatCurrentlyUnavailableException`, but an ASK or lifecycle operation with an ambiguous outcome must not be blindly replayed. END does not delete a paused chat, so the application must resume it first. After END succeeds, previously serialized handles can still be attached, but they cannot continue the chat.
+Documentation must explain that applications must serialize PAUSE, RESUME, and END operations on the same chat, including across `ConversationalQueryChat` instances, and any other operations whose order matters. It should explain that an explicit `resume()` may recover from `ConversationalChatCurrentlyUnavailableException`, but an ASK or lifecycle operation with an ambiguous outcome must not be blindly replayed. END does not delete a paused chat, so the application must resume it first. After END succeeds, previously serialized handles can still be attached, but they cannot continue the chat.
 
 Documentation should explain that `execute(true)` does not guarantee execution. Applications that need to determine whether a statement was executed should enable metrics and inspect `generatedStatementExecuted()` when present. Creating a function generated with `JsUdf` requires a separate ordinary Query request.
 
