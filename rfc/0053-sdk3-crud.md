@@ -397,7 +397,7 @@ Per-Field errors:
   - DocumentNotJson (#120)
   - Xattr (#124)
 
-Notes
+#### Notes
 
 - Do not implement the singular Sub-Doc commands as in SDK 2.0, there is a very tiny performance penalty and only adds 3 bytes to the packet size while causing quite a bit of complexity on the client. Instead only implement the "multi" Sub-Doc operations.
 
@@ -405,7 +405,9 @@ Notes
 
 - The server requires that all Xattr operations must come before any regular operations when sent to the server; however, when the results are returned from the server the previous order specified by the User must be returned so that ContentAs(int index) can be used to fetch the correct result. A data structure may be used internally to "remember" this ordering.
 
-LookupIn Macro Values
+- By default, the server accepts at most 16 specs per `LookupIn` request. In newer server versions, the limit can be set to a higher value. No client-side validation of the number of specs should be performed to support a higher limit. When the limit is exceeded, the server responds with a `SUBDOC_INVALID_COMBO` (0xCB) error, which is mapped to an `InvalidArgumentException`, according to the [Error Handling RFC](0058-error-handling.md).
+
+#### LookupIn Macro Values
 
 Unlike MutateIn macros, below, these are simple strings and the app still needs to explicitly set the xattrs flag for them.
 
@@ -578,7 +580,7 @@ Throws
   - PathExists (#123)
   - Xattr (#124)
 
-Notes
+#### Notes
 
 - Do not implement the singular Sub-Doc commands as in SDK 2.0, there is a very tiny performance penalty and only adds 3 bytes to the packet size while causing quite a bit of complexity on the client. Instead only implement the "multi" Sub-Doc operations.
 
@@ -588,7 +590,9 @@ Notes
 
 - If CAS is non-zero and KEY_EXISTS is returned by the server a CasMismatchException should be propagated.
 
-Mutation Macro Values
+- By default, the server accepts at most 16 specs per `MutateIn` request. In newer server versions, the limit can be set to a higher value. No client-side validation of the number of specs should be performed to support a higher limit. When the limit is exceeded, the server responds with a `SUBDOC_INVALID_COMBO` (0xCB) error, which is mapped to an `InvalidArgumentException`, according to the [Error Handling RFC](0058-error-handling.md).
+
+#### Mutation Macro Values
 
 | Name        | String Value               |
 | ----------- | -------------------------- |
@@ -600,7 +604,7 @@ There are currently a fixed number of Mutation Macros supported by the server; i
 
 There are a number of ways to do this, but a very simple way is to define a marker interface and simple implementations for each of the values in the table above where ToString() or its equivalent is called if the interface is detected and then taking the string value and setting the XAttr flag as it is required for macros.
 
-Mutation Macro Example
+#### Mutation Macro Example
 
 ```csharp
 interface IMutationMacro{}
@@ -1378,7 +1382,7 @@ public interface ICounterResult : IMutationResult {
 
 # Projections using Get
 
-A new feature of Get is to allow "projections" of document fragments for a given path. Based on Sub-Doc API, the maximum number of fields that can be projected is 16. Once the 16 field limit is reached, the entire document will be fetched using the standard Get command and the requested fields will be extracted.
+A new feature of Get is to allow "projections" of document fragments for a given path. Based on Sub-Doc API, the maximum number of fields that can be projected is 16 (which is the minimum subdoc op limit that can be configured on the cluster). Once the 16 field limit is reached, the entire document will be fetched using the standard Get command and the requested fields will be extracted.
 
 Given a JSON document with the following structure, the table below it shows the expected inputs/outputs of the API and how an SDK should handle a given path:
 
@@ -1836,6 +1840,10 @@ Invalid operation
 - September, 2026 - Revision #23 (by Graham Pople)
 
   - Adjustments to `GetReplica`.
+
+- November 25, 2026 - Revision #24 (by Dimitris Christodoulou)
+
+  - Clarify that SDKs should not perform client-side validation of the number of commands in a `MutateIn` or `LookupIn`, as the limit on the number of subdoc commands can be configured on the server in newer server versions.
 
   # Signoff
 
